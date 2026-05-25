@@ -44,16 +44,51 @@ class DatabaseManager {
     const applied = new Set(
       (this.db.prepare('SELECT name FROM schema_migrations').all() as { name: string }[]).map(r => r.name)
     );
+    // Pending list: migrations that targeted a table that didn't exist yet at
+    // first call (CREATE-TABLE statements happen later in this method). After
+    // all CREATEs run, we replay these.
+    const deferred: Array<{ name: string; sql: string }> = [];
+
     const runOnce = (name: string, sql: string) => {
       if (applied.has(name)) return;
+      let shouldMark = true;
       try {
         this.db!.exec(sql);
-      } catch (e) {
-        // Column/constraint may already exist from a pre-tracking run.
-        // Still record the migration to avoid re-running it on every boot.
+      } catch (e: any) {
+        const msg = String(e?.message ?? '');
+        if (msg.includes('no such table')) {
+          // Queue for retry after all CREATE TABLE statements have run.
+          deferred.push({ name, sql });
+          shouldMark = false;
+        } else if (!msg.includes('duplicate column')) {
+          console.warn(`[migration ${name}] ${msg}`);
+        }
+        // "duplicate column name" — already exists from a pre-tracking run; mark as done.
       }
-      this.db!.prepare('INSERT OR IGNORE INTO schema_migrations (name) VALUES (?)').run(name);
-      applied.add(name);
+      if (shouldMark) {
+        this.db!.prepare('INSERT OR IGNORE INTO schema_migrations (name) VALUES (?)').run(name);
+        applied.add(name);
+      }
+    };
+
+    // Drain deferred migrations after CREATE TABLE statements below have run.
+    const drainDeferred = () => {
+      for (const { name, sql } of deferred) {
+        if (applied.has(name)) continue;
+        try {
+          this.db!.exec(sql);
+          this.db!.prepare('INSERT OR IGNORE INTO schema_migrations (name) VALUES (?)').run(name);
+          applied.add(name);
+        } catch (e: any) {
+          const msg = String(e?.message ?? '');
+          if (msg.includes('duplicate column')) {
+            this.db!.prepare('INSERT OR IGNORE INTO schema_migrations (name) VALUES (?)').run(name);
+            applied.add(name);
+          } else {
+            console.warn(`[deferred migration ${name}] ${msg}`);
+          }
+        }
+      }
     };
 
     // Users table
@@ -568,6 +603,10 @@ class DatabaseManager {
     } catch (e) {
       console.error('Failed to initialize round-robin table:', e);
     }
+
+    // Apply any ALTER TABLE migrations whose target tables were created
+    // after their declaration site above.
+    drainDeferred();
 
     console.log('📦 Database migrations completed');
   }
