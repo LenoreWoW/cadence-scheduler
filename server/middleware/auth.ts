@@ -59,6 +59,40 @@ export function verifyToken(token: string): JWTPayload | null {
   }
 }
 
+/**
+ * Hash a Personal Access Token (PAT) for storage / lookup. We never store the
+ * raw token — only its SHA-256 hash.
+ */
+export function hashPat(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Resolve a PAT (`cad_pat_…`) to a JWT-shaped payload. Returns null on
+ * unknown/expired token. Updates `last_used_at` on success.
+ */
+function resolvePatToken(token: string): JWTPayload | null {
+  if (!token.startsWith('cad_pat_')) return null;
+  try {
+    const tokenHash = hashPat(token);
+    const row = db.connection.prepare(`
+      SELECT t.id, t.user_id, t.expires_at, u.username, u.role
+      FROM api_tokens t
+      JOIN users u ON u.id = t.user_id
+      WHERE t.token_hash = ?
+    `).get(tokenHash) as any;
+    if (!row) return null;
+    if (row.expires_at && new Date(row.expires_at) < new Date()) return null;
+    // Update last_used_at — best-effort.
+    try {
+      db.connection.prepare(`UPDATE api_tokens SET last_used_at = datetime('now') WHERE id = ?`).run(row.id);
+    } catch {}
+    return { userId: row.user_id, username: row.username, role: row.role };
+  } catch {
+    return null;
+  }
+}
+
 export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
@@ -67,7 +101,16 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  const payload = verifyToken(token);
+  // Accept either a JWT or a Personal Access Token. PATs are SHA-256 hashed
+  // in the DB; JWTs are HS256-signed with JWT_SECRET. Try PAT first only if
+  // it has the `cad_pat_` prefix — otherwise we'd waste a DB lookup on JWTs.
+  let payload: JWTPayload | null = null;
+  if (token.startsWith('cad_pat_')) {
+    payload = resolvePatToken(token);
+  } else {
+    payload = verifyToken(token);
+  }
+
   if (!payload) {
     return res.status(403).json({ error: 'Invalid or expired token' });
   }

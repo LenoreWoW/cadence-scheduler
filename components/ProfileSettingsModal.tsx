@@ -9,6 +9,8 @@ import { VIDEO_PLATFORM_CONFIG } from '../constants';
 import { BookingLinksManager } from './BookingLinksManager';
 import { CalendarSyncSettings } from './CalendarSyncSettings';
 import { useReducedMotionState } from '../hooks/useReducedMotion';
+import { WebhooksPanel } from './WebhooksPanel';
+import { AccountSettingsPage } from './AccountSettingsPage';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -22,7 +24,8 @@ interface ProfileSettingsModalProps {
 export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   isOpen, onClose, onSave, currentUser, t, lang
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'availability' | 'timeoff' | 'meeting' | 'booking' | 'calendar' | 'preferences'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'availability' | 'timeoff' | 'meeting' | 'booking' | 'calendar' | 'preferences' | 'integrations' | 'security'>('profile');
+  const [integrationsSubTab, setIntegrationsSubTab] = useState<'webhooks' | 'tokens'>('webhooks');
   
   // Form State
   const [formData, setFormData] = useState({
@@ -199,6 +202,8 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                { id: 'meeting', label: 'Online Meetings', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
                { id: 'booking', label: 'Booking Links', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1', dataTour: 'booking-links' },
                { id: 'calendar', label: 'Calendar Sync', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' },
+               { id: 'integrations', label: 'Integrations', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
+               { id: 'security', label: 'Security & Data', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
                { id: 'preferences', label: 'Preferences', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }
              ].map(item => (
                 <button
@@ -553,6 +558,34 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                         t={t}
                         lang={lang}
                       />
+                   </div>
+                )}
+
+                {activeTab === 'integrations' && (
+                   <div className="animate-fade-in space-y-6">
+                      <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 w-fit">
+                         {(['webhooks', 'tokens'] as const).map(opt => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => setIntegrationsSubTab(opt)}
+                              className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${integrationsSubTab === opt ? 'bg-white text-charcoal shadow-sm' : 'text-gray-500 hover:text-charcoal'}`}
+                            >
+                               {opt === 'webhooks' ? 'Webhooks' : 'API Tokens'}
+                            </button>
+                         ))}
+                      </div>
+                      {integrationsSubTab === 'webhooks' ? (
+                         <WebhooksPanel lang={lang} />
+                      ) : (
+                         <AccountSettingsPage userEmail={currentUser.email} lang={lang} section="tokens" />
+                      )}
+                   </div>
+                )}
+
+                {activeTab === 'security' && (
+                   <div className="animate-fade-in">
+                      <AccountSettingsPage userEmail={currentUser.email} lang={lang} section="all" />
                    </div>
                 )}
 

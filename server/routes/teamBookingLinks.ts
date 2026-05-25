@@ -12,6 +12,9 @@ import rateLimit from 'express-rate-limit';
 import { db } from '../database';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
+import { awardXp, incrementBookingStat } from '../services/userStatsSync';
+import { dispatchWebhook } from '../services/outboundWebhooks';
+import { trackChallengeProgress } from './challenges';
 
 const router = Router();
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -425,6 +428,17 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       `/?view=my-meetings`
     );
   } catch {}
+
+  // Stats / XP / webhook / challenges hooks
+  try { awardXp(assignedMember.id, 10, 'team booking'); } catch {}
+  try { incrementBookingStat(assignedMember.id); } catch {}
+  try {
+    dispatchWebhook(assignedMember.id, 'booking.created', {
+      meetingId, title: meetingTitle, date, time, duration: bookingDuration,
+      attendeeName, attendeeEmail, source: 'team_booking_link', slug: req.params.slug,
+    });
+  } catch {}
+  try { trackChallengeProgress(assignedMember.id, 'bookings_received', 1); } catch {}
 
   // Fire-and-forget emails
   (async () => {

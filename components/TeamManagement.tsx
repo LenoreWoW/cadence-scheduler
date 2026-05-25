@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { User, Team, Role, Language } from '../types';
 import { Button } from './Button';
 import { storageService } from '../services/storageService';
+import { TeamInvitationsPanel } from './TeamInvitationsPanel';
+import { DepartmentsPanel } from './DepartmentsPanel';
+import { ResourcesPanel } from './ResourcesPanel';
+import { ApprovalQueue } from './ApprovalQueue';
+import { BulkUserImportModal } from './BulkUserImportModal';
 
 interface TeamManagementProps {
   t: (key: string) => string;
@@ -16,7 +21,8 @@ interface TeamWithLeader extends Team {
 }
 
 export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, currentUser }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'teams'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'teams' | 'invitations' | 'departments' | 'resources' | 'approvals'>('users');
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<TeamWithLeader[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -164,47 +170,63 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
     <div className="bg-white rounded-xl shadow-lg border border-dune/20 overflow-hidden min-h-[600px] animate-fade-in">
        {/* Tab Header */}
        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6 rtl:space-x-reverse" aria-label="Tabs">
-            <button
-              onClick={() => { setActiveTab('users'); setSearchQuery(''); }}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 ${
-                activeTab === 'users'
-                  ? 'border-al-adaam text-al-adaam'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {t('users')}
-            </button>
-            <button
-              onClick={() => { setActiveTab('teams'); setSearchQuery(''); }}
-              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 ${
-                activeTab === 'teams'
-                  ? 'border-al-adaam text-al-adaam'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {t('teams')}
-            </button>
+          <nav className="flex flex-wrap space-x-4 sm:space-x-8 px-6 rtl:space-x-reverse" aria-label="Tabs">
+            {([
+              { id: 'users', label: t('users'), show: true },
+              { id: 'teams', label: t('teams'), show: true },
+              { id: 'invitations', label: lang === 'ar' ? 'الدعوات' : 'Invitations', show: isAdmin || isManager },
+              { id: 'departments', label: lang === 'ar' ? 'الأقسام' : 'Departments', show: isAdmin },
+              { id: 'resources', label: lang === 'ar' ? 'الموارد' : 'Resources', show: isAdmin || isManager },
+              { id: 'approvals', label: lang === 'ar' ? 'الموافقات' : 'Approvals', show: isAdmin || isManager },
+            ] as const).map(tab => tab.show && (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id as any); setSearchQuery(''); }}
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 ${
+                  activeTab === tab.id
+                    ? 'border-al-adaam text-al-adaam'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </nav>
        </div>
 
        <div className="p-6">
+          {activeTab === 'invitations' ? (
+             <TeamInvitationsPanel teamId={currentUser?.teamId} lang={lang} />
+          ) : activeTab === 'departments' ? (
+             <DepartmentsPanel lang={lang} />
+          ) : activeTab === 'resources' ? (
+             <ResourcesPanel lang={lang} teamId={currentUser?.teamId} />
+          ) : activeTab === 'approvals' ? (
+             <ApprovalQueue lang={lang} />
+          ) : (<>
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="relative w-full md:w-64">
                <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-               <input 
-                 type="text" 
-                 placeholder={`Search ${activeTab}...`} 
+               <input
+                 type="text"
+                 placeholder={`Search ${activeTab}...`}
                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none transition-colors"
                  value={searchQuery}
                  onChange={e => setSearchQuery(e.target.value)}
                />
             </div>
-            {(activeTab === 'users' ? isAdmin : canCreateTeam) && (
-              <Button onClick={handleAddNew} variant="primary">
-                 + {activeTab === 'users' ? t('addUser') : t('addTeam')}
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {activeTab === 'users' && isAdmin && (
+                <Button onClick={() => setShowBulkImport(true)} variant="secondary">
+                   {lang === 'ar' ? 'استيراد CSV' : 'Bulk Import'}
+                </Button>
+              )}
+              {(activeTab === 'users' ? isAdmin : canCreateTeam) && (
+                <Button onClick={handleAddNew} variant="primary">
+                   + {activeTab === 'users' ? t('addUser') : t('addTeam')}
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="overflow-x-auto rounded-lg border border-gray-100">
@@ -326,6 +348,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
               </table>
             )}
           </div>
+          </>)}
        </div>
 
        {/* Edit/Add Modal */}
@@ -485,6 +508,14 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
             </div>
           </div>
        )}
+
+       {/* Bulk import */}
+       <BulkUserImportModal
+         isOpen={showBulkImport}
+         onClose={() => setShowBulkImport(false)}
+         onImported={loadData}
+         lang={lang}
+       />
     </div>
   );
 };

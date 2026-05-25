@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '../database';
 import { generateTokens, verifyToken, authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
+import { awardXp } from '../services/userStatsSync';
+import { trackChallengeProgress } from './challenges';
 
 const router = Router();
 
@@ -59,6 +61,10 @@ router.post('/login', async (req: Request, res: Response) => {
       INSERT INTO activity_logs (id, action, details, performed_by, role)
       VALUES (?, 'LOGIN', 'User logged in', ?, ?)
     `).run(uuidv4(), user.name, user.role);
+
+    // Gamification: small XP for login + challenge progress.
+    try { awardXp(user.id, 2, 'login'); } catch {}
+    try { trackChallengeProgress(user.id, 'logins', 1); } catch {}
 
     // Get user availability
     const availability = db.connection.prepare(`

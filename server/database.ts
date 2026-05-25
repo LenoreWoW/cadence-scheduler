@@ -226,6 +226,228 @@ class DatabaseManager {
       )`
     );
 
+    // ====== 10/10 expansion migrations ======
+    runOnce(
+      '20240120_team_invitations',
+      `CREATE TABLE IF NOT EXISTS team_invitations (
+        token TEXT PRIMARY KEY,
+        team_id TEXT NOT NULL,
+        email TEXT NOT NULL,
+        role TEXT DEFAULT 'subordinate',
+        invited_by TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        accepted INTEGER DEFAULT 0,
+        accepted_at TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+        FOREIGN KEY (invited_by) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240121_team_invitations_index',
+      `CREATE INDEX IF NOT EXISTS idx_team_invitations_email ON team_invitations(email)`
+    );
+    runOnce(
+      '20240122_departments',
+      `CREATE TABLE IF NOT EXISTS departments (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        head_user_id TEXT,
+        parent_id TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (head_user_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (parent_id) REFERENCES departments(id) ON DELETE SET NULL
+      )`
+    );
+    runOnce(
+      '20240123_users_add_department',
+      `ALTER TABLE users ADD COLUMN department_id TEXT`
+    );
+    runOnce(
+      '20240124_teams_add_department',
+      `ALTER TABLE teams ADD COLUMN department_id TEXT`
+    );
+    runOnce(
+      '20240125_resources',
+      `CREATE TABLE IF NOT EXISTS resources (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL DEFAULT 'room',
+        location TEXT,
+        capacity INTEGER,
+        description TEXT,
+        owner_team_id TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_team_id) REFERENCES teams(id) ON DELETE SET NULL
+      )`
+    );
+    runOnce(
+      '20240126_resource_bookings',
+      `CREATE TABLE IF NOT EXISTS resource_bookings (
+        id TEXT PRIMARY KEY,
+        resource_id TEXT NOT NULL,
+        meeting_id TEXT,
+        user_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        purpose TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE,
+        FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240127_resource_bookings_index',
+      `CREATE INDEX IF NOT EXISTS idx_resource_bookings_resource_date ON resource_bookings(resource_id, date)`
+    );
+    runOnce(
+      '20240128_meeting_attachments',
+      `CREATE TABLE IF NOT EXISTS meeting_attachments (
+        id TEXT PRIMARY KEY,
+        meeting_id TEXT NOT NULL,
+        uploader_id TEXT NOT NULL,
+        filename TEXT NOT NULL,
+        size_bytes INTEGER NOT NULL,
+        content_type TEXT,
+        data_base64 TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE,
+        FOREIGN KEY (uploader_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240129_meeting_attachments_index',
+      `CREATE INDEX IF NOT EXISTS idx_meeting_attachments_meeting ON meeting_attachments(meeting_id)`
+    );
+    runOnce(
+      '20240130_outbound_webhooks',
+      `CREATE TABLE IF NOT EXISTS outbound_webhooks (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        url TEXT NOT NULL,
+        secret TEXT,
+        events TEXT NOT NULL DEFAULT '[]',
+        is_active INTEGER DEFAULT 1,
+        last_delivery_at TEXT,
+        last_status INTEGER,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240131_webhook_deliveries',
+      `CREATE TABLE IF NOT EXISTS webhook_deliveries (
+        id TEXT PRIMARY KEY,
+        webhook_id TEXT NOT NULL,
+        event TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        status_code INTEGER,
+        response_body TEXT,
+        delivered_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (webhook_id) REFERENCES outbound_webhooks(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240132_api_tokens',
+      `CREATE TABLE IF NOT EXISTS api_tokens (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        token_hash TEXT UNIQUE NOT NULL,
+        scopes TEXT DEFAULT '[]',
+        last_used_at TEXT,
+        expires_at TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240133_challenges',
+      `CREATE TABLE IF NOT EXISTS challenges (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        metric TEXT NOT NULL,
+        target INTEGER NOT NULL,
+        period TEXT DEFAULT 'week',
+        starts_at TEXT NOT NULL,
+        ends_at TEXT NOT NULL,
+        xp_reward INTEGER DEFAULT 100,
+        active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )`
+    );
+    runOnce(
+      '20240134_user_challenge_progress',
+      `CREATE TABLE IF NOT EXISTS user_challenge_progress (
+        user_id TEXT NOT NULL,
+        challenge_id TEXT NOT NULL,
+        progress INTEGER DEFAULT 0,
+        completed INTEGER DEFAULT 0,
+        completed_at TEXT,
+        PRIMARY KEY (user_id, challenge_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240135_users_email_verification',
+      `ALTER TABLE users ADD COLUMN email_verification_token TEXT`
+    );
+    runOnce(
+      '20240136_booking_links_availability_override',
+      `ALTER TABLE booking_links ADD COLUMN availability_override TEXT`
+    );
+    runOnce(
+      '20240137_booking_links_bookable_window_days',
+      `ALTER TABLE booking_links ADD COLUMN bookable_window_days INTEGER`
+    );
+    runOnce(
+      '20240138_booking_links_slot_capacity',
+      `ALTER TABLE booking_links ADD COLUMN slot_capacity INTEGER DEFAULT 1`
+    );
+    runOnce(
+      '20240139_booking_links_approval_required',
+      `ALTER TABLE booking_links ADD COLUMN approval_required INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240140_users_delegate',
+      `CREATE TABLE IF NOT EXISTS user_delegates (
+        principal_user_id TEXT NOT NULL,
+        delegate_user_id TEXT NOT NULL,
+        scope TEXT DEFAULT 'calendar',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (principal_user_id, delegate_user_id),
+        FOREIGN KEY (principal_user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (delegate_user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240141_users_preferred_language',
+      `ALTER TABLE users ADD COLUMN preferred_language TEXT DEFAULT 'en'`
+    );
+    runOnce(
+      '20240142_user_stats_xp',
+      `ALTER TABLE user_stats ADD COLUMN xp INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240143_user_stats_level',
+      `ALTER TABLE user_stats ADD COLUMN level INTEGER DEFAULT 1`
+    );
+    runOnce(
+      '20240144_meetings_approval_status',
+      `ALTER TABLE meetings ADD COLUMN approval_required INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240145_meetings_approver_id',
+      `ALTER TABLE meetings ADD COLUMN approver_id TEXT`
+    );
+
     // Meetings table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS meetings (

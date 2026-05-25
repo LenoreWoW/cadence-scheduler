@@ -390,5 +390,53 @@ router.get('/achievements', (req: Request, res: Response) => {
   res.json(achievements);
 });
 
+// Team-vs-team competition ranking. Aggregates each team's totals from the meetings table.
+router.get('/team-competition', authenticateToken, (req: Request, res: Response) => {
+  try {
+    const { period = 'month' } = req.query;
+    const now = new Date();
+    let cutoff = new Date();
+    if (period === 'week') cutoff.setDate(now.getDate() - 7);
+    else if (period === 'quarter') cutoff.setMonth(now.getMonth() - 3);
+    else if (period === 'year') cutoff.setFullYear(now.getFullYear() - 1);
+    else cutoff.setMonth(now.getMonth() - 1);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+
+    const rows = db.connection.prepare(`
+      SELECT
+        t.id, t.name, t.color, t.image,
+        COUNT(DISTINCT u.id) as members,
+        COUNT(m.id) as total_bookings,
+        SUM(CASE WHEN m.status = 'approved' THEN 1 ELSE 0 END) as approved_bookings,
+        SUM(CASE WHEN m.status = 'approved' THEN m.duration_minutes ELSE 0 END) as total_minutes,
+        COALESCE(SUM(us.xp), 0) as total_xp
+      FROM teams t
+      LEFT JOIN users u ON u.team_id = t.id
+      LEFT JOIN meetings m ON m.host_id = u.id AND m.date >= ?
+      LEFT JOIN user_stats us ON us.user_id = u.id
+      GROUP BY t.id
+      ORDER BY total_xp DESC, approved_bookings DESC
+    `).all(cutoffStr) as any[];
+
+    res.json({
+      period,
+      teams: rows.map((r, i) => ({
+        rank: i + 1,
+        id: r.id,
+        name: r.name,
+        color: r.color,
+        image: r.image,
+        members: r.members || 0,
+        totalBookings: r.total_bookings || 0,
+        approvedBookings: r.approved_bookings || 0,
+        totalHours: Math.round((r.total_minutes || 0) / 60),
+        totalXp: r.total_xp || 0,
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch team competition' });
+  }
+});
+
 export default router;
 

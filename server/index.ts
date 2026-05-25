@@ -18,12 +18,26 @@ import emailRoutes from './routes/email';
 import bookingLinkRoutes from './routes/bookingLinks';
 import analyticsRoutes from './routes/analytics';
 import leaderboardRoutes from './routes/leaderboard';
+import gamificationRoutes from './routes/gamification';
 import roundRobinRoutes from './routes/roundRobin';
 import calendarRoutes from './routes/calendar';
 import notificationRoutes from './routes/notifications';
 import teamBookingLinkRoutes from './routes/teamBookingLinks';
+import teamInvitationRoutes from './routes/teamInvitations';
+import departmentRoutes from './routes/departments';
+import resourceRoutes from './routes/resources';
+import attachmentRoutes from './routes/attachments';
+import webhookRoutes from './routes/webhooks';
+import apiTokenRoutes from './routes/apiTokens';
+import challengeRoutes from './routes/challenges';
+import dataExportRoutes from './routes/dataExport';
+import auditRoutes from './routes/audit';
+import adminRoutes from './routes/admin';
+import ssoRoutes from './routes/sso';
+import embedRoutes from './routes/embed';
 import { initReminderScheduler } from './jobs/reminderScheduler';
 import { initCalendarSyncScheduler } from './jobs/calendarSyncJob';
+import { initRetentionJob } from './jobs/retentionJob';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/logger';
 
@@ -86,6 +100,10 @@ const registerLimiter = rateLimit({
 });
 app.use('/api/auth/register', registerLimiter);
 
+// Attachments need a higher JSON limit (base64 files). Mount the router with
+// its own parser BEFORE the global tighter limit so it isn't pre-empted.
+app.use('/api/attachments', express.json({ limit: '8mb' }), attachmentRoutes);
+
 // Body Parsing
 app.use(express.json({ limit: '64kb' }));
 app.use(express.urlencoded({ extended: true, limit: '64kb' }));
@@ -112,10 +130,23 @@ app.use('/api/email', emailRoutes);
 app.use('/api/booking-links', bookingLinkRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/gamification', gamificationRoutes);
 app.use('/api/round-robin', roundRobinRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/team-booking-links', teamBookingLinkRoutes);
+app.use('/api/team-invitations', teamInvitationRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/resources', resourceRoutes);
+// /api/attachments mounted above with its own body parser
+app.use('/api/webhooks', webhookRoutes);
+app.use('/api/api-tokens', apiTokenRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/data-export', dataExportRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/sso', ssoRoutes);
+app.use('/api/embed', embedRoutes);
 
 // 404 Handler
 app.use('/api/*', (_req: Request, res: Response) => {
@@ -132,6 +163,7 @@ async function startServer() {
 
     initReminderScheduler();
     initCalendarSyncScheduler();
+    initRetentionJob();
 
     app.listen(PORT, () => {
       console.log(`🚀 Cadence server running on port ${PORT}`);

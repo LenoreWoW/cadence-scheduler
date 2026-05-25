@@ -9,6 +9,7 @@
 
 import { getEmailProvider } from './emailProvider';
 import { generateICSForMeeting } from './icsGenerator';
+import { t as i18n, getPreferredLanguageByEmail, dirFor } from './multiLangEmail';
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -83,9 +84,9 @@ function addToCalendarUrls(args: BaseArgs) {
   return { google, outlook };
 }
 
-function emailShell(title: string, headerColor: string, contentHtml: string, footerHtml: string = 'Cadence'): string {
+function emailShell(title: string, headerColor: string, contentHtml: string, footerHtml: string = 'Cadence', dir: 'ltr' | 'rtl' = 'ltr'): string {
   return `<!DOCTYPE html>
-<html>
+<html dir="${dir}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:20px;background:#f5f5f5;font-family:-apple-system,'Segoe UI',sans-serif;">
   <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.08);">
@@ -144,14 +145,19 @@ export async function sendBookingConfirmation(args: ConfirmationArgs): Promise<v
   const provider = getEmailProvider();
   const { google, outlook } = addToCalendarUrls(args);
   const manageUrl = `${FRONTEND_URL}/manage-booking?token=${encodeURIComponent(args.attendeeToken)}`;
+  const lang = getPreferredLanguageByEmail(args.attendeeEmail);
+  const dir = dirFor(lang);
+  const locale = lang === 'ar' ? 'ar' : 'en-US';
 
-  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString('en-US', {
+  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  const headerTitle = i18n(lang, 'booking_received');
+  const headerBody = i18n(lang, 'booking_received_body', { host: args.hostName });
   const content = `
     <h2 style="margin-top:0;color:#1a1a1a;">${htmlEscape(args.meetingTitle)}</h2>
-    <p style="color:#666;margin:0 0 24px;">We've sent your request to ${htmlEscape(args.hostName)}. You'll get another email when it's confirmed.</p>
+    <p style="color:#666;margin:0 0 24px;">${htmlEscape(headerBody)}</p>
     ${detailBlock('Date', dateStr)}
     ${detailBlock('Time', args.time)}
     ${detailBlock('Duration', `${args.durationMinutes} minutes`)}
@@ -162,9 +168,9 @@ export async function sendBookingConfirmation(args: ConfirmationArgs): Promise<v
 
   await provider.send({
     to: args.attendeeEmail,
-    subject: `Booking received: ${args.meetingTitle}`,
-    html: emailShell('📬 Booking Received', '#129b82', content),
-    text: `Booking received for ${args.meetingTitle} on ${dateStr} at ${args.time}. Manage: ${manageUrl}`,
+    subject: `${headerTitle}: ${args.meetingTitle}`,
+    html: emailShell(`📬 ${headerTitle}`, '#129b82', content, 'Cadence', dir),
+    text: `${headerTitle}: ${args.meetingTitle} on ${dateStr} at ${args.time}. Manage: ${manageUrl}`,
     attachments: buildICSAttachment(args, 'TENTATIVE'),
   });
 }
@@ -173,14 +179,19 @@ export async function sendBookingHostNotification(args: BaseArgs): Promise<void>
   if (!args.hostEmail) return;
   const provider = getEmailProvider();
   const { google, outlook } = addToCalendarUrls(args);
+  const lang = getPreferredLanguageByEmail(args.hostEmail);
+  const dir = dirFor(lang);
+  const locale = lang === 'ar' ? 'ar' : 'en-US';
 
-  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString('en-US', {
+  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  const headerTitle = i18n(lang, 'host_new_booking');
+  const headerBody = i18n(lang, 'host_new_booking_body', { attendee: args.attendeeName });
   const content = `
-    <h2 style="margin-top:0;color:#1a1a1a;">New booking request</h2>
-    <p style="color:#666;margin:0 0 24px;"><strong>${htmlEscape(args.attendeeName)}</strong> (${htmlEscape(args.attendeeEmail)}) requested a meeting.</p>
+    <h2 style="margin-top:0;color:#1a1a1a;">${htmlEscape(headerTitle)}</h2>
+    <p style="color:#666;margin:0 0 24px;">${htmlEscape(headerBody)} (${htmlEscape(args.attendeeEmail)})</p>
     ${detailBlock('Title', args.meetingTitle)}
     ${detailBlock('Date', dateStr)}
     ${detailBlock('Time', args.time)}
@@ -194,8 +205,8 @@ export async function sendBookingHostNotification(args: BaseArgs): Promise<void>
 
   await provider.send({
     to: args.hostEmail,
-    subject: `📬 Booking request from ${args.attendeeName}`,
-    html: emailShell('New Booking Request', '#e9c56b', content),
+    subject: `📬 ${headerTitle}: ${args.attendeeName}`,
+    html: emailShell(headerTitle, '#e9c56b', content, 'Cadence', dir),
     text: `${args.attendeeName} requested ${args.meetingTitle} on ${dateStr} at ${args.time}. Review at ${FRONTEND_URL}/?view=my-meetings`,
     attachments: buildICSAttachment(args, 'TENTATIVE'),
   });
@@ -207,14 +218,19 @@ export async function sendBookingApproved(args: BaseArgs & { attendeeToken?: str
   const manageUrl = args.attendeeToken
     ? `${FRONTEND_URL}/manage-booking?token=${encodeURIComponent(args.attendeeToken)}`
     : undefined;
+  const lang = getPreferredLanguageByEmail(args.attendeeEmail);
+  const dir = dirFor(lang);
+  const locale = lang === 'ar' ? 'ar' : 'en-US';
 
-  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString('en-US', {
+  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  const headerTitle = i18n(lang, 'booking_approved');
+  const headerBody = i18n(lang, 'booking_approved_body', { host: args.hostName });
   const content = `
     <h2 style="margin-top:0;color:#1a1a1a;">${htmlEscape(args.meetingTitle)}</h2>
-    <p style="color:#666;margin:0 0 24px;">${htmlEscape(args.hostName)} confirmed your meeting.</p>
+    <p style="color:#666;margin:0 0 24px;">${htmlEscape(headerBody)}</p>
     ${detailBlock('Date', dateStr)}
     ${detailBlock('Time', args.time)}
     ${detailBlock('Duration', `${args.durationMinutes} minutes`)}
@@ -225,33 +241,38 @@ export async function sendBookingApproved(args: BaseArgs & { attendeeToken?: str
 
   await provider.send({
     to: args.attendeeEmail,
-    subject: `✓ Confirmed: ${args.meetingTitle}`,
-    html: emailShell('✓ Meeting Confirmed', '#129b82', content),
-    text: `Your meeting "${args.meetingTitle}" with ${args.hostName} on ${dateStr} at ${args.time} is confirmed.`,
+    subject: `✓ ${headerTitle}: ${args.meetingTitle}`,
+    html: emailShell(`✓ ${headerTitle}`, '#129b82', content, 'Cadence', dir),
+    text: `${headerTitle}: ${args.meetingTitle} with ${args.hostName} on ${dateStr} at ${args.time}.`,
     attachments: buildICSAttachment(args, 'CONFIRMED'),
   });
 }
 
 export async function sendBookingCancelled(args: BaseArgs & { cancelledBy?: string }): Promise<void> {
   const provider = getEmailProvider();
+  const lang = getPreferredLanguageByEmail(args.attendeeEmail);
+  const dir = dirFor(lang);
+  const locale = lang === 'ar' ? 'ar' : 'en-US';
 
-  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString('en-US', {
+  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString(locale, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  const headerTitle = i18n(lang, 'booking_cancelled');
+  const headerBody = i18n(lang, 'booking_cancelled_body');
   const content = `
     <div style="background:#f5f5f5;border-radius:8px;padding:20px;margin-bottom:20px;">
       <h2 style="margin:0;color:#888;text-decoration:line-through;">${htmlEscape(args.meetingTitle)}</h2>
       <p style="color:#888;margin:10px 0 0;">${htmlEscape(dateStr)} at ${htmlEscape(args.time)}</p>
     </div>
-    <p style="color:#666;">This meeting has been cancelled${args.cancelledBy ? ` by ${htmlEscape(args.cancelledBy)}` : ''}.</p>
+    <p style="color:#666;">${htmlEscape(headerBody)}${args.cancelledBy ? ` (${htmlEscape(args.cancelledBy)})` : ''}.</p>
   `;
 
   await provider.send({
     to: args.attendeeEmail,
-    subject: `Cancelled: ${args.meetingTitle}`,
-    html: emailShell('Meeting Cancelled', '#A29475', content),
-    text: `The meeting "${args.meetingTitle}" on ${dateStr} at ${args.time} has been cancelled.`,
+    subject: `${headerTitle}: ${args.meetingTitle}`,
+    html: emailShell(headerTitle, '#A29475', content, 'Cadence', dir),
+    text: `${headerTitle}: ${args.meetingTitle} on ${dateStr} at ${args.time}.`,
     attachments: buildICSAttachment({ ...args, notes: 'Cancelled' }, 'CONFIRMED'),
   });
 }

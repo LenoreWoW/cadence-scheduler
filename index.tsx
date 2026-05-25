@@ -34,6 +34,16 @@ import { TeamBookingPage } from './components/TeamBookingPage';
 import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team, Achievement } from './types';
 import { BookingLinksManager } from './components/BookingLinksManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
+import { TermsOfServicePage } from './components/TermsOfServicePage';
+import { AcceptInvitePage } from './components/AcceptInvitePage';
+import { CookieBanner } from './components/CookieBanner';
+import { XpLevelBadge } from './components/XpLevelBadge';
+import { ChallengesCard } from './components/ChallengesCard';
+import { SystemHealthDashboard } from './components/SystemHealthDashboard';
+import { AuditLogViewer } from './components/AuditLogViewer';
+import { TeamCompetitionLeaderboard } from './components/TeamCompetitionLeaderboard';
+import { setTokens } from './services/api';
 import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
@@ -53,7 +63,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Views
-  const [currentView, setCurrentView] = useState<'dashboard' | 'scheduler' | 'logs' | 'my-meetings' | 'team-management' | 'booking-links' | 'analytics'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'scheduler' | 'logs' | 'my-meetings' | 'team-management' | 'booking-links' | 'analytics' | 'system-health' | 'audit-log' | 'team-competition'>('dashboard');
   const [lang, setLang] = useState<Language>('en');
 
   // Scheduler State
@@ -97,11 +107,27 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
   // Initialize Data
   useEffect(() => {
+    // Handle SSO callback: backend redirects with `#token=...&refresh=...`.
+    if (window.location.hash && window.location.hash.startsWith('#token=')) {
+      try {
+        const hash = window.location.hash.slice(1);
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get('token');
+        const refreshToken = params.get('refresh') || params.get('refreshToken') || '';
+        if (accessToken) {
+          setTokens({ accessToken, refreshToken });
+          window.history.replaceState({}, '', '/');
+        }
+      } catch {
+        /* swallow malformed hash */
+      }
+    }
+
     storageService.init();
     setMeetings(storageService.getMeetings());
     setLogs(storageService.getLogs());
     setTeams(storageService.getTeams());
-    
+
     const sessionUser = authService.getCurrentSession();
     if (sessionUser) {
       setCurrentUser(sessionUser);
@@ -485,6 +511,9 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     { id: 'profile', label: 'Profile Settings', icon: '⚙️', shortcut: 'P', action: () => setIsProfileModalOpen(true), category: 'Settings' },
     ...(currentUser?.role !== 'guest' ? [{ id: 'booking-links', label: 'Manage Booking Links', icon: '🔗', action: () => setCurrentView('booking-links'), category: 'Settings' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'analytics', label: 'View Analytics', icon: '📊', action: () => setCurrentView('analytics'), category: 'Admin' }] : []),
+    ...(currentUser?.role === 'admin' ? [{ id: 'system-health', label: 'System Health', icon: '💚', action: () => setCurrentView('system-health'), category: 'Admin' }] : []),
+    ...(currentUser?.role === 'admin' ? [{ id: 'audit-log', label: 'Audit Log', icon: '📜', action: () => setCurrentView('audit-log'), category: 'Admin' }] : []),
+    { id: 'team-competition', label: 'Team Competition', icon: '🏆', action: () => setCurrentView('team-competition'), category: 'Gamification' },
     { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: '⌨️', shortcut: '?', action: () => setIsShortcutsModalOpen(true), category: 'Help' },
     { id: 'logout', label: 'Sign Out', icon: '🚪', action: handleLogout, category: 'Account' },
     ...(currentUser?.role === 'admin' ? [{ id: 'teams', label: 'Team Management', icon: '👥', action: () => setCurrentView('team-management'), category: 'Admin' }] : []),
@@ -610,11 +639,13 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                    )}
                  </div>
 
+                <XpLevelBadge lang={lang} />
+
                 {(role === 'manager' || role === 'admin') && (
                   <div className="relative group cursor-pointer" data-tour="profile" onClick={() => setIsProfileModalOpen(true)}>
-                     <img 
-                       src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.name}`} 
-                       alt="Profile" 
+                     <img
+                       src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.name}`}
+                       alt="Profile"
                        className="w-8 h-8 rounded-full border border-gray-200 group-hover:border-al-adaam transition-colors"
                      />
                   </div>
@@ -695,11 +726,11 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
           {currentView === 'dashboard' ? (
             <PageTransition viewKey="dashboard">
-            <Dashboard 
-              user={currentUser} 
-              meetings={meetings} 
-              t={t} 
-              lang={lang} 
+            <Dashboard
+              user={currentUser}
+              meetings={meetings}
+              t={t}
+              lang={lang}
               onNavigate={(view) => { setCurrentView(view); audioService.play('click'); }}
               onBookForTeam={handleSelectTeam}
                 onQuickBook={() => { setIsQuickBookOpen(true); audioService.play('click'); }}
@@ -712,11 +743,16 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                   addToast('info', 'Dashboard refreshed');
                 }}
             />
+            {currentUser.role !== 'guest' && (
+              <div className="mt-6 max-w-2xl mx-auto">
+                <ChallengesCard lang={lang} />
+              </div>
+            )}
             </PageTransition>
           ) : currentView === 'logs' ? (
             <PageTransition viewKey="logs"><div className="animate-slide-up"><LogsPanel logs={logs} t={t} /></div></PageTransition>
           ) : currentView === 'team-management' ? (
-             <PageTransition viewKey="team"><div className="animate-slide-up"><TeamManagement t={t} lang={lang} /></div></PageTransition>
+             <PageTransition viewKey="team"><div className="animate-slide-up"><TeamManagement t={t} lang={lang} currentUser={currentUser} /></div></PageTransition>
           ) : currentView === 'booking-links' ? (
              <PageTransition viewKey="booking-links">
                <div className="animate-slide-up max-w-4xl mx-auto">
@@ -738,6 +774,18 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                    language={lang}
                  />
                </div>
+             </PageTransition>
+          ) : currentView === 'system-health' ? (
+             <PageTransition viewKey="system-health">
+               <div className="animate-slide-up max-w-5xl mx-auto"><SystemHealthDashboard lang={lang} /></div>
+             </PageTransition>
+          ) : currentView === 'audit-log' ? (
+             <PageTransition viewKey="audit-log">
+               <div className="animate-slide-up max-w-6xl mx-auto"><AuditLogViewer lang={lang} /></div>
+             </PageTransition>
+          ) : currentView === 'team-competition' ? (
+             <PageTransition viewKey="team-competition">
+               <div className="animate-slide-up max-w-4xl mx-auto"><TeamCompetitionLeaderboard lang={lang} /></div>
              </PageTransition>
           ) : currentView === 'my-meetings' ? (
             <PageTransition viewKey="appointments">
@@ -888,6 +936,8 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
         <TourOverlay />
 
+        <CookieBanner lang={lang} />
+
         <QuickBookModal
           isOpen={isQuickBookOpen}
           onClose={() => setIsQuickBookOpen(false)}
@@ -1008,6 +1058,27 @@ const Router: React.FC = () => {
       </ErrorBoundary>
     );
   }
+  if (route.type === 'privacy') {
+    return (
+      <ErrorBoundary>
+        <PrivacyPolicyPage />
+      </ErrorBoundary>
+    );
+  }
+  if (route.type === 'terms') {
+    return (
+      <ErrorBoundary>
+        <TermsOfServicePage />
+      </ErrorBoundary>
+    );
+  }
+  if (route.type === 'accept-invite') {
+    return (
+      <ErrorBoundary>
+        <AcceptInvitePage />
+      </ErrorBoundary>
+    );
+  }
 
   return <App initialAuthMode={route.authMode} />;
 };
@@ -1016,6 +1087,9 @@ function resolveRoute(path: string, search: string): RouteState {
   if (path === '/login') return { type: 'app', authMode: 'login' };
   if (path === '/register') return { type: 'app', authMode: 'register' };
   if (path === '/forgot-password') return { type: 'forgot-password' };
+  if (path === '/privacy') return { type: 'privacy' };
+  if (path === '/terms') return { type: 'terms' };
+  if (path === '/accept-invite') return { type: 'accept-invite' };
 
   const params = new URLSearchParams(search);
 
@@ -1042,7 +1116,10 @@ type RouteState =
   | { type: 'team-booking'; slug: string }
   | { type: 'manage-booking'; token: string }
   | { type: 'reset-password'; token: string }
-  | { type: 'forgot-password' };
+  | { type: 'forgot-password' }
+  | { type: 'privacy' }
+  | { type: 'terms' }
+  | { type: 'accept-invite' };
 
 const container = document.getElementById('root');
 if (container) {

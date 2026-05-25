@@ -8,8 +8,52 @@ import { db } from '../database';
 import { authenticateToken, optionalAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import { syncMeetingToCalendar, deleteSyncedEvent, getExternalBusyTimes } from '../services/calendarSync';
+import { awardXp, incrementBookingStat } from '../services/userStatsSync';
+import { dispatchWebhook } from '../services/outboundWebhooks';
+import { trackChallengeProgress } from './challenges';
 
 const router = Router();
+
+// Approval queue — meetings that need this user (as approver) to act
+router.get('/pending-approval', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const role = req.user!.role;
+
+    let sql = `
+      SELECT m.*, u.name as host_name, u.avatar as host_avatar
+      FROM meetings m
+      LEFT JOIN users u ON m.host_id = u.id
+      WHERE m.status = 'pending' AND m.approval_required = 1
+    `;
+    const params: any[] = [];
+    if (role !== 'admin') {
+      sql += ' AND (m.approver_id = ? OR m.host_id = ?)';
+      params.push(userId, userId);
+    }
+    sql += ' ORDER BY m.date ASC, m.time ASC';
+
+    const meetings = db.connection.prepare(sql).all(...params) as any[];
+    res.json(meetings.map(m => ({
+      id: m.id,
+      title: m.title,
+      date: m.date,
+      time: m.time,
+      durationMinutes: m.duration_minutes,
+      attendeeName: m.attendee_name,
+      attendeeEmail: m.attendee_email,
+      hostId: m.host_id,
+      hostName: m.host_name,
+      hostAvatar: m.host_avatar,
+      notes: m.notes,
+      meetingFormat: m.meeting_format || 'in-person',
+      meetingLink: m.meeting_link,
+      createdAt: m.created_at,
+    })));
+  } catch (error) {
+    throw new AppError('Failed to fetch pending approvals', 500);
+  }
+});
 
 // Get meetings (filtered by role)
 router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
@@ -257,6 +301,19 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       });
     }
 
+    // Stats / XP / webhook / challenges hooks
+    try { awardXp(hostId, 10, 'new booking'); } catch {}
+    try { incrementBookingStat(hostId); } catch {}
+    try {
+      dispatchWebhook(hostId, 'booking.created', {
+        meetingId, title, date, time,
+        duration: durationMinutes || 30,
+        attendeeName, attendeeEmail,
+        source: 'internal',
+      });
+    } catch {}
+    try { trackChallengeProgress(hostId, 'bookings_received', 1); } catch {}
+
     res.status(201).json({
       id: meetingId,
       title,
@@ -312,6 +369,23 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
         console.error('Failed to delete synced event:', err);
       });
     }
+
+    // Webhook + XP hooks for status changes
+    const webhookBase = {
+      meetingId: meeting.id, title: meeting.title,
+      date: meeting.date, time: meeting.time,
+      attendeeName: meeting.attendee_name, attendeeEmail: meeting.attendee_email,
+    };
+    try {
+      if (status === 'approved') {
+        dispatchWebhook(meeting.host_id, 'booking.approved', webhookBase);
+        awardXp(meeting.host_id, 5, 'approved_booking');
+      } else if (status === 'rejected') {
+        dispatchWebhook(meeting.host_id, 'booking.rejected', webhookBase);
+      } else if (status === 'cancelled') {
+        dispatchWebhook(meeting.host_id, 'booking.cancelled', { ...webhookBase, cancelledBy: req.user?.username });
+      }
+    } catch {}
 
     // Email notifications + in-app feed entries
     (async () => {

@@ -8,6 +8,9 @@ import rateLimit from 'express-rate-limit';
 import { db } from '../database';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
+import { awardXp, incrementBookingStat } from '../services/userStatsSync';
+import { dispatchWebhook } from '../services/outboundWebhooks';
+import { trackChallengeProgress } from './challenges';
 
 // Public booking endpoint is unauthenticated by design — apply per-IP-per-slug throttling.
 const publicBookingLimiter = rateLimit({
@@ -353,7 +356,7 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
 
     const link = db.connection.prepare(`
       SELECT bl.*, u.id as host_id,
-             ua.start_hour, ua.end_hour, ua.slot_duration, ua.buffer_minutes, 
+             ua.start_hour, ua.end_hour, ua.slot_duration, ua.buffer_minutes,
              ua.min_notice_minutes, ua.working_days, ua.time_off
       FROM booking_links bl
       JOIN users u ON bl.user_id = u.id
@@ -363,6 +366,17 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
 
     if (!link) {
       throw new AppError('Booking link not found', 404);
+    }
+
+    // Bookable-window check — refuse dates further out than the link allows.
+    if (link.bookable_window_days) {
+      const reqDateOnly = new Date(`${date as string}T00:00:00`);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((reqDateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+      if (diffDays > link.bookable_window_days) {
+        return res.json({ slots: [], outsideBookableWindow: true });
+      }
     }
 
     // Get existing meetings for this date
@@ -383,16 +397,23 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
       }
     }
 
-    // Generate available slots
+    // Per-link availability override — if set, use that JSON in place of the
+    // host's global user_availability. Same shape so the rest of the math is identical.
+    let override: any = null;
+    if (link.availability_override) {
+      try { override = JSON.parse(link.availability_override); } catch {}
+    }
     const availability = {
-      startHour: link.start_hour || 9,
-      endHour: link.end_hour || 17,
-      slotDuration: link.slot_duration || 30,
-      bufferMinutes: link.buffer_minutes || 0,
-      days: JSON.parse(link.working_days || '[0,1,2,3,4]'),
-      timeOff: JSON.parse(link.time_off || '[]'),
-      minNoticeMinutes: link.min_notice_minutes || 120
+      startHour: override?.startHour ?? link.start_hour ?? 9,
+      endHour: override?.endHour ?? link.end_hour ?? 17,
+      slotDuration: override?.slotDuration ?? link.slot_duration ?? 30,
+      bufferMinutes: override?.bufferMinutes ?? link.buffer_minutes ?? 0,
+      days: override?.days ?? JSON.parse(link.working_days || '[0,1,2,3,4]'),
+      timeOff: override?.timeOff ?? JSON.parse(link.time_off || '[]'),
+      minNoticeMinutes: override?.minNoticeMinutes ?? link.min_notice_minutes ?? 120,
     };
+
+    const slotCapacity = link.slot_capacity && link.slot_capacity > 0 ? link.slot_capacity : 1;
 
     const requestedDate = new Date(date as string);
     const dayOfWeek = requestedDate.getDay();
@@ -430,16 +451,18 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
           continue;
         }
 
-        // Check for conflicts with existing meetings
-        const hasConflict = existingMeetings.some((meeting: any) => {
+        // For group events (slot_capacity > 1) we count overlapping meetings
+        // and treat the slot as full only when count >= capacity. For 1-on-1
+        // events we keep the prior boolean conflict check.
+        const slotStartMin = hour * 60 + minute - (link.buffer_before || 0);
+        const slotEndMin = hour * 60 + minute + availability.slotDuration;
+        const overlappingCount = existingMeetings.filter((meeting: any) => {
           const [mHour, mMinute] = meeting.time.split(':').map(Number);
-          const meetingStart = mHour * 60 + mMinute;
-          const meetingEnd = meetingStart + meeting.duration_minutes + (link.buffer_after || 0);
-          const slotStart = hour * 60 + minute - (link.buffer_before || 0);
-          const slotEnd = hour * 60 + minute + availability.slotDuration;
-          
-          return (slotStart < meetingEnd && slotEnd > meetingStart);
-        });
+          const mStart = mHour * 60 + mMinute;
+          const mEnd = mStart + meeting.duration_minutes + (link.buffer_after || 0);
+          return slotStartMin < mEnd && slotEndMin > mStart;
+        }).length;
+        const hasConflict = overlappingCount >= slotCapacity;
 
         if (!hasConflict) {
           const period = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
@@ -531,14 +554,31 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       throw new AppError('Invalid duration selected', 400);
     }
 
+    // Per-link availability override — JSON shape mirrors user_availability.
+    let override: any = null;
+    if (link.availability_override) {
+      try { override = JSON.parse(link.availability_override); } catch {}
+    }
+
+    // Bookable-window check
+    if (link.bookable_window_days) {
+      const reqDateOnly = new Date(`${date}T00:00:00`);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((reqDateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+      if (diffDays > link.bookable_window_days) {
+        throw new AppError(`Bookings cannot be made more than ${link.bookable_window_days} days in advance`, 400);
+      }
+    }
+
     // ---- working-day + time-off check ----
     const requestedDate = new Date(`${date}T00:00:00`);
     const dayOfWeek = requestedDate.getDay();
-    const workingDays: number[] = JSON.parse(link.working_days || '[0,1,2,3,4]');
+    const workingDays: number[] = override?.days ?? JSON.parse(link.working_days || '[0,1,2,3,4]');
     if (!workingDays.includes(dayOfWeek)) {
       throw new AppError('Not a working day', 400);
     }
-    const timeOff: any[] = JSON.parse(link.time_off || '[]');
+    const timeOff: any[] = override?.timeOff ?? JSON.parse(link.time_off || '[]');
     const isTimeOff = timeOff.some((off: any) => {
       if (typeof off === 'string') return off === date;
       return date >= off.start && date <= off.end;
@@ -548,7 +588,7 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
     }
 
     // ---- min-notice check ----
-    const minNoticeMinutes = link.min_notice_minutes ?? 120;
+    const minNoticeMinutes = override?.minNoticeMinutes ?? link.min_notice_minutes ?? 120;
     const slotDateTime = new Date(`${date}T${time}:00`);
     const earliestAllowed = new Date(Date.now() + minNoticeMinutes * 60_000);
     if (slotDateTime <= earliestAllowed) {
@@ -576,13 +616,15 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       WHERE host_id = ? AND date = ? AND status IN ('pending', 'approved')
     `).all(link.host_id, date) as any[];
 
-    const internalConflict = sameDayMeetings.some(m => {
+    // Group events: allow up to N bookings per slot via slot_capacity.
+    const slotCapacity = link.slot_capacity && link.slot_capacity > 0 ? link.slot_capacity : 1;
+    const overlappingCount = sameDayMeetings.filter(m => {
       const [mH, mM] = m.time.split(':').map(Number);
       const mStart = mH * 60 + mM - (link.buffer_before || 0);
       const mEnd = mH * 60 + mM + m.duration_minutes + (link.buffer_after || 0);
       return reqStart < mEnd && reqEnd > mStart;
-    });
-    if (internalConflict) {
+    }).length;
+    if (overlappingCount >= slotCapacity) {
       throw new AppError('This time slot is no longer available', 409);
     }
 
@@ -620,17 +662,21 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
     const attendeeToken = uuidv4();
     const meetingTitle = title || `Meeting with ${attendeeName}`;
 
+    const approvalRequired = !!link.approval_required;
+
     db.connection.prepare(`
       INSERT INTO meetings (
         id, title, date, time, duration_minutes, attendee_name, attendee_email,
         host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform,
-        attendee_token
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?)
+        attendee_token, approval_required, approver_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?, ?, ?)
     `).run(
       meetingId, meetingTitle, date, time, bookingDuration,
       attendeeName, attendeeEmail, link.host_id, notes || null,
       format, finalMeetingLink || null, finalPlatform,
-      attendeeToken
+      attendeeToken,
+      approvalRequired ? 1 : 0,
+      approvalRequired ? link.host_id : null
     );
 
     // Log activity
@@ -638,6 +684,17 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       INSERT INTO activity_logs (id, action, details, performed_by, role)
       VALUES (?, 'PUBLIC_BOOK', ?, ?, 'guest')
     `).run(uuidv4(), `Booked "${meetingTitle}" via public link`, attendeeName);
+
+    // Stats / XP / webhook / challenges — best-effort, never block the response.
+    try { awardXp(link.host_id, 10, 'public booking'); } catch {}
+    try { incrementBookingStat(link.host_id); } catch {}
+    try {
+      dispatchWebhook(link.host_id, 'booking.created', {
+        meetingId, title: meetingTitle, date, time, duration: bookingDuration,
+        attendeeName, attendeeEmail, source: 'booking_link', slug,
+      });
+    } catch {}
+    try { trackChallengeProgress(link.host_id, 'bookings_received', 1); } catch {}
 
     // Notify host in-app
     try {
@@ -817,6 +874,16 @@ router.post('/manage/:token/cancel', manageBookingLimiter, asyncHandler(async (r
     console.error('Failed to email host of cancellation:', e);
   }
 
+  // Webhook dispatch
+  try {
+    dispatchWebhook(meeting.host_id, 'booking.cancelled', {
+      meetingId: meeting.id, title: meeting.title,
+      date: meeting.date, time: meeting.time,
+      attendeeName: meeting.attendee_name, attendeeEmail: meeting.attendee_email,
+      cancelledBy: 'attendee',
+    });
+  } catch {}
+
   res.json({ success: true, status: 'cancelled' });
 }));
 
@@ -920,6 +987,16 @@ router.post('/manage/:token/reschedule', manageBookingLimiter, asyncHandler(asyn
   } catch (e) {
     console.error('Failed to resend confirmation:', e);
   }
+
+  // Webhook dispatch
+  try {
+    dispatchWebhook(meeting.host_id, 'booking.rescheduled', {
+      meetingId: meeting.id, title: meeting.title,
+      date, time,
+      attendeeName: meeting.attendee_name, attendeeEmail: meeting.attendee_email,
+      rescheduledBy: 'attendee',
+    });
+  } catch {}
 
   res.json({ success: true, status: 'pending', date, time });
 }));

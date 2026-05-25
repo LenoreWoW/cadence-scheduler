@@ -2,6 +2,7 @@ import React from 'react';
 import { Meeting, Language, VideoPlatform } from '../types';
 import { Button } from './Button';
 import { CATEGORY_CONFIG, VIDEO_PLATFORM_CONFIG } from '../constants';
+import { MeetingAttachmentsPanel } from './MeetingAttachmentsPanel';
 
 interface MeetingDetailsModalProps {
   isOpen: boolean;
@@ -172,6 +173,13 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
                Booked by: <span className="font-medium">{meeting.bookedBy}</span> | ID: {meeting.id}
             </p>
           </div>
+
+          {/* Attachments */}
+          <MeetingAttachmentsPanel
+            meetingId={meeting.id}
+            currentUserId={meeting.userId}
+            lang={lang}
+          />
 
           <div className="flex justify-end mt-6">
              <Button variant="secondary" onClick={onClose}>Close</Button>

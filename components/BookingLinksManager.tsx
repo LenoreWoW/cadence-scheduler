@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { Language } from '../types';
 import { ConfirmationModal } from './ConfirmationModal';
+import { BookingLinkAdvancedSettings, BookingLinkAdvancedConfig } from './BookingLinkAdvancedSettings';
+import { EmbedSnippetModal } from './EmbedSnippetModal';
 
 interface BookingLink {
   id: string;
@@ -44,6 +46,8 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
   const [editingLink, setEditingLink] = useState<BookingLink | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [advancedLink, setAdvancedLink] = useState<BookingLink | null>(null);
+  const [embedLink, setEmbedLink] = useState<BookingLink | null>(null);
 
   const [formData, setFormData] = useState({
     title: 'Book a Meeting',
@@ -431,6 +435,20 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setAdvancedLink(link)}
+                    className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200 text-slate-500 hover:border-[#8A1538] hover:text-[#8A1538] transition-colors"
+                    aria-label={lang === 'ar' ? 'الإعدادات المتقدمة' : 'Advanced settings'}
+                  >
+                    {lang === 'ar' ? 'متقدم' : 'Advanced'}
+                  </button>
+                  <button
+                    onClick={() => setEmbedLink(link)}
+                    className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200 text-slate-500 hover:border-[#8A1538] hover:text-[#8A1538] transition-colors"
+                    aria-label={lang === 'ar' ? 'تضمين' : 'Embed'}
+                  >
+                    {lang === 'ar' ? 'تضمين' : 'Embed'}
+                  </button>
                   <a
                     href={getBookingUrl(link.slug)}
                     target="_blank"
@@ -478,6 +496,58 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
             </div>
           ))}
         </div>
+      )}
+
+      {/* Confirm delete */}
+      <ConfirmationModal
+        isOpen={!!pendingDeleteId}
+        onClose={() => setPendingDeleteId(null)}
+        onConfirm={() => pendingDeleteId && performDelete(pendingDeleteId)}
+        title={lang === 'ar' ? 'حذف رابط الحجز؟' : 'Delete booking link?'}
+        message={lang === 'ar' ? 'لن تتمكن من استرداد هذا الرابط بعد الحذف.' : 'This link cannot be recovered after deletion.'}
+        confirmLabel={lang === 'ar' ? 'حذف' : 'Delete'}
+        cancelLabel={lang === 'ar' ? 'إلغاء' : 'Cancel'}
+        isRTL={isRTL}
+      />
+
+      {/* Advanced settings */}
+      {advancedLink && (
+        <BookingLinkAdvancedSettings
+          isOpen={!!advancedLink}
+          onClose={() => setAdvancedLink(null)}
+          initial={{
+            availabilityOverride: null,
+            bookableWindowDays: 60,
+            slotCapacity: 1,
+            approvalRequired: false,
+            questions: [],
+          }}
+          lang={lang}
+          onSave={async (config: BookingLinkAdvancedConfig) => {
+            try {
+              await fetch(`${API_BASE}/booking-links/${advancedLink.id}`, {
+                method: 'PUT',
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(config),
+              });
+            } catch (err) {
+              console.error('Failed to save advanced settings:', err);
+            }
+          }}
+        />
+      )}
+
+      {/* Embed snippet */}
+      {embedLink && (
+        <EmbedSnippetModal
+          isOpen={!!embedLink}
+          onClose={() => setEmbedLink(null)}
+          slug={embedLink.slug}
+          lang={lang}
+        />
       )}
     </div>
   );
