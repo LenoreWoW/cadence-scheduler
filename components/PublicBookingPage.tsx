@@ -172,11 +172,15 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
 
     setSubmitting(true);
     try {
+      // Format the date in the host's local timezone (not the booker's),
+      // since slots were generated in the host's TZ. Using toISOString() would
+      // drift by ±1 day for far-away bookers.
+      const dateYmd = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
       const response = await fetch(`${API_BASE}/booking-links/public/${slug}/book`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: selectedDate.toISOString().split('T')[0],
+          date: dateYmd,
           time: selectedSlot.time,
           duration: selectedDuration,
           title: formData.title || `Meeting with ${formData.attendeeName}`,
@@ -445,9 +449,14 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
             {/* Time Slots */}
             {selectedDate && (
               <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 animate-fade-in">
-                <h3 className="font-bold text-slate-800 mb-4">
-                  {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                </h3>
+                <div className="flex items-baseline justify-between mb-4">
+                  <h3 className="font-bold text-slate-800">
+                    {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </h3>
+                  <span className="text-xs text-slate-400 ml-2 whitespace-nowrap" title="Times shown in your local timezone">
+                    {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                  </span>
+                </div>
 
                 {slotsLoading ? (
                   <div className="flex items-center justify-center py-8">

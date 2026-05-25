@@ -27,6 +27,10 @@ import { PageTransition } from './components/PageTransition';
 import { TourOverlay } from './components/TourOverlay';
 import { QuickBookModal } from './components/QuickBookModal';
 import { PublicBookingPage } from './components/PublicBookingPage';
+import { ManageBookingPage } from './components/ManageBookingPage';
+import { ResetPasswordPage } from './components/ResetPasswordPage';
+import { ForgotPasswordPage } from './components/ForgotPasswordPage';
+import { TeamBookingPage } from './components/TeamBookingPage';
 import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team, Achievement } from './types';
 import { BookingLinksManager } from './components/BookingLinksManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
@@ -262,8 +266,8 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
   const handleCompleteOnboarding = (data: any) => {
      if (!currentUser) return;
-     const updatedUser: User = { 
-        ...currentUser, 
+     const updatedUser: User = {
+        ...currentUser,
         onboardingCompleted: true,
         availability: {
            ...currentUser.availability,
@@ -273,14 +277,30 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
            slotDuration: data.slotDuration
         } as any
      };
-     
+
      if (data.soundEnabled !== audioService.enabled) audioService.toggle();
-     
+
      setCurrentUser(updatedUser);
      const allUsers = storageService.getUsers();
      const newUsers = allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
      storageService.saveUsers(newUsers);
-     
+
+     // Persist server-side too — without this, a localStorage clear re-runs onboarding.
+     const accessToken = localStorage.getItem('accessToken');
+     if (accessToken) {
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/users/${updatedUser.id}`, {
+           method: 'PUT',
+           headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+           },
+           body: JSON.stringify({
+              onboardingCompleted: true,
+              availability: updatedUser.availability,
+           }),
+        }).catch(err => console.error('Failed to persist onboarding completion:', err));
+     }
+
      setShowOnboarding(false);
      addToast('success', 'Setup complete!');
   };
@@ -941,42 +961,14 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 // Simple Router Component
 const Router: React.FC = () => {
   const [route, setRoute] = useState(() => {
-    const path = window.location.pathname;
-    // Check for login/register routes
-    if (path === '/login') {
-      return { type: 'app' as const, authMode: 'login' as const };
-    }
-    if (path === '/register') {
-      return { type: 'app' as const, authMode: 'register' as const };
-    }
-    // Check for public booking route /book/:slug
-    const bookingMatch = path.match(/^\/book\/([^/]+)$/);
-    if (bookingMatch) {
-      return { type: 'public-booking' as const, slug: bookingMatch[1] };
-    }
-    return { type: 'app' as const };
+    return resolveRoute(window.location.pathname, window.location.search);
   });
 
   // Listen for navigation changes
   useEffect(() => {
     const handlePopState = () => {
-      const path = window.location.pathname;
-      if (path === '/login') {
-        setRoute({ type: 'app', authMode: 'login' });
-        return;
-      }
-      if (path === '/register') {
-        setRoute({ type: 'app', authMode: 'register' });
-        return;
-      }
-      const bookingMatch = path.match(/^\/book\/([^/]+)$/);
-      if (bookingMatch) {
-        setRoute({ type: 'public-booking', slug: bookingMatch[1] });
-      } else {
-        setRoute({ type: 'app' });
-      }
+      setRoute(resolveRoute(window.location.pathname, window.location.search));
     };
-
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
@@ -988,9 +980,69 @@ const Router: React.FC = () => {
       </ErrorBoundary>
     );
   }
+  if (route.type === 'team-booking') {
+    return (
+      <ErrorBoundary>
+        <TeamBookingPage slug={route.slug} />
+      </ErrorBoundary>
+    );
+  }
+  if (route.type === 'manage-booking') {
+    return (
+      <ErrorBoundary>
+        <ManageBookingPage token={route.token} />
+      </ErrorBoundary>
+    );
+  }
+  if (route.type === 'reset-password') {
+    return (
+      <ErrorBoundary>
+        <ResetPasswordPage token={route.token} />
+      </ErrorBoundary>
+    );
+  }
+  if (route.type === 'forgot-password') {
+    return (
+      <ErrorBoundary>
+        <ForgotPasswordPage />
+      </ErrorBoundary>
+    );
+  }
 
   return <App initialAuthMode={route.authMode} />;
 };
+
+function resolveRoute(path: string, search: string): RouteState {
+  if (path === '/login') return { type: 'app', authMode: 'login' };
+  if (path === '/register') return { type: 'app', authMode: 'register' };
+  if (path === '/forgot-password') return { type: 'forgot-password' };
+
+  const params = new URLSearchParams(search);
+
+  if (path === '/reset-password') {
+    return { type: 'reset-password', token: params.get('token') || '' };
+  }
+  if (path === '/manage-booking') {
+    return { type: 'manage-booking', token: params.get('token') || '' };
+  }
+  const teamBookingMatch = path.match(/^\/book\/team\/([^/]+)$/);
+  if (teamBookingMatch) {
+    return { type: 'team-booking', slug: teamBookingMatch[1] };
+  }
+  const bookingMatch = path.match(/^\/book\/([^/]+)$/);
+  if (bookingMatch) {
+    return { type: 'public-booking', slug: bookingMatch[1] };
+  }
+  return { type: 'app' };
+}
+
+type RouteState =
+  | { type: 'app'; authMode?: 'login' | 'register' }
+  | { type: 'public-booking'; slug: string }
+  | { type: 'team-booking'; slug: string }
+  | { type: 'manage-booking'; token: string }
+  | { type: 'reset-password'; token: string }
+  | { type: 'forgot-password' };
 
 const container = document.getElementById('root');
 if (container) {

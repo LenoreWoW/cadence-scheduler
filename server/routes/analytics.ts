@@ -5,15 +5,18 @@
 
 import { Router, Request, Response } from 'express';
 import { db } from '../database';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = Router();
+
+// Org-wide analytics are admin/manager only. Avoids leaking aggregate data to guests.
+const analyticsAuth = [authenticateToken, requireRole('admin', 'manager')];
 
 /**
  * GET /api/analytics/overview
  * Get overview statistics for current user's meetings
  */
-router.get('/overview', authenticateToken, async (req: Request, res: Response) => {
+router.get(`/overview`, ...analyticsAuth, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
     const { period = 'month' } = req.query;
@@ -146,7 +149,7 @@ router.get('/overview', authenticateToken, async (req: Request, res: Response) =
  * GET /api/analytics/trends
  * Get daily/weekly meeting trends
  */
-router.get('/trends', authenticateToken, async (req: Request, res: Response) => {
+router.get(`/trends`, ...analyticsAuth, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
     const { period = 'month', groupBy = 'day' } = req.query;
@@ -205,7 +208,7 @@ router.get('/trends', authenticateToken, async (req: Request, res: Response) => 
  * GET /api/analytics/team
  * Get team-level analytics (admin only)
  */
-router.get('/team', authenticateToken, async (req: Request, res: Response) => {
+router.get(`/team`, ...analyticsAuth, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
     const { period = 'month' } = req.query;

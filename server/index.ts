@@ -20,6 +20,8 @@ import analyticsRoutes from './routes/analytics';
 import leaderboardRoutes from './routes/leaderboard';
 import roundRobinRoutes from './routes/roundRobin';
 import calendarRoutes from './routes/calendar';
+import notificationRoutes from './routes/notifications';
+import teamBookingLinkRoutes from './routes/teamBookingLinks';
 import { initReminderScheduler } from './jobs/reminderScheduler';
 import { initCalendarSyncScheduler } from './jobs/calendarSyncJob';
 import { errorHandler } from './middleware/errorHandler';
@@ -112,6 +114,8 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/round-robin', roundRobinRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/team-booking-links', teamBookingLinkRoutes);
 
 // 404 Handler
 app.use('/api/*', (_req: Request, res: Response) => {

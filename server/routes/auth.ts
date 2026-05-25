@@ -290,5 +290,102 @@ router.post('/change-password', authenticateToken, async (req: AuthenticatedRequ
   }
 });
 
+// ============================================================================
+// Password Reset
+// ============================================================================
+// Two-endpoint flow:
+//   1. POST /forgot-password { email } — always 200 (no enumeration), emails a single-use token
+//   2. POST /reset-password { token, newPassword } — consumes the token, hashes the new password
+
+router.post('/forgot-password', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body ?? {};
+    // Always return 200 with the same body — never reveal whether the email exists.
+    const ok = { message: 'If that email is registered, a reset link is on the way.' };
+
+    if (typeof email !== 'string' || email.length === 0 || email.length > 254) {
+      return res.json(ok);
+    }
+
+    const user = db.connection.prepare('SELECT id, email, name FROM users WHERE lower(email) = lower(?)').get(email) as any;
+    if (!user) return res.json(ok);
+
+    const token = uuidv4().replace(/-/g, '') + uuidv4().replace(/-/g, '');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+    db.connection.prepare(`
+      INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (?, ?, ?)
+    `).run(token, user.id, expiresAt);
+
+    // Best-effort: send the reset email. Don't block on failure.
+    try {
+      const { getEmailProvider } = await import('../services/emailProvider');
+      const provider = getEmailProvider();
+      const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const resetUrl = `${frontend}/reset-password?token=${encodeURIComponent(token)}`;
+      const html = `<!DOCTYPE html><html><body style="margin:0;padding:20px;background:#f5f5f5;font-family:-apple-system,'Segoe UI',sans-serif;">
+        <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;">
+          <div style="background:#8A1538;color:white;padding:30px;text-align:center;"><h1 style="margin:0;font-size:24px;">Reset your password</h1></div>
+          <div style="padding:30px;color:#1a1a1a;">
+            <p>Hi ${user.name || 'there'},</p>
+            <p>You requested a password reset for your Cadence account. Click below to choose a new password. The link is valid for 1 hour.</p>
+            <p style="margin:24px 0;"><a href="${resetUrl}" style="display:inline-block;padding:12px 28px;background:#8A1538;color:white;text-decoration:none;border-radius:6px;font-weight:500;">Reset password</a></p>
+            <p style="color:#666;font-size:13px;">If you didn't ask for this, you can ignore this email — your password won't change.</p>
+          </div>
+          <div style="padding:20px 30px;background:#f9f9f9;border-top:1px solid #eee;text-align:center;color:#888;font-size:12px;">Cadence</div>
+        </div>
+      </body></html>`;
+      await provider.send({
+        to: user.email,
+        subject: 'Reset your Cadence password',
+        html,
+        text: `Reset your Cadence password: ${resetUrl} (valid 1 hour)`,
+      });
+    } catch (e) {
+      console.error('Failed to send password-reset email:', e);
+    }
+
+    res.json(ok);
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to process password reset', 500);
+  }
+});
+
+router.post('/reset-password', async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body ?? {};
+
+    if (typeof token !== 'string' || token.length === 0) {
+      throw new AppError('Token is required', 400);
+    }
+    if (typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 128) {
+      throw new AppError('Password must be 8-128 characters', 400);
+    }
+
+    const row = db.connection.prepare(`
+      SELECT token, user_id, expires_at, used FROM password_reset_tokens WHERE token = ?
+    `).get(token) as any;
+
+    if (!row) throw new AppError('Invalid or expired token', 400);
+    if (row.used) throw new AppError('Token already used', 400);
+    if (new Date(row.expires_at) < new Date()) throw new AppError('Token expired', 400);
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    // Atomically: mark token used + update password + invalidate sessions.
+    const txn = db.connection.transaction(() => {
+      db.connection.prepare(`UPDATE password_reset_tokens SET used = 1 WHERE token = ?`).run(token);
+      db.connection.prepare(`UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`).run(passwordHash, row.user_id);
+      db.connection.prepare(`DELETE FROM sessions WHERE user_id = ?`).run(row.user_id);
+    });
+    txn();
+
+    res.json({ message: 'Password updated. Please log in with your new password.' });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to reset password', 500);
+  }
+});
+
 export default router;
 

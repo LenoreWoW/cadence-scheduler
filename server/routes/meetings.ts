@@ -313,6 +313,35 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
       });
     }
 
+    // Email notifications + in-app feed entries
+    (async () => {
+      try {
+        const host = db.connection.prepare(`SELECT name, email FROM users WHERE id = ?`).get(meeting.host_id) as any;
+        const base = {
+          meetingId: meeting.id,
+          meetingTitle: meeting.title,
+          date: meeting.date,
+          time: meeting.time,
+          durationMinutes: meeting.duration_minutes,
+          attendeeName: meeting.attendee_name,
+          attendeeEmail: meeting.attendee_email,
+          hostName: host?.name ?? 'Your host',
+          hostEmail: host?.email,
+          meetingLink: meeting.meeting_link,
+          notes: meeting.notes,
+        };
+        if (status === 'approved') {
+          const { sendBookingApproved } = await import('../services/bookingEmails');
+          await sendBookingApproved({ ...base, attendeeToken: meeting.attendee_token });
+        } else if (status === 'cancelled' || status === 'rejected') {
+          const { sendBookingCancelled } = await import('../services/bookingEmails');
+          await sendBookingCancelled({ ...base, cancelledBy: req.user?.username });
+        }
+      } catch (e) {
+        console.error('Failed to send booking-status email:', e);
+      }
+    })();
+
     // Log activity
     db.connection.prepare(`
       INSERT INTO activity_logs (id, action, details, performed_by, role)

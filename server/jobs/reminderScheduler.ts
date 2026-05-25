@@ -1,12 +1,13 @@
 /**
  * Meeting Reminder Scheduler
  *
- * Sends 24h and 1h email reminders for approved meetings.
- * Runs via setInterval from server/index.ts.
+ * Sends 24h and 1h email reminders for approved meetings to both
+ * the attendee and the host. Runs via setInterval from server/index.ts.
  */
 
 import { db } from '../database';
 import { getEmailProvider } from '../services/emailProvider';
+import { generateICSForMeeting } from '../services/icsGenerator';
 
 function htmlEscape(s: unknown): string {
   return String(s ?? '')
@@ -24,25 +25,59 @@ function safeLink(url: unknown): string | null {
   return url;
 }
 
-async function sendReminderEmail(
-  to: string,
-  meetingTitle: string,
-  hostName: string,
-  date: string,
-  time: string,
-  hoursUntil: number,
-  meetingLink?: string
-): Promise<boolean> {
+type Recipient = 'attendee' | 'host';
+
+interface ReminderArgs {
+  to: string;
+  meetingTitle: string;
+  counterpartyName: string;
+  date: string;
+  time: string;
+  hoursUntil: number;
+  meetingLink?: string;
+  recipient: Recipient;
+  // For ICS attachment generation:
+  meetingId: string;
+  durationMinutes: number;
+  attendeeName?: string;
+  attendeeEmail?: string;
+  hostName?: string;
+  hostEmail?: string;
+}
+
+async function sendReminderEmail(args: ReminderArgs): Promise<boolean> {
   try {
     const provider = getEmailProvider();
-    const subject = `Reminder: ${meetingTitle} ${
-      hoursUntil === 24 ? 'tomorrow' : `in ${hoursUntil} hour${hoursUntil > 1 ? 's' : ''}`
+    const subject = `Reminder: ${args.meetingTitle} ${
+      args.hoursUntil === 24 ? 'tomorrow' : `in ${args.hoursUntil} hour${args.hoursUntil > 1 ? 's' : ''}`
     }`;
+
+    // Generate an ICS attachment so the meeting can be re-added to a calendar from the reminder.
+    let attachments;
+    try {
+      const ics = generateICSForMeeting({
+        id: args.meetingId,
+        title: args.meetingTitle,
+        date: args.date,
+        time: args.time,
+        durationMinutes: args.durationMinutes,
+        attendeeName: args.attendeeName ?? args.counterpartyName,
+        attendeeEmail: args.attendeeEmail ?? args.to,
+        hostName: args.hostName ?? args.counterpartyName,
+        hostEmail: args.hostEmail,
+        meetingLink: args.meetingLink,
+      });
+      attachments = [{ filename: 'meeting.ics', content: ics, contentType: 'text/calendar' }];
+    } catch {
+      // Don't block the reminder if ICS generation fails.
+    }
+
     const result = await provider.send({
-      to,
+      to: args.to,
       subject,
-      html: generateReminderHtml(meetingTitle, hostName, date, time, hoursUntil, meetingLink),
-      text: generateReminderText(meetingTitle, hostName, date, time, hoursUntil),
+      html: generateReminderHtml(args),
+      text: generateReminderText(args),
+      attachments,
     });
     return result.success;
   } catch (error) {
@@ -51,14 +86,8 @@ async function sendReminderEmail(
   }
 }
 
-function generateReminderHtml(
-  title: string,
-  hostName: string,
-  date: string,
-  time: string,
-  hoursUntil: number,
-  meetingLink?: string
-): string {
+function generateReminderHtml(args: ReminderArgs): string {
+  const { meetingTitle, counterpartyName, date, time, hoursUntil, meetingLink, recipient } = args;
   const timeLabel =
     hoursUntil === 24 ? 'tomorrow' : hoursUntil === 1 ? 'in 1 hour' : `in ${hoursUntil} hours`;
 
@@ -70,6 +99,7 @@ function generateReminderHtml(
   });
 
   const link = safeLink(meetingLink);
+  const counterpartyLabel = recipient === 'host' ? 'Attendee' : 'With';
 
   return `
     <!DOCTYPE html>
@@ -100,7 +130,7 @@ function generateReminderHtml(
             <p class="alert-text">Your meeting is coming up ${htmlEscape(timeLabel)}!</p>
           </div>
 
-          <h2 style="color: #1a1a1a; margin-top: 0;">${htmlEscape(title)}</h2>
+          <h2 style="color: #1a1a1a; margin-top: 0;">${htmlEscape(meetingTitle)}</h2>
 
           <div class="detail">
             <div class="detail-label">Date</div>
@@ -113,8 +143,8 @@ function generateReminderHtml(
           </div>
 
           <div class="detail">
-            <div class="detail-label">With</div>
-            <div class="detail-value">${htmlEscape(hostName)}</div>
+            <div class="detail-label">${counterpartyLabel}</div>
+            <div class="detail-value">${htmlEscape(counterpartyName)}</div>
           </div>
 
           ${link ? `<a href="${htmlEscape(link)}" class="button">Join Meeting</a>` : ''}
@@ -128,24 +158,20 @@ function generateReminderHtml(
   `;
 }
 
-function generateReminderText(
-  title: string,
-  hostName: string,
-  date: string,
-  time: string,
-  hoursUntil: number
-): string {
+function generateReminderText(args: ReminderArgs): string {
+  const { meetingTitle, counterpartyName, date, time, hoursUntil, recipient } = args;
   const timeLabel =
     hoursUntil === 24 ? 'tomorrow' : hoursUntil === 1 ? 'in 1 hour' : `in ${hoursUntil} hours`;
+  const label = recipient === 'host' ? 'Attendee' : 'With';
 
   return `
-Meeting Reminder: ${title}
+Meeting Reminder: ${meetingTitle}
 
 Your meeting is coming up ${timeLabel}!
 
 Date: ${date}
 Time: ${time}
-With: ${hostName}
+${label}: ${counterpartyName}
 
 ---
 Cadence
@@ -153,11 +179,13 @@ Cadence
 }
 
 export async function sendMeetingReminders(): Promise<{
-  sent24h: number;
-  sent1h: number;
+  sent24hAttendee: number;
+  sent24hHost: number;
+  sent1hAttendee: number;
+  sent1hHost: number;
   errors: number;
 }> {
-  const stats = { sent24h: 0, sent1h: 0, errors: 0 };
+  const stats = { sent24hAttendee: 0, sent24hHost: 0, sent1hAttendee: 0, sent1hHost: 0, errors: 0 };
   const now = new Date();
 
   try {
@@ -165,74 +193,146 @@ export async function sendMeetingReminders(): Promise<{
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowDate = tomorrow.toISOString().split('T')[0];
 
+    // 24h reminders — pull all approved meetings tomorrow that still need to send to either side
     const meetings24h = db.connection.prepare(`
-      SELECT m.*, u.name as host_name, u.id as host_user_id
+      SELECT m.*, u.name as host_name, u.email as host_email, u.id as host_user_id
       FROM meetings m
       JOIN users u ON m.host_id = u.id
       WHERE m.status = 'approved'
       AND m.date = ?
-      AND (m.reminder_24h_sent IS NULL OR m.reminder_24h_sent = '')
+      AND (
+        (m.reminder_24h_sent IS NULL OR m.reminder_24h_sent = '' OR m.reminder_24h_sent = 0)
+        OR (m.host_reminder_24h_sent IS NULL OR m.host_reminder_24h_sent = 0)
+      )
     `).all(tomorrowDate) as any[];
 
     for (const meeting of meetings24h) {
-      const success = await sendReminderEmail(
-        meeting.attendee_email,
-        meeting.title,
-        meeting.host_name,
-        meeting.date,
-        meeting.time,
-        24,
-        meeting.meeting_link
-      );
+      // Attendee
+      if (!meeting.reminder_24h_sent) {
+        const ok = await sendReminderEmail({
+          to: meeting.attendee_email,
+          meetingTitle: meeting.title,
+          counterpartyName: meeting.host_name,
+          date: meeting.date,
+          time: meeting.time,
+          hoursUntil: 24,
+          meetingLink: meeting.meeting_link,
+          recipient: 'attendee',
+          meetingId: meeting.id,
+          durationMinutes: meeting.duration_minutes,
+          attendeeName: meeting.attendee_name,
+          attendeeEmail: meeting.attendee_email,
+          hostName: meeting.host_name,
+          hostEmail: meeting.host_email,
+        });
+        if (ok) {
+          db.connection.prepare(`UPDATE meetings SET reminder_24h_sent = ? WHERE id = ?`).run(now.toISOString(), meeting.id);
+          stats.sent24hAttendee++;
+        } else {
+          stats.errors++;
+        }
+      }
 
-      if (success) {
-        db.connection.prepare(`
-          UPDATE meetings SET reminder_24h_sent = ? WHERE id = ?
-        `).run(now.toISOString(), meeting.id);
-        stats.sent24h++;
-      } else {
-        stats.errors++;
+      // Host (only if we have an email on file)
+      if (!meeting.host_reminder_24h_sent && meeting.host_email) {
+        const ok = await sendReminderEmail({
+          to: meeting.host_email,
+          meetingTitle: meeting.title,
+          counterpartyName: meeting.attendee_name,
+          date: meeting.date,
+          time: meeting.time,
+          hoursUntil: 24,
+          meetingLink: meeting.meeting_link,
+          recipient: 'host',
+          meetingId: meeting.id,
+          durationMinutes: meeting.duration_minutes,
+          attendeeName: meeting.attendee_name,
+          attendeeEmail: meeting.attendee_email,
+          hostName: meeting.host_name,
+          hostEmail: meeting.host_email,
+        });
+        if (ok) {
+          db.connection.prepare(`UPDATE meetings SET host_reminder_24h_sent = 1 WHERE id = ?`).run(meeting.id);
+          stats.sent24hHost++;
+        } else {
+          stats.errors++;
+        }
       }
     }
 
+    // 1h reminders
     const todayDate = now.toISOString().split('T')[0];
-    const currentHour = now.getHours();
-    const nextHour = currentHour + 1;
+    const nextHour = now.getHours() + 1;
 
     const meetings1h = db.connection.prepare(`
-      SELECT m.*, u.name as host_name, u.id as host_user_id
+      SELECT m.*, u.name as host_name, u.email as host_email, u.id as host_user_id
       FROM meetings m
       JOIN users u ON m.host_id = u.id
       WHERE m.status = 'approved'
       AND m.date = ?
       AND m.time LIKE ?
-      AND (m.reminder_1h_sent IS NULL OR m.reminder_1h_sent = '')
+      AND (
+        (m.reminder_1h_sent IS NULL OR m.reminder_1h_sent = '' OR m.reminder_1h_sent = 0)
+        OR (m.host_reminder_1h_sent IS NULL OR m.host_reminder_1h_sent = 0)
+      )
     `).all(todayDate, `${nextHour.toString().padStart(2, '0')}:%`) as any[];
 
     for (const meeting of meetings1h) {
-      const success = await sendReminderEmail(
-        meeting.attendee_email,
-        meeting.title,
-        meeting.host_name,
-        meeting.date,
-        meeting.time,
-        1,
-        meeting.meeting_link
-      );
+      if (!meeting.reminder_1h_sent) {
+        const ok = await sendReminderEmail({
+          to: meeting.attendee_email,
+          meetingTitle: meeting.title,
+          counterpartyName: meeting.host_name,
+          date: meeting.date,
+          time: meeting.time,
+          hoursUntil: 1,
+          meetingLink: meeting.meeting_link,
+          recipient: 'attendee',
+          meetingId: meeting.id,
+          durationMinutes: meeting.duration_minutes,
+          attendeeName: meeting.attendee_name,
+          attendeeEmail: meeting.attendee_email,
+          hostName: meeting.host_name,
+          hostEmail: meeting.host_email,
+        });
+        if (ok) {
+          db.connection.prepare(`UPDATE meetings SET reminder_1h_sent = ? WHERE id = ?`).run(now.toISOString(), meeting.id);
+          stats.sent1hAttendee++;
+        } else {
+          stats.errors++;
+        }
+      }
 
-      if (success) {
-        db.connection.prepare(`
-          UPDATE meetings SET reminder_1h_sent = ? WHERE id = ?
-        `).run(now.toISOString(), meeting.id);
-        stats.sent1h++;
-      } else {
-        stats.errors++;
+      if (!meeting.host_reminder_1h_sent && meeting.host_email) {
+        const ok = await sendReminderEmail({
+          to: meeting.host_email,
+          meetingTitle: meeting.title,
+          counterpartyName: meeting.attendee_name,
+          date: meeting.date,
+          time: meeting.time,
+          hoursUntil: 1,
+          meetingLink: meeting.meeting_link,
+          recipient: 'host',
+          meetingId: meeting.id,
+          durationMinutes: meeting.duration_minutes,
+          attendeeName: meeting.attendee_name,
+          attendeeEmail: meeting.attendee_email,
+          hostName: meeting.host_name,
+          hostEmail: meeting.host_email,
+        });
+        if (ok) {
+          db.connection.prepare(`UPDATE meetings SET host_reminder_1h_sent = 1 WHERE id = ?`).run(meeting.id);
+          stats.sent1hHost++;
+        } else {
+          stats.errors++;
+        }
       }
     }
 
-    if (stats.sent24h > 0 || stats.sent1h > 0) {
+    const total = stats.sent24hAttendee + stats.sent24hHost + stats.sent1hAttendee + stats.sent1hHost;
+    if (total > 0) {
       console.log(
-        `📧 Reminders sent: ${stats.sent24h} (24h) + ${stats.sent1h} (1h) | Errors: ${stats.errors}`
+        `📧 Reminders: 24h ${stats.sent24hAttendee}a/${stats.sent24hHost}h, 1h ${stats.sent1hAttendee}a/${stats.sent1hHost}h, errors ${stats.errors}`
       );
     }
 

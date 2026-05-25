@@ -166,15 +166,57 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
         },
         body: JSON.stringify({ syncEnabled: enabled })
       });
-      
+
       setStatus(prev => prev ? {
         ...prev,
-        connections: prev.connections.map(c => 
+        connections: prev.connections.map(c =>
           c.provider === provider ? { ...c, syncEnabled: enabled } : c
         )
       } : null);
     } catch (err) {
       setError('Failed to update sync settings');
+    }
+  };
+
+  // Multi-calendar picker — users with multiple Google/MS calendars can choose
+  // which one Cadence reads from and writes to.
+  const [calendars, setCalendars] = useState<Record<'google' | 'microsoft', { id: string; summary?: string; name?: string; primary?: boolean }[]>>({ google: [], microsoft: [] });
+  const [calendarsLoading, setCalendarsLoading] = useState<Record<'google' | 'microsoft', boolean>>({ google: false, microsoft: false });
+
+  useEffect(() => {
+    if (!status || !accessToken) return;
+    (['google', 'microsoft'] as const).forEach(provider => {
+      const conn = status.connections.find(c => c.provider === provider);
+      if (!conn) return;
+      setCalendarsLoading(prev => ({ ...prev, [provider]: true }));
+      fetch(`${API_BASE}/calendar/calendars?provider=${provider}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+        .then(r => r.ok ? r.json() : { calendars: [] })
+        .then(d => setCalendars(prev => ({ ...prev, [provider]: d.calendars || [] })))
+        .catch(() => setCalendars(prev => ({ ...prev, [provider]: [] })))
+        .finally(() => setCalendarsLoading(prev => ({ ...prev, [provider]: false })));
+    });
+  }, [status, accessToken]);
+
+  const handleCalendarChange = async (provider: 'google' | 'microsoft', calendarId: string) => {
+    try {
+      await fetch(`${API_BASE}/calendar/${provider}/settings`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ calendarId }),
+      });
+      setStatus(prev => prev ? {
+        ...prev,
+        connections: prev.connections.map(c =>
+          c.provider === provider ? { ...c, calendarId } : c
+        ),
+      } : null);
+    } catch (err) {
+      setError(isRTL ? 'فشل تحديث التقويم' : 'Failed to update calendar');
     }
   };
 
@@ -321,10 +363,31 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
         </div>
         
         {getConnectionForProvider('google') && (
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500">
-            <span>{isRTL ? 'آخر مزامنة:' : 'Last sync:'} {formatLastSync(getConnectionForProvider('google')?.lastSyncAt || null)}</span>
-            <span>{isRTL ? 'متصل منذ:' : 'Connected:'} {new Date(getConnectionForProvider('google')?.connectedAt || '').toLocaleDateString()}</span>
-          </div>
+          <>
+            {calendars.google.length > 1 && (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  {isRTL ? 'التقويم المحدد' : 'Selected calendar'}
+                </label>
+                <select
+                  value={getConnectionForProvider('google')?.calendarId || ''}
+                  onChange={(e) => handleCalendarChange('google', e.target.value)}
+                  disabled={calendarsLoading.google}
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:border-[#8A1538]"
+                >
+                  {calendars.google.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.summary || c.name || c.id}{c.primary ? (isRTL ? ' (أساسي)' : ' (primary)') : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500">
+              <span>{isRTL ? 'آخر مزامنة:' : 'Last sync:'} {formatLastSync(getConnectionForProvider('google')?.lastSyncAt || null)}</span>
+              <span>{isRTL ? 'متصل منذ:' : 'Connected:'} {new Date(getConnectionForProvider('google')?.connectedAt || '').toLocaleDateString()}</span>
+            </div>
+          </>
         )}
       </div>
 
@@ -391,10 +454,31 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
         </div>
         
         {getConnectionForProvider('microsoft') && (
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500">
-            <span>{isRTL ? 'آخر مزامنة:' : 'Last sync:'} {formatLastSync(getConnectionForProvider('microsoft')?.lastSyncAt || null)}</span>
-            <span>{isRTL ? 'متصل منذ:' : 'Connected:'} {new Date(getConnectionForProvider('microsoft')?.connectedAt || '').toLocaleDateString()}</span>
-          </div>
+          <>
+            {calendars.microsoft.length > 1 && (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+                  {isRTL ? 'التقويم المحدد' : 'Selected calendar'}
+                </label>
+                <select
+                  value={getConnectionForProvider('microsoft')?.calendarId || ''}
+                  onChange={(e) => handleCalendarChange('microsoft', e.target.value)}
+                  disabled={calendarsLoading.microsoft}
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:border-[#8A1538]"
+                >
+                  {calendars.microsoft.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.summary || c.name || c.id}{c.primary ? (isRTL ? ' (أساسي)' : ' (primary)') : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500">
+              <span>{isRTL ? 'آخر مزامنة:' : 'Last sync:'} {formatLastSync(getConnectionForProvider('microsoft')?.lastSyncAt || null)}</span>
+              <span>{isRTL ? 'متصل منذ:' : 'Connected:'} {new Date(getConnectionForProvider('microsoft')?.connectedAt || '').toLocaleDateString()}</span>
+            </div>
+          </>
         )}
       </div>
 

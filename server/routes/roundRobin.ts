@@ -160,13 +160,27 @@ router.post('/teams/:teamId/book', async (req: Request, res: Response) => {
       ? rotationOrder.indexOf(state.last_assigned_user_id)
       : -1;
 
+    // Optional external busy-times check (calendar sync may not be configured)
+    let getExternalBusyTimes: ((userId: string, date: string) => { start: string; end: string }[]) | null = null;
+    try {
+      const cs = await import('../services/calendarSync');
+      getExternalBusyTimes = cs.getExternalBusyTimes;
+    } catch {
+      getExternalBusyTimes = null;
+    }
+
+    const meetingDate = new Date(`${date}T00:00:00`);
+    const dayOfWeek = meetingDate.getDay();
+    const [reqH, reqM] = time.split(':').map(Number);
+
     for (let i = 0; i < rotationOrder.length; i++) {
       const nextIndex = (lastIndex + 1 + i) % rotationOrder.length;
       const candidateId = rotationOrder[nextIndex];
 
       // Check if candidate is available at this time
       const candidate = db.connection.prepare(`
-        SELECT u.*, ua.start_hour, ua.end_hour, ua.working_days
+        SELECT u.*, ua.start_hour, ua.end_hour, ua.slot_duration, ua.buffer_minutes,
+               ua.min_notice_minutes, ua.working_days, ua.time_off
         FROM users u
         LEFT JOIN user_availability ua ON ua.user_id = u.id
         WHERE u.id = ?
@@ -176,30 +190,66 @@ router.post('/teams/:teamId/book', async (req: Request, res: Response) => {
 
       // Parse availability
       const workingDays = JSON.parse(candidate.working_days || '[0,1,2,3,4]');
-      const meetingDate = new Date(date);
-      const dayOfWeek = meetingDate.getDay();
+      const timeOff: any[] = JSON.parse(candidate.time_off || '[]');
 
-      // Check if working day
+      // Working day
       if (!workingDays.includes(dayOfWeek)) continue;
 
-      // Check time within working hours
-      const hourStr = time.split(':')[0];
-      const hour = parseInt(hourStr);
-      if (hour < (candidate.start_hour || 9) || hour >= (candidate.end_hour || 17)) continue;
+      // Time off (full-day or range)
+      const isTimeOff = timeOff.some((off: any) => {
+        if (typeof off === 'string') return off === date;
+        return date >= off.start && date <= off.end;
+      });
+      if (isTimeOff) continue;
 
-      // Check for conflicts
-      const conflict = db.connection.prepare(`
-        SELECT id FROM meetings 
-        WHERE host_id = ? AND date = ? AND time = ? AND status != 'cancelled'
-      `).get(candidateId, date, time);
+      // Working hours
+      const startHour = candidate.start_hour ?? 9;
+      const endHour = candidate.end_hour ?? 17;
+      if (reqH < startHour || reqH >= endHour) continue;
 
-      if (conflict) continue;
+      // Min-notice
+      const minNotice = candidate.min_notice_minutes ?? 120;
+      const slotStart = new Date(`${date}T${time}:00`);
+      if (slotStart <= new Date(Date.now() + minNotice * 60_000)) continue;
+
+      // Buffer-aware overlap check
+      const buffer = candidate.buffer_minutes ?? 0;
+      const reqStartMin = reqH * 60 + reqM - buffer;
+      const reqEndMin = reqH * 60 + reqM + (duration as number) + buffer;
+      const sameDay = db.connection.prepare(`
+        SELECT id, time, duration_minutes FROM meetings
+        WHERE host_id = ? AND date = ? AND status IN ('pending','approved')
+      `).all(candidateId, date) as any[];
+      const internalConflict = sameDay.some(m => {
+        const [mH, mM] = m.time.split(':').map(Number);
+        const mStart = mH * 60 + mM - buffer;
+        const mEnd = mH * 60 + mM + m.duration_minutes + buffer;
+        return reqStartMin < mEnd && reqEndMin > mStart;
+      });
+      if (internalConflict) continue;
+
+      // External calendar busy-times
+      if (getExternalBusyTimes) {
+        try {
+          const busy = getExternalBusyTimes(candidateId, date);
+          const slotStartMs = slotStart.getTime();
+          const slotEndMs = slotStartMs + (duration as number) * 60_000;
+          const externalConflict = busy.some(b => {
+            const bs = new Date(b.start).getTime();
+            const be = new Date(b.end).getTime();
+            return slotStartMs < be && slotEndMs > bs;
+          });
+          if (externalConflict) continue;
+        } catch {
+          // ignore — fresh DB or unconfigured
+        }
+      }
 
       assignedMember = candidate;
-      
+
       // Update round-robin state
       db.connection.prepare(`
-        UPDATE round_robin_state 
+        UPDATE round_robin_state
         SET last_assigned_user_id = ?, updated_at = datetime('now')
         WHERE team_id = ?
       `).run(candidateId, teamId);
@@ -233,7 +283,7 @@ router.post('/teams/:teamId/book', async (req: Request, res: Response) => {
       attendeeName,
       attendeeEmail,
       assignedMember.id,
-      'approved', // Auto-approve round-robin bookings
+      'pending', // Host approves — round-robin no longer auto-confirms
       'round-robin',
       notes || null,
       category,
@@ -247,7 +297,7 @@ router.post('/teams/:teamId/book', async (req: Request, res: Response) => {
         date,
         time,
         duration,
-        status: 'approved',
+        status: 'pending',
         category,
         meetingFormat
       },
@@ -257,7 +307,7 @@ router.post('/teams/:teamId/book', async (req: Request, res: Response) => {
         email: assignedMember.email,
         avatar: assignedMember.avatar
       },
-      message: `Meeting assigned to ${assignedMember.name} via round-robin`
+      message: `Meeting requested with ${assignedMember.name} via round-robin — awaiting confirmation`
     });
   } catch (error) {
     console.error('Round-robin booking error:', error);

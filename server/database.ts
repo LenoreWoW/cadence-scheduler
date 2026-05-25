@@ -135,6 +135,96 @@ class DatabaseManager {
       '20240101_meetings_add_reminder_1h_sent',
       `ALTER TABLE meetings ADD COLUMN reminder_1h_sent INTEGER DEFAULT 0`
     );
+    runOnce(
+      '20240102_meetings_add_host_reminder_24h_sent',
+      `ALTER TABLE meetings ADD COLUMN host_reminder_24h_sent INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240102_meetings_add_host_reminder_1h_sent',
+      `ALTER TABLE meetings ADD COLUMN host_reminder_1h_sent INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240103_meetings_add_attendee_token',
+      `ALTER TABLE meetings ADD COLUMN attendee_token TEXT`
+    );
+    runOnce(
+      '20240104_booking_links_add_questions',
+      `ALTER TABLE booking_links ADD COLUMN questions TEXT DEFAULT '[]'`
+    );
+    runOnce(
+      '20240105_booking_links_add_view_count',
+      `ALTER TABLE booking_links ADD COLUMN view_count INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240106_users_add_email_verified',
+      `ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240107_password_reset_tokens',
+      `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        token TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        used INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240108_notification_prefs',
+      `CREATE TABLE IF NOT EXISTS notification_prefs (
+        user_id TEXT PRIMARY KEY,
+        attendee_reminders INTEGER DEFAULT 1,
+        host_reminders INTEGER DEFAULT 1,
+        booking_approved INTEGER DEFAULT 1,
+        booking_cancelled INTEGER DEFAULT 1,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240109_in_app_notifications',
+      `CREATE TABLE IF NOT EXISTS notifications (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        body TEXT,
+        link TEXT,
+        read INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240110_notifications_index',
+      `CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, read, created_at)`
+    );
+    runOnce(
+      '20240111_ical_feed_tokens',
+      `ALTER TABLE users ADD COLUMN ical_feed_token TEXT`
+    );
+    runOnce(
+      '20240112_team_booking_links',
+      `CREATE TABLE IF NOT EXISTS team_booking_links (
+        id TEXT PRIMARY KEY,
+        team_id TEXT NOT NULL,
+        slug TEXT UNIQUE NOT NULL,
+        token TEXT UNIQUE NOT NULL,
+        title TEXT DEFAULT 'Book a meeting with our team',
+        description TEXT,
+        duration_options TEXT DEFAULT '[15, 30, 45, 60]',
+        default_duration INTEGER DEFAULT 30,
+        is_active INTEGER DEFAULT 1,
+        expires_at TEXT,
+        max_bookings_per_day INTEGER,
+        custom_message TEXT,
+        view_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
+      )`
+    );
 
     // Meetings table
     this.db.exec(`

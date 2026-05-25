@@ -55,26 +55,39 @@ function generateSlug(name: string, existingSlugs: string[]): string {
 router.get('/my-links', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const links = db.connection.prepare(`
-      SELECT * FROM booking_links WHERE user_id = ? ORDER BY created_at DESC
+      SELECT bl.*,
+        (SELECT COUNT(*) FROM meetings m WHERE m.booked_by = 'guest' AND m.host_id = bl.user_id) as total_bookings
+      FROM booking_links bl
+      WHERE bl.user_id = ?
+      ORDER BY bl.created_at DESC
     `).all(req.user!.userId) as any[];
 
-    const result = links.map(link => ({
-      id: link.id,
-      slug: link.slug,
-      token: link.token,
-      title: link.title,
-      description: link.description,
-      durationOptions: JSON.parse(link.duration_options || '[30]'),
-      defaultDuration: link.default_duration,
-      isActive: !!link.is_active,
-      expiresAt: link.expires_at,
-      maxBookingsPerDay: link.max_bookings_per_day,
-      bufferBefore: link.buffer_before,
-      bufferAfter: link.buffer_after,
-      customMessage: link.custom_message,
-      createdAt: link.created_at,
-      updatedAt: link.updated_at
-    }));
+    const result = links.map(link => {
+      const views = link.view_count || 0;
+      const bookings = link.total_bookings || 0;
+      return {
+        id: link.id,
+        slug: link.slug,
+        token: link.token,
+        title: link.title,
+        description: link.description,
+        durationOptions: JSON.parse(link.duration_options || '[30]'),
+        defaultDuration: link.default_duration,
+        isActive: !!link.is_active,
+        expiresAt: link.expires_at,
+        maxBookingsPerDay: link.max_bookings_per_day,
+        bufferBefore: link.buffer_before,
+        bufferAfter: link.buffer_after,
+        customMessage: link.custom_message,
+        questions: JSON.parse(link.questions || '[]'),
+        viewCount: views,
+        // Conversion is approximate — total guest bookings on this host vs link views.
+        // Until we tag bookings with which link they came from, this is the best estimator.
+        conversionRate: views > 0 ? Math.round((bookings / views) * 100) : null,
+        createdAt: link.created_at,
+        updatedAt: link.updated_at
+      };
+    });
 
     res.json(result);
   } catch (error) {
@@ -151,9 +164,10 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
 router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { 
-      slug, title, description, durationOptions, defaultDuration, 
-      isActive, maxBookingsPerDay, bufferBefore, bufferAfter, customMessage, expiresAt 
+    const {
+      slug, title, description, durationOptions, defaultDuration,
+      isActive, maxBookingsPerDay, bufferBefore, bufferAfter, customMessage, expiresAt,
+      questions
     } = req.body;
 
     // Verify ownership
@@ -175,6 +189,27 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       }
     }
 
+    // Validate questions shape if provided
+    let questionsJson: string | null = null;
+    if (questions !== undefined) {
+      if (!Array.isArray(questions) || questions.length > 20) {
+        throw new AppError('questions must be an array of up to 20 items', 400);
+      }
+      for (const q of questions) {
+        if (!q || typeof q !== 'object') throw new AppError('Invalid question', 400);
+        if (typeof q.label !== 'string' || q.label.length === 0 || q.label.length > 200) {
+          throw new AppError('Question label must be 1-200 characters', 400);
+        }
+        if (q.type && !['text', 'textarea', 'select', 'checkbox'].includes(q.type)) {
+          throw new AppError(`Invalid question type: ${q.type}`, 400);
+        }
+        if (q.options !== undefined && (!Array.isArray(q.options) || q.options.length > 20)) {
+          throw new AppError('Question options must be an array of up to 20 items', 400);
+        }
+      }
+      questionsJson = JSON.stringify(questions);
+    }
+
     db.connection.prepare(`
       UPDATE booking_links SET
         slug = COALESCE(?, slug),
@@ -188,6 +223,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
         buffer_after = COALESCE(?, buffer_after),
         custom_message = ?,
         expires_at = ?,
+        questions = COALESCE(?, questions),
         updated_at = ?
       WHERE id = ?
     `).run(
@@ -202,6 +238,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       bufferAfter || null,
       customMessage !== undefined ? customMessage : existing.custom_message,
       expiresAt !== undefined ? expiresAt : existing.expires_at,
+      questionsJson,
       new Date().toISOString(),
       id
     );
@@ -262,6 +299,13 @@ router.get('/public/:slug', asyncHandler(async (req: Request, res: Response) => 
       return res.status(410).json({ error: 'This booking link has expired' });
     }
 
+    // Bump view count — fire-and-forget, never block the page load.
+    try {
+      db.connection.prepare(`UPDATE booking_links SET view_count = COALESCE(view_count, 0) + 1 WHERE id = ?`).run(link.id);
+    } catch (e) {
+      // view_count column may not exist on very old DBs; safe to ignore.
+    }
+
     res.json({
       id: link.id,
       slug: link.slug,
@@ -270,6 +314,7 @@ router.get('/public/:slug', asyncHandler(async (req: Request, res: Response) => 
       durationOptions: JSON.parse(link.duration_options || '[30]'),
       defaultDuration: link.default_duration,
       customMessage: link.custom_message,
+      questions: JSON.parse(link.questions || '[]'),
       host: {
         id: link.host_id,
         name: link.host_name,
@@ -454,18 +499,29 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       }
     }
 
-    // Get booking link and host info
+    // Get booking link + host availability in a single read (mirror slots-endpoint behavior)
     const link = db.connection.prepare(`
-      SELECT bl.*, u.id as host_id, u.name as host_name,
-             ums.meeting_link as default_meeting_link, ums.preferred_platform
+      SELECT bl.*, u.id as host_id, u.name as host_name, u.email as host_email,
+             ums.meeting_link as default_meeting_link, ums.preferred_platform,
+             ua.start_hour, ua.end_hour, ua.slot_duration, ua.buffer_minutes,
+             ua.min_notice_minutes, ua.working_days, ua.time_off
       FROM booking_links bl
       JOIN users u ON bl.user_id = u.id
       LEFT JOIN user_meeting_settings ums ON u.id = ums.user_id
+      LEFT JOIN user_availability ua ON u.id = ua.user_id
       WHERE bl.slug = ? AND bl.is_active = 1
     `).get(slug) as any;
 
     if (!link) {
       throw new AppError('Booking link not found or inactive', 404);
+    }
+
+    // ---- expiration check (the slot endpoint enforces this; re-check on POST) ----
+    if (link.expires_at) {
+      const expires = new Date(link.expires_at);
+      if (!isNaN(expires.getTime()) && expires < new Date()) {
+        throw new AppError('This booking link has expired', 410);
+      }
     }
 
     // Validate duration
@@ -475,14 +531,79 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       throw new AppError('Invalid duration selected', 400);
     }
 
-    // Check for conflicts
-    const existing = db.connection.prepare(`
-      SELECT id FROM meetings
-      WHERE host_id = ? AND date = ? AND time = ? AND status IN ('pending', 'approved')
-    `).get(link.host_id, date, time);
+    // ---- working-day + time-off check ----
+    const requestedDate = new Date(`${date}T00:00:00`);
+    const dayOfWeek = requestedDate.getDay();
+    const workingDays: number[] = JSON.parse(link.working_days || '[0,1,2,3,4]');
+    if (!workingDays.includes(dayOfWeek)) {
+      throw new AppError('Not a working day', 400);
+    }
+    const timeOff: any[] = JSON.parse(link.time_off || '[]');
+    const isTimeOff = timeOff.some((off: any) => {
+      if (typeof off === 'string') return off === date;
+      return date >= off.start && date <= off.end;
+    });
+    if (isTimeOff) {
+      throw new AppError('Host is not available on this date', 400);
+    }
 
-    if (existing) {
+    // ---- min-notice check ----
+    const minNoticeMinutes = link.min_notice_minutes ?? 120;
+    const slotDateTime = new Date(`${date}T${time}:00`);
+    const earliestAllowed = new Date(Date.now() + minNoticeMinutes * 60_000);
+    if (slotDateTime <= earliestAllowed) {
+      throw new AppError(`Bookings require at least ${minNoticeMinutes} minutes advance notice`, 400);
+    }
+
+    // ---- daily booking limit ----
+    if (link.max_bookings_per_day) {
+      const dailyCount = db.connection.prepare(`
+        SELECT COUNT(*) as count FROM meetings
+        WHERE host_id = ? AND date = ? AND status IN ('pending', 'approved')
+      `).get(link.host_id, date) as any;
+      if (dailyCount.count >= link.max_bookings_per_day) {
+        throw new AppError('Daily booking limit reached for this date', 409);
+      }
+    }
+
+    // ---- buffer-aware overlap check (mirrors slot-endpoint conflict logic) ----
+    const [reqHour, reqMinute] = (time as string).split(':').map(Number);
+    const reqStart = reqHour * 60 + reqMinute - (link.buffer_before || 0);
+    const reqEnd = reqHour * 60 + reqMinute + bookingDuration + (link.buffer_after || 0);
+
+    const sameDayMeetings = db.connection.prepare(`
+      SELECT id, time, duration_minutes FROM meetings
+      WHERE host_id = ? AND date = ? AND status IN ('pending', 'approved')
+    `).all(link.host_id, date) as any[];
+
+    const internalConflict = sameDayMeetings.some(m => {
+      const [mH, mM] = m.time.split(':').map(Number);
+      const mStart = mH * 60 + mM - (link.buffer_before || 0);
+      const mEnd = mH * 60 + mM + m.duration_minutes + (link.buffer_after || 0);
+      return reqStart < mEnd && reqEnd > mStart;
+    });
+    if (internalConflict) {
       throw new AppError('This time slot is no longer available', 409);
+    }
+
+    // ---- external calendar (Google/Outlook) busy-times check ----
+    try {
+      const { getExternalBusyTimes } = await import('../services/calendarSync');
+      const busy = getExternalBusyTimes(link.host_id, date);
+      const externalConflict = busy.some((b: { start: string; end: string }) => {
+        const bStart = new Date(b.start).getTime();
+        const bEnd = new Date(b.end).getTime();
+        const reqStartMs = slotDateTime.getTime();
+        const reqEndMs = reqStartMs + bookingDuration * 60_000;
+        return reqStartMs < bEnd && reqEndMs > bStart;
+      });
+      if (externalConflict) {
+        throw new AppError('This time slot conflicts with an external calendar event', 409);
+      }
+    } catch (e) {
+      if (e instanceof AppError) throw e;
+      // If the calendar tables don't exist yet (fresh install) or sync is unconfigured,
+      // a missing connection just means no external events to check — fall through.
     }
 
     // Determine meeting link
@@ -496,17 +617,20 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
     }
 
     const meetingId = uuidv4();
+    const attendeeToken = uuidv4();
     const meetingTitle = title || `Meeting with ${attendeeName}`;
 
     db.connection.prepare(`
       INSERT INTO meetings (
         id, title, date, time, duration_minutes, attendee_name, attendee_email,
-        host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?)
+        host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform,
+        attendee_token
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?)
     `).run(
       meetingId, meetingTitle, date, time, bookingDuration,
       attendeeName, attendeeEmail, link.host_id, notes || null,
-      format, finalMeetingLink || null, finalPlatform
+      format, finalMeetingLink || null, finalPlatform,
+      attendeeToken
     );
 
     // Log activity
@@ -514,6 +638,46 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       INSERT INTO activity_logs (id, action, details, performed_by, role)
       VALUES (?, 'PUBLIC_BOOK', ?, ?, 'guest')
     `).run(uuidv4(), `Booked "${meetingTitle}" via public link`, attendeeName);
+
+    // Notify host in-app
+    try {
+      db.connection.prepare(`
+        INSERT INTO notifications (id, user_id, type, title, body, link)
+        VALUES (?, ?, 'booking.request', ?, ?, ?)
+      `).run(
+        uuidv4(),
+        link.host_id,
+        `New booking request: ${meetingTitle}`,
+        `${attendeeName} requested ${date} at ${time}`,
+        `/?view=my-meetings`
+      );
+    } catch (e) {
+      console.error('Failed to create in-app notification:', e);
+    }
+
+    // Fire-and-forget confirmation emails (attendee + host) with ICS attachment.
+    // Don't block the response on email delivery.
+    (async () => {
+      try {
+        const { sendBookingConfirmation, sendBookingHostNotification } = await import('../services/bookingEmails');
+        await sendBookingConfirmation({
+          meetingId, attendeeToken, meetingTitle, date, time,
+          durationMinutes: bookingDuration, attendeeName, attendeeEmail,
+          hostName: link.host_name, hostEmail: link.host_email,
+          meetingLink: finalMeetingLink, notes,
+        });
+        if (link.host_email) {
+          await sendBookingHostNotification({
+            meetingId, meetingTitle, date, time,
+            durationMinutes: bookingDuration, attendeeName, attendeeEmail,
+            hostName: link.host_name, hostEmail: link.host_email,
+            meetingLink: finalMeetingLink, notes,
+          });
+        }
+      } catch (e) {
+        console.error('Failed to send booking emails:', e);
+      }
+    })();
 
     res.status(201).json({
       id: meetingId,
@@ -526,12 +690,238 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       hostName: link.host_name,
       status: 'pending',
       meetingFormat: format,
+      attendeeToken,  // returned so the success page can offer a "manage booking" link
       message: 'Your meeting request has been submitted! You will receive a confirmation once approved.'
     });
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to create booking', 500);
   }
+}));
+
+// ============================================================================
+// Public reschedule / cancel via tokenized link (no auth, but rate-limited)
+// ============================================================================
+
+const manageBookingLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: (req) => `${req.ip}:${req.params.token}`,
+  message: { error: 'Too many attempts. Please try again in a minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// GET /api/booking-links/manage/:token — fetch booking details for the attendee
+router.get('/manage/:token', manageBookingLimiter, asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const meeting = db.connection.prepare(`
+    SELECT m.*, u.name as host_name
+    FROM meetings m
+    JOIN users u ON m.host_id = u.id
+    WHERE m.attendee_token = ?
+  `).get(token) as any;
+
+  if (!meeting) {
+    throw new AppError('Booking not found', 404);
+  }
+
+  res.json({
+    id: meeting.id,
+    title: meeting.title,
+    date: meeting.date,
+    time: meeting.time,
+    durationMinutes: meeting.duration_minutes,
+    attendeeName: meeting.attendee_name,
+    attendeeEmail: meeting.attendee_email,
+    hostId: meeting.host_id,
+    hostName: meeting.host_name,
+    status: meeting.status,
+    meetingLink: meeting.meeting_link,
+    meetingFormat: meeting.meeting_format,
+    notes: meeting.notes,
+    canModify: ['pending', 'approved'].includes(meeting.status),
+  });
+}));
+
+// POST /api/booking-links/manage/:token/cancel
+router.post('/manage/:token/cancel', manageBookingLimiter, asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const meeting = db.connection.prepare(`
+    SELECT m.*, u.name as host_name, u.email as host_email
+    FROM meetings m
+    JOIN users u ON m.host_id = u.id
+    WHERE m.attendee_token = ?
+  `).get(token) as any;
+
+  if (!meeting) throw new AppError('Booking not found', 404);
+  if (!['pending', 'approved'].includes(meeting.status)) {
+    throw new AppError('This booking can no longer be cancelled', 400);
+  }
+
+  // Meeting must be in the future
+  const meetingStart = new Date(`${meeting.date}T${meeting.time}:00`);
+  if (meetingStart <= new Date()) {
+    throw new AppError('Past meetings cannot be cancelled', 400);
+  }
+
+  db.connection.prepare(`UPDATE meetings SET status = 'cancelled', updated_at = datetime('now') WHERE id = ?`).run(meeting.id);
+
+  db.connection.prepare(`
+    INSERT INTO activity_logs (id, action, details, performed_by, role)
+    VALUES (?, 'CANCEL_BY_ATTENDEE', ?, ?, 'guest')
+  `).run(uuidv4(), `Attendee cancelled "${meeting.title}"`, meeting.attendee_name);
+
+  // Notify host in-app + by email
+  try {
+    db.connection.prepare(`
+      INSERT INTO notifications (id, user_id, type, title, body, link)
+      VALUES (?, ?, 'booking.cancelled', ?, ?, ?)
+    `).run(
+      uuidv4(),
+      meeting.host_id,
+      `Booking cancelled: ${meeting.title}`,
+      `${meeting.attendee_name} cancelled ${meeting.date} at ${meeting.time}`,
+      `/?view=my-meetings`
+    );
+  } catch (e) {
+    console.error('Failed to write notification:', e);
+  }
+
+  // Best-effort sync deletion for the host's external calendar
+  try {
+    const { deleteSyncedEvent } = await import('../services/calendarSync');
+    deleteSyncedEvent(meeting.id).catch((err: any) => console.error('Failed to delete synced event:', err));
+  } catch (e) {
+    // calendar sync may be unconfigured
+  }
+
+  // Email the host
+  try {
+    if (meeting.host_email) {
+      const { sendBookingCancelled } = await import('../services/bookingEmails');
+      await sendBookingCancelled({
+        meetingId: meeting.id,
+        meetingTitle: meeting.title,
+        date: meeting.date,
+        time: meeting.time,
+        durationMinutes: meeting.duration_minutes,
+        attendeeName: meeting.attendee_name,
+        attendeeEmail: meeting.host_email, // send the cancellation notice TO the host
+        hostName: meeting.host_name,
+        hostEmail: meeting.host_email,
+        cancelledBy: `${meeting.attendee_name} (attendee)`,
+      });
+    }
+  } catch (e) {
+    console.error('Failed to email host of cancellation:', e);
+  }
+
+  res.json({ success: true, status: 'cancelled' });
+}));
+
+// POST /api/booking-links/manage/:token/reschedule { date, time }
+router.post('/manage/:token/reschedule', manageBookingLimiter, asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const { date, time } = req.body ?? {};
+
+  if (!date || !time || typeof date !== 'string' || typeof time !== 'string') {
+    throw new AppError('Date and time are required', 400);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+    throw new AppError('Invalid date/time format', 400);
+  }
+
+  const meeting = db.connection.prepare(`
+    SELECT m.*, u.name as host_name, u.email as host_email,
+           ua.buffer_minutes, ua.min_notice_minutes
+    FROM meetings m
+    JOIN users u ON m.host_id = u.id
+    LEFT JOIN user_availability ua ON u.id = ua.user_id
+    WHERE m.attendee_token = ?
+  `).get(token) as any;
+
+  if (!meeting) throw new AppError('Booking not found', 404);
+  if (!['pending', 'approved'].includes(meeting.status)) {
+    throw new AppError('This booking can no longer be rescheduled', 400);
+  }
+
+  // Min-notice
+  const minNoticeMinutes = meeting.min_notice_minutes ?? 120;
+  const newStart = new Date(`${date}T${time}:00`);
+  if (newStart <= new Date(Date.now() + minNoticeMinutes * 60_000)) {
+    throw new AppError(`Reschedule requires at least ${minNoticeMinutes} minutes notice`, 400);
+  }
+
+  // Conflict check excluding self
+  const buffer = meeting.buffer_minutes ?? 0;
+  const reqStart = parseInt(time.split(':')[0]) * 60 + parseInt(time.split(':')[1]) - buffer;
+  const reqEnd = parseInt(time.split(':')[0]) * 60 + parseInt(time.split(':')[1]) + meeting.duration_minutes + buffer;
+  const sameDay = db.connection.prepare(`
+    SELECT id, time, duration_minutes FROM meetings
+    WHERE host_id = ? AND date = ? AND status IN ('pending','approved') AND id != ?
+  `).all(meeting.host_id, date, meeting.id) as any[];
+  const conflict = sameDay.some(m => {
+    const [mH, mM] = m.time.split(':').map(Number);
+    const mStart = mH * 60 + mM - buffer;
+    const mEnd = mH * 60 + mM + m.duration_minutes + buffer;
+    return reqStart < mEnd && reqEnd > mStart;
+  });
+  if (conflict) {
+    throw new AppError('That time is no longer available', 409);
+  }
+
+  db.connection.prepare(`
+    UPDATE meetings
+    SET date = ?, time = ?, status = 'pending',
+        reminder_24h_sent = 0, reminder_1h_sent = 0,
+        host_reminder_24h_sent = 0, host_reminder_1h_sent = 0,
+        updated_at = datetime('now')
+    WHERE id = ?
+  `).run(date, time, meeting.id);
+
+  db.connection.prepare(`
+    INSERT INTO activity_logs (id, action, details, performed_by, role)
+    VALUES (?, 'RESCHEDULE_BY_ATTENDEE', ?, ?, 'guest')
+  `).run(uuidv4(), `Attendee rescheduled "${meeting.title}" to ${date} ${time}`, meeting.attendee_name);
+
+  try {
+    db.connection.prepare(`
+      INSERT INTO notifications (id, user_id, type, title, body, link)
+      VALUES (?, ?, 'booking.rescheduled', ?, ?, ?)
+    `).run(
+      uuidv4(),
+      meeting.host_id,
+      `Booking rescheduled: ${meeting.title}`,
+      `${meeting.attendee_name} moved the meeting to ${date} at ${time}`,
+      `/?view=my-meetings`
+    );
+  } catch (e) {
+    console.error('Failed to write notification:', e);
+  }
+
+  // Re-send confirmation email to attendee with new time
+  try {
+    const { sendBookingConfirmation } = await import('../services/bookingEmails');
+    await sendBookingConfirmation({
+      meetingId: meeting.id,
+      attendeeToken: token,
+      meetingTitle: meeting.title,
+      date,
+      time,
+      durationMinutes: meeting.duration_minutes,
+      attendeeName: meeting.attendee_name,
+      attendeeEmail: meeting.attendee_email,
+      hostName: meeting.host_name,
+      hostEmail: meeting.host_email,
+      meetingLink: meeting.meeting_link,
+      notes: meeting.notes,
+    });
+  } catch (e) {
+    console.error('Failed to resend confirmation:', e);
+  }
+
+  res.json({ success: true, status: 'pending', date, time });
 }));
 
 export default router;

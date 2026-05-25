@@ -431,5 +431,87 @@ router.post('/sync-meeting/:meetingId', authenticateToken, async (req: Request, 
   }
 });
 
+// ============================================================================
+// iCal subscription feed — let users add their Cadence meetings to Apple/Google/
+// Outlook as a read-only subscription. Auth is the token IN the URL.
+// ============================================================================
+
+import crypto from 'crypto';
+import { generateICSForFeed } from '../services/icsGenerator';
+
+// Auth'd: get-or-create the feed token for the current user
+router.post('/feed/token', authenticateToken, (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
+  let row = db.connection.prepare('SELECT ical_feed_token FROM users WHERE id = ?').get(userId) as any;
+  if (!row?.ical_feed_token) {
+    const token = crypto.randomBytes(24).toString('hex');
+    db.connection.prepare('UPDATE users SET ical_feed_token = ? WHERE id = ?').run(token, userId);
+    row = { ical_feed_token: token };
+  }
+  const base = process.env.PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3001}`;
+  res.json({ token: row.ical_feed_token, url: `${base}/api/calendar/feed/${row.ical_feed_token}.ics` });
+});
+
+// Auth'd: rotate the feed token (revokes any subscribers)
+router.post('/feed/token/rotate', authenticateToken, (req: Request, res: Response) => {
+  const userId = (req as any).user.userId;
+  const token = crypto.randomBytes(24).toString('hex');
+  db.connection.prepare('UPDATE users SET ical_feed_token = ? WHERE id = ?').run(token, userId);
+  const base = process.env.PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3001}`;
+  res.json({ token, url: `${base}/api/calendar/feed/${token}.ics` });
+});
+
+// Public iCal feed — token IS the auth. Returns a VCALENDAR document.
+router.get('/feed/:token.ics', (req: Request, res: Response) => {
+  const { token } = req.params;
+  const user = db.connection.prepare(`
+    SELECT id, name, email FROM users WHERE ical_feed_token = ?
+  `).get(token) as any;
+
+  if (!user) {
+    res.status(404).type('text/plain').send('Calendar feed not found');
+    return;
+  }
+
+  // Pull approved + pending meetings for the next 1 year and previous 90 days
+  // (typical calendar-app sync window).
+  const cutoffStart = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const cutoffEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  const meetings = db.connection.prepare(`
+    SELECT m.*, u.name as host_name, u.email as host_email
+    FROM meetings m
+    JOIN users u ON m.host_id = u.id
+    WHERE m.host_id = ?
+      AND m.status IN ('pending','approved','cancelled')
+      AND m.date >= ? AND m.date <= ?
+    ORDER BY m.date ASC, m.time ASC
+  `).all(user.id, cutoffStart, cutoffEnd) as any[];
+
+  const ics = generateICSForFeed(
+    meetings.map(m => ({
+      id: m.id,
+      title: m.title,
+      date: m.date,
+      time: m.time,
+      durationMinutes: m.duration_minutes,
+      attendeeName: m.attendee_name,
+      attendeeEmail: m.attendee_email,
+      hostName: m.host_name,
+      hostEmail: m.host_email,
+      meetingLink: m.meeting_link,
+      notes: m.notes,
+      status: m.status,
+    })),
+    `Cadence — ${user.name}`
+  );
+
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', `inline; filename="cadence-${user.id}.ics"`);
+  // Calendar apps poll on their own schedule; 5-minute cache is safe and friendly.
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.send(ics);
+});
+
 export default router;
 
