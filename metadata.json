@@ -1,0 +1,5 @@
+{
+  "name": "Regent",
+  "description": "A self-contained booking management system featuring role-based access for Guests, Managers, and Subordinates with a premium color theme.",
+  "requestFramePermissions": []
+}

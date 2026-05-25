@@ -1,0 +1,44 @@
+# Render blueprint — https://render.com/docs/blueprint-spec
+# Deploy with one click after connecting this repo to Render.
+
+services:
+  - type: web
+    name: cadence-api
+    runtime: node
+    region: oregon
+    plan: starter
+    branch: main
+    buildCommand: yarn install --ignore-engines --frozen-lockfile
+    startCommand: yarn server
+    healthCheckPath: /api/health
+    disk:
+      name: cadence-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /data/cadence.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 3001
+      - key: FRONTEND_URL
+        sync: false        # Set this manually in Render dashboard
+      - key: EMAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: MICROSOFT_CLIENT_ID
+        sync: false
+      - key: MICROSOFT_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_REDIRECT_URI
+        sync: false

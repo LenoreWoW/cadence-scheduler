@@ -1,0 +1,38 @@
+# Fly.io app config — https://fly.io/docs/reference/configuration/
+# 1. fly launch --no-deploy --copy-config (this file)
+# 2. fly volumes create cadence_data --size 1 --region <your-region>
+# 3. fly secrets set JWT_SECRET=$(openssl rand -hex 32) FRONTEND_URL=https://yourfrontend.example.com EMAIL_FROM=noreply@example.com
+# 4. fly deploy
+
+app = "cadence-api"
+primary_region = "iad"
+
+[build]
+
+[env]
+  NODE_ENV = "production"
+  DATABASE_PATH = "/data/cadence.db"
+  PORT = "3001"
+
+[[mounts]]
+  source = "cadence_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.checks]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/api/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
