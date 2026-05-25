@@ -41,6 +41,9 @@ interface BaseArgs {
   hostEmail?: string;
   meetingLink?: string;
   notes?: string;
+  /** Optional physical address for in-person meetings — rendered as a Location block. */
+  locationAddress?: string;
+  meetingFormat?: 'online' | 'in-person';
   // Optional custom Reply-To header (per booking link). Forwarded to the
   // provider as `reply_to`.
   replyTo?: string;
@@ -158,6 +161,7 @@ export async function sendBookingConfirmation(args: ConfirmationArgs): Promise<v
 
   const headerTitle = i18n(lang, 'booking_received');
   const headerBody = i18n(lang, 'booking_received_body', { host: args.hostName });
+  const showInPersonLocation = args.meetingFormat === 'in-person' && args.locationAddress;
   const content = `
     <h2 style="margin-top:0;color:#1a1a1a;">${htmlEscape(args.meetingTitle)}</h2>
     <p style="color:#666;margin:0 0 24px;">${htmlEscape(headerBody)}</p>
@@ -165,6 +169,7 @@ export async function sendBookingConfirmation(args: ConfirmationArgs): Promise<v
     ${detailBlock('Time', args.time)}
     ${detailBlock('Duration', `${args.durationMinutes} minutes`)}
     ${detailBlock('Host', args.hostName)}
+    ${showInPersonLocation ? detailBlock('Location', args.locationAddress!) : ''}
     ${args.meetingLink && safeUrl(args.meetingLink) ? `<div style="margin-top:18px;"><a href="${htmlEscape(safeUrl(args.meetingLink)!)}" style="display:inline-block;padding:12px 24px;background:#8A1538;color:white;text-decoration:none;border-radius:6px;">Join meeting link</a></div>` : ''}
     ${calendarButtons(google, outlook, manageUrl)}
   `;
@@ -193,6 +198,7 @@ export async function sendBookingHostNotification(args: BaseArgs): Promise<void>
 
   const headerTitle = i18n(lang, 'host_new_booking');
   const headerBody = i18n(lang, 'host_new_booking_body', { attendee: args.attendeeName });
+  const showInPersonLocation = args.meetingFormat === 'in-person' && args.locationAddress;
   const content = `
     <h2 style="margin-top:0;color:#1a1a1a;">${htmlEscape(headerTitle)}</h2>
     <p style="color:#666;margin:0 0 24px;">${htmlEscape(headerBody)} (${htmlEscape(args.attendeeEmail)})</p>
@@ -200,6 +206,7 @@ export async function sendBookingHostNotification(args: BaseArgs): Promise<void>
     ${detailBlock('Date', dateStr)}
     ${detailBlock('Time', args.time)}
     ${detailBlock('Duration', `${args.durationMinutes} minutes`)}
+    ${showInPersonLocation ? detailBlock('Location', args.locationAddress!) : ''}
     ${args.notes ? detailBlock('Notes', args.notes) : ''}
     <div style="margin-top:20px;">
       <a href="${htmlEscape(FRONTEND_URL)}/?view=my-meetings" style="display:inline-block;padding:12px 24px;background:#8A1538;color:white;text-decoration:none;border-radius:6px;">Review in Cadence</a>

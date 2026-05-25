@@ -20,11 +20,18 @@ export interface RoutingCondition {
   value: string;
 }
 
-export type RoutingActionType = 'route_to_user' | 'route_to_link';
+export type RoutingActionType =
+  | 'route_to_user'
+  | 'route_to_link'
+  | 'route_to_user_by_attribute';
 
 export interface RoutingAction {
   type: RoutingActionType;
-  target: string; // userId or bookingLinkId/slug
+  target: string; // userId or bookingLinkId/slug (empty for route_to_user_by_attribute)
+  /** Attribute key for route_to_user_by_attribute (e.g. "territory"). */
+  attributeKey?: string;
+  /** Attribute value to match for route_to_user_by_attribute (e.g. "NA"). */
+  attributeValue?: string;
 }
 
 export interface RoutingRule {
@@ -260,6 +267,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
     action: lang === 'ar' ? 'الإجراء' : 'Action',
     routeToUser: lang === 'ar' ? 'توجيه إلى مستخدم' : 'Route to user',
     routeToLink: lang === 'ar' ? 'توجيه إلى رابط' : 'Route to link',
+    routeByAttribute: lang === 'ar' ? 'توجيه بسمة المستخدم' : 'Route by user attribute',
     fallback: lang === 'ar' ? '(القاعدة الاحتياطية)' : '(fallback rule)',
     save: lang === 'ar' ? 'حفظ' : 'Save',
     cancel: lang === 'ar' ? 'إلغاء' : 'Cancel',
@@ -457,47 +465,82 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                               {labels.addCondition}
                             </button>
                           </div>
-                          {r.conditions.map((c, ci) => (
-                            <div key={ci} className="grid grid-cols-12 gap-2 items-center">
-                              <select
-                                value={c.fieldId}
-                                onChange={(e) => updateCondition(r.id, ci, { fieldId: e.target.value })}
-                                className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
-                              >
-                                <option value="">—</option>
-                                {fields.map((f) => (
-                                  <option key={f.id} value={f.id}>
-                                    {f.label || f.id}
+                          {r.conditions.map((c, ci) => {
+                            const isAttrCondition = c.fieldId.startsWith('user_attribute:');
+                            const attrKey = isAttrCondition ? c.fieldId.slice('user_attribute:'.length) : '';
+                            const selectValue = isAttrCondition ? '__attr__' : c.fieldId;
+                            return (
+                            <div key={ci} className="space-y-2">
+                              <div className="grid grid-cols-12 gap-2 items-center">
+                                <select
+                                  value={selectValue}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (v === '__attr__') {
+                                      updateCondition(r.id, ci, { fieldId: 'user_attribute:' });
+                                    } else {
+                                      updateCondition(r.id, ci, { fieldId: v });
+                                    }
+                                  }}
+                                  className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                >
+                                  <option value="">—</option>
+                                  {fields.map((f) => (
+                                    <option key={f.id} value={f.id}>
+                                      {f.label || f.id}
+                                    </option>
+                                  ))}
+                                  <option value="__attr__">
+                                    {lang === 'ar' ? 'سمة المستخدم…' : 'User attribute…'}
                                   </option>
-                                ))}
-                              </select>
-                              <select
-                                value={c.op}
-                                onChange={(e) => updateCondition(r.id, ci, { op: e.target.value as RoutingOp })}
-                                className="col-span-3 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
-                              >
-                                <option value="equals">equals</option>
-                                <option value="not_equals">not equals</option>
-                                <option value="contains">contains</option>
-                                <option value="gt">{'>'}</option>
-                                <option value="lt">{'<'}</option>
-                              </select>
-                              <input
-                                type="text"
-                                value={c.value}
-                                onChange={(e) => updateCondition(r.id, ci, { value: e.target.value })}
-                                className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeCondition(r.id, ci)}
-                                className="col-span-1 text-xs text-salmon hover:text-red-700"
-                                aria-label={labels.remove}
-                              >
-                                ×
-                              </button>
+                                </select>
+                                <select
+                                  value={c.op}
+                                  onChange={(e) => updateCondition(r.id, ci, { op: e.target.value as RoutingOp })}
+                                  className="col-span-3 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                >
+                                  <option value="equals">equals</option>
+                                  <option value="not_equals">not equals</option>
+                                  <option value="contains">contains</option>
+                                  <option value="gt">{'>'}</option>
+                                  <option value="lt">{'<'}</option>
+                                </select>
+                                <input
+                                  type="text"
+                                  value={c.value}
+                                  onChange={(e) => updateCondition(r.id, ci, { value: e.target.value })}
+                                  className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeCondition(r.id, ci)}
+                                  className="col-span-1 text-xs text-salmon hover:text-red-700"
+                                  aria-label={labels.remove}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              {isAttrCondition && (
+                                <div className="grid grid-cols-12 gap-2 pl-1">
+                                  <span className="col-span-4 text-[10px] font-mono uppercase text-gray-500 self-center">
+                                    {lang === 'ar' ? 'مفتاح السمة' : 'Attribute key'}
+                                  </span>
+                                  <input
+                                    type="text"
+                                    placeholder="territory"
+                                    value={attrKey}
+                                    onChange={(e) =>
+                                      updateCondition(r.id, ci, {
+                                        fieldId: `user_attribute:${e.target.value}`,
+                                      })
+                                    }
+                                    className="col-span-8 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] font-mono"
+                                  />
+                                </div>
+                              )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
 
                         {/* Action */}
@@ -507,13 +550,19 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                             value={r.action.type}
                             onChange={(e) =>
                               updateRule(r.id, {
-                                action: { type: e.target.value as RoutingActionType, target: '' },
+                                action: {
+                                  type: e.target.value as RoutingActionType,
+                                  target: '',
+                                  attributeKey: '',
+                                  attributeValue: '',
+                                },
                               })
                             }
                             className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
                           >
                             <option value="route_to_user">{labels.routeToUser}</option>
                             <option value="route_to_link">{labels.routeToLink}</option>
+                            <option value="route_to_user_by_attribute">{labels.routeByAttribute}</option>
                           </select>
                           {r.action.type === 'route_to_user' ? (
                             <select
@@ -530,7 +579,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                 </option>
                               ))}
                             </select>
-                          ) : (
+                          ) : r.action.type === 'route_to_link' ? (
                             <select
                               value={r.action.target}
                               onChange={(e) =>
@@ -545,6 +594,31 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                 </option>
                               ))}
                             </select>
+                          ) : (
+                            <div className="col-span-8 grid grid-cols-2 gap-2">
+                              <input
+                                type="text"
+                                placeholder={lang === 'ar' ? 'مفتاح السمة' : 'attribute key'}
+                                value={r.action.attributeKey || ''}
+                                onChange={(e) =>
+                                  updateRule(r.id, {
+                                    action: { ...r.action, attributeKey: e.target.value },
+                                  })
+                                }
+                                className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] font-mono"
+                              />
+                              <input
+                                type="text"
+                                placeholder={lang === 'ar' ? 'القيمة' : 'value'}
+                                value={r.action.attributeValue || ''}
+                                onChange={(e) =>
+                                  updateRule(r.id, {
+                                    action: { ...r.action, attributeValue: e.target.value },
+                                  })
+                                }
+                                className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                              />
+                            </div>
                           )}
                         </div>
                       </div>

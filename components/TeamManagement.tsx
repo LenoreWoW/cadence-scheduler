@@ -9,6 +9,7 @@ import { ResourcesPanel } from './ResourcesPanel';
 import { ApprovalQueue } from './ApprovalQueue';
 import { BulkUserImportModal } from './BulkUserImportModal';
 import { WorkflowsPanel } from './WorkflowsPanel';
+import { UserAttributesEditor } from './UserAttributesEditor';
 
 interface TeamManagementProps {
   t: (key: string) => string;
@@ -403,6 +404,12 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
                         <label className="block text-xs font-bold uppercase tracking-widest text-dune mb-2">{t('avatarUrl')}</label>
                         <input name="avatar" defaultValue={editingItem?.avatar} className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none" />
                       </div>
+
+                      {editingItem?.id && (
+                        <div className="pt-6 border-t border-gray-100">
+                          <UserAttributesEditor scope={editingItem.id} lang={lang} />
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>

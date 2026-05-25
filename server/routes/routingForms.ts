@@ -27,7 +27,7 @@ const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => P
 
 const VALID_FIELD_TYPES = new Set(['text', 'textarea', 'select', 'checkbox', 'radio', 'email']);
 const VALID_OPS = new Set(['equals', 'not_equals', 'contains', 'gt', 'lt']);
-const VALID_ACTION_TYPES = new Set(['route_to_user', 'route_to_link']);
+const VALID_ACTION_TYPES = new Set(['route_to_user', 'route_to_link', 'route_to_user_by_attribute']);
 
 interface Question {
   id: string;
@@ -418,6 +418,33 @@ router.post('/public/:id/submit', submitLimiter, asyncHandler(async (req: Reques
           displayName = team.title;
           bookingUrl = `/book/team/${team.slug}`;
           target = { target: 'link', slug: team.slug, name: team.title };
+        }
+      }
+    } else if (chosen.action.type === 'route_to_user_by_attribute') {
+      // target string format: "<attributeKey>=<attributeValue>".
+      const sep = chosen.action.target.indexOf('=');
+      const attrKey = sep >= 0 ? chosen.action.target.slice(0, sep).trim() : '';
+      const attrValue = sep >= 0 ? chosen.action.target.slice(sep + 1).trim() : '';
+      if (attrKey && attrValue) {
+        // Pull active candidate users with an active booking link, filter by attribute match.
+        const candidates = db.connection.prepare(`
+          SELECT u.id, u.name, u.attributes, bl.slug
+          FROM users u
+          JOIN booking_links bl ON bl.user_id = u.id AND bl.is_active = 1
+          WHERE u.attributes IS NOT NULL AND u.attributes != '{}'
+          GROUP BY u.id
+        `).all() as any[];
+        for (const c of candidates) {
+          try {
+            const attrs = JSON.parse(c.attributes || '{}');
+            if (String(attrs[attrKey] ?? '') === attrValue) {
+              routedUserId = c.id;
+              displayName = c.name;
+              bookingUrl = `/book/${c.slug}`;
+              target = { target: 'user', userId: c.id, slug: c.slug, name: c.name };
+              break;
+            }
+          } catch {}
         }
       }
     }

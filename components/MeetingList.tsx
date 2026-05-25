@@ -214,6 +214,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({
         meeting={viewMeeting}
         t={t}
         lang={lang}
+        currentUser={currentUser}
       />
     </>
   );

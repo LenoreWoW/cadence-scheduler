@@ -6,6 +6,9 @@ import { FrequencyLimitsEditor } from './FrequencyLimitsEditor';
 import { AnalyticsPixelsEditor } from './AnalyticsPixelsEditor';
 import { CommonSchedulesPicker } from './CommonSchedulesPicker';
 import { RoutingFormBuilder } from './RoutingFormBuilder';
+import { DateRangeWindowEditor } from './DateRangeWindowEditor';
+import { BookingThemeSelector } from './BookingThemeSelector';
+import { ExternalIdField } from './ExternalIdField';
 
 export interface AvailabilityOverride {
   startHour: number;
@@ -335,6 +338,18 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                       {lang === 'ar' ? 'إعداد' : 'Configure'}
                     </Button>
                   </div>
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <DateRangeWindowEditor link={link} onChange={onRefresh} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <BookingThemeSelector link={link} onChange={onRefresh} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <ExternalIdField link={link} onChange={onRefresh} lang={lang} />
                 </section>
               </>
             )}

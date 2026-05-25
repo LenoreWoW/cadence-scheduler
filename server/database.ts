@@ -756,6 +756,130 @@ class DatabaseManager {
       `ALTER TABLE meetings ADD COLUMN routing_submission_id TEXT`
     );
 
+    // ====== Cal.com remaining-gap migrations ======
+
+    // CalDAV / Apple Calendar fields on calendar_connections (table created by calendarSync.ts)
+    runOnce(
+      '20240400_calendar_connections_server_url',
+      `ALTER TABLE calendar_connections ADD COLUMN server_url TEXT`
+    );
+    runOnce(
+      '20240401_calendar_connections_dav_password',
+      `ALTER TABLE calendar_connections ADD COLUMN dav_password TEXT`
+    );
+
+    // Video connections for Daily.co / future room-based providers
+    runOnce(
+      '20240410_video_connections',
+      `CREATE TABLE IF NOT EXISTS video_connections (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        api_key TEXT,
+        domain TEXT,
+        room_template TEXT,
+        enabled INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240411_video_connections_user_idx',
+      `CREATE INDEX IF NOT EXISTS idx_video_connections_user ON video_connections(user_id, provider)`
+    );
+
+    // Booking links: theme, hide_details, bookable start_date, external_id, request_recording
+    runOnce(
+      '20240420_booking_links_theme',
+      `ALTER TABLE booking_links ADD COLUMN theme TEXT DEFAULT 'system'`
+    );
+    runOnce(
+      '20240421_booking_links_hide_details',
+      `ALTER TABLE booking_links ADD COLUMN hide_details INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240422_booking_links_start_date',
+      `ALTER TABLE booking_links ADD COLUMN bookable_start_date TEXT`
+    );
+    runOnce(
+      '20240423_booking_links_external_ref_template',
+      `ALTER TABLE booking_links ADD COLUMN external_ref_template TEXT`
+    );
+    runOnce(
+      '20240424_booking_links_record_meetings',
+      `ALTER TABLE booking_links ADD COLUMN record_meetings INTEGER DEFAULT 0`
+    );
+
+    // Meetings: location_address + external_id + recording_url
+    runOnce(
+      '20240430_meetings_location_address',
+      `ALTER TABLE meetings ADD COLUMN location_address TEXT`
+    );
+    runOnce(
+      '20240431_meetings_external_id',
+      `ALTER TABLE meetings ADD COLUMN external_id TEXT`
+    );
+    runOnce(
+      '20240432_meetings_recording_url',
+      `ALTER TABLE meetings ADD COLUMN recording_url TEXT`
+    );
+    runOnce(
+      '20240433_meetings_external_id_idx',
+      `CREATE INDEX IF NOT EXISTS idx_meetings_external_id ON meetings(external_id)`
+    );
+    runOnce(
+      '20240434_meetings_reassigned_from',
+      `ALTER TABLE meetings ADD COLUMN reassigned_from_user_id TEXT`
+    );
+
+    // Users: attributes JSON (territory, expertise, tags) + user-wide booking caps
+    runOnce(
+      '20240440_users_attributes',
+      `ALTER TABLE users ADD COLUMN attributes TEXT DEFAULT '{}'`
+    );
+    runOnce(
+      '20240441_users_weekly_booking_cap',
+      `ALTER TABLE users ADD COLUMN weekly_booking_cap INTEGER`
+    );
+    runOnce(
+      '20240442_users_monthly_booking_cap',
+      `ALTER TABLE users ADD COLUMN monthly_booking_cap INTEGER`
+    );
+    runOnce(
+      '20240443_users_yearly_booking_cap',
+      `ALTER TABLE users ADD COLUMN yearly_booking_cap INTEGER`
+    );
+
+    // Email verification flow
+    runOnce(
+      '20240450_email_verification_tokens',
+      `CREATE TABLE IF NOT EXISTS email_verification_tokens (
+        token TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        email TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        used INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+
+    // Domain verifications
+    runOnce(
+      '20240460_domain_verifications',
+      `CREATE TABLE IF NOT EXISTS domain_verifications (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        domain TEXT NOT NULL,
+        verification_token TEXT NOT NULL,
+        method TEXT DEFAULT 'dns_txt',
+        status TEXT DEFAULT 'pending',
+        verified_at TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+
     // Meetings table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS meetings (

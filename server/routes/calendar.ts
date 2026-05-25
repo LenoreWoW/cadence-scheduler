@@ -23,6 +23,8 @@ import calendarSync, {
   getExternalBusyTimes,
   getValidAccessToken
 } from '../services/calendarSync';
+import { connectCalDav, discoverCalDavServer, pullCalDavEvents } from '../services/calDavSync';
+import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -428,6 +430,89 @@ router.post('/sync-meeting/:meetingId', authenticateToken, async (req: Request, 
   } catch (error) {
     console.error('Sync meeting error:', error);
     res.status(500).json({ error: 'Failed to sync meeting' });
+  }
+});
+
+// ============================================================================
+// CalDAV — Apple iCloud / Yahoo / Fastmail / any generic CalDAV server.
+// User supplies credentials at connect time; we store them in
+// calendar_connections.dav_password.
+// ============================================================================
+
+/**
+ * POST /api/calendar/caldav/connect
+ * Body: { serverUrl?, username, password, autoDiscoverEmail? }
+ */
+router.post('/caldav/connect', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    let { serverUrl, username, password, autoDiscoverEmail } = req.body || {};
+
+    if (typeof username !== 'string' || username.length < 1 || username.length > 200) {
+      throw new AppError('username is required', 400);
+    }
+    if (typeof password !== 'string' || password.length < 1 || password.length > 500) {
+      throw new AppError('password is required', 400);
+    }
+
+    if (!serverUrl && typeof autoDiscoverEmail === 'string' && autoDiscoverEmail.length > 0) {
+      try {
+        serverUrl = await discoverCalDavServer(autoDiscoverEmail);
+      } catch (e: any) {
+        throw new AppError(e?.message || 'Could not discover CalDAV server', 400);
+      }
+    }
+
+    if (typeof serverUrl !== 'string' || !/^https?:\/\//i.test(serverUrl)) {
+      throw new AppError('Valid serverUrl (or autoDiscoverEmail) required', 400);
+    }
+
+    const result = await connectCalDav(userId, serverUrl, username, password);
+
+    // Initial pull is best-effort.
+    pullCalDavEvents(userId).catch(err => console.error('Initial CalDAV pull failed:', err));
+
+    res.json({
+      success: true,
+      calendars: result.calendars.map(c => ({
+        url: c.url,
+        displayName: c.displayName,
+        primary: c.primary,
+      })),
+    });
+  } catch (error: any) {
+    if (error instanceof AppError) throw error;
+    console.error('CalDAV connect error:', error);
+    res.status(400).json({ error: error?.message || 'Failed to connect CalDAV' });
+  }
+});
+
+/** DELETE /api/calendar/caldav/disconnect */
+router.delete('/caldav/disconnect', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    db.connection.prepare(
+      'DELETE FROM calendar_connections WHERE user_id = ? AND provider = ?'
+    ).run(userId, 'caldav');
+    db.connection.prepare(
+      'DELETE FROM external_events WHERE user_id = ? AND provider = ?'
+    ).run(userId, 'caldav');
+    res.json({ success: true, message: 'CalDAV disconnected' });
+  } catch (error) {
+    console.error('CalDAV disconnect error:', error);
+    res.status(500).json({ error: 'Failed to disconnect CalDAV' });
+  }
+});
+
+/** POST /api/calendar/caldav/sync */
+router.post('/caldav/sync', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    await pullCalDavEvents(userId);
+    res.json({ success: true, message: 'CalDAV synced' });
+  } catch (error: any) {
+    console.error('CalDAV manual sync error:', error);
+    res.status(500).json({ error: error?.message || 'Failed to sync CalDAV' });
   }
 });
 

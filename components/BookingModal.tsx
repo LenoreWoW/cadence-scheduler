@@ -6,6 +6,7 @@ import { CATEGORY_CONFIG } from '../constants';
 import { calendarIntegration } from '../services/calendarIntegration';
 import { smartDefaults } from '../services/smartDefaults';
 import { BookingSuccess3D } from './BookingSuccess3D';
+import { LocationAddressField } from './LocationAddressField';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -40,7 +41,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     frequency: 'none',
     occurrences: 1,
     meetingFormat: 'in-person' as 'online' | 'in-person',
-    meetingLink: ''
+    meetingLink: '',
+    locationAddress: ''
   });
 
   useEffect(() => {
@@ -53,14 +55,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         title: '',
         category: role === 'guest' ? 'client' : 'general',
         attendeeName: currentUser.name || '',
-        attendeeEmail: currentUser.email || '', 
+        attendeeEmail: currentUser.email || '',
         additionalAttendees: '',
         notes: '',
         duration: defaultDuration,
         frequency: 'none',
         occurrences: 1,
         meetingFormat: 'in-person',
-        meetingLink: ''
+        meetingLink: '',
+        locationAddress: ''
       });
       setTitleSuggestions([]);
     }
@@ -269,6 +272,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                               Meeting Link (Zoom, Teams, etc.)
                            </label>
                          </div>
+                      </div>
+                   )}
+
+                   {formData.meetingFormat === 'in-person' && (
+                      <div className="animate-fade-in-down">
+                         <LocationAddressField
+                           value={formData.locationAddress}
+                           onChange={(v) => setFormData({ ...formData, locationAddress: v })}
+                           lang={lang}
+                         />
                       </div>
                    )}
                 </div>

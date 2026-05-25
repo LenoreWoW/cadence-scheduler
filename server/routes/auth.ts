@@ -145,6 +145,17 @@ router.post('/register', async (req: Request, res: Response) => {
       VALUES (?, ?, ?, ?)
     `).run(sessionId, userId, refreshToken, expiresAt);
 
+    // Best-effort: send a verification email if the user provided one.
+    if (email) {
+      (async () => {
+        try {
+          await sendVerificationEmail(userId, email, name);
+        } catch (e) {
+          console.error('Initial verification email failed:', e);
+        }
+      })();
+    }
+
     res.status(201).json({
       user: {
         id: userId,
@@ -160,6 +171,89 @@ router.post('/register', async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError('Registration failed', 500);
+  }
+});
+
+// ============================================================================
+// Email Verification
+// ============================================================================
+
+async function sendVerificationEmail(userId: string, email: string, name: string | null): Promise<void> {
+  // If there's already an unused, unexpired token, do nothing (idempotent).
+  const existing = db.connection.prepare(`
+    SELECT token FROM email_verification_tokens
+    WHERE user_id = ? AND used = 0 AND expires_at > datetime('now')
+    LIMIT 1
+  `).get(userId) as any;
+  if (existing) return;
+
+  const token = uuidv4().replace(/-/g, '') + uuidv4().replace(/-/g, '');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  db.connection.prepare(`
+    INSERT INTO email_verification_tokens (token, user_id, email, expires_at) VALUES (?, ?, ?, ?)
+  `).run(token, userId, email, expiresAt);
+
+  const { getEmailProvider } = await import('../services/emailProvider');
+  const provider = getEmailProvider();
+  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verifyUrl = `${frontend}/verify-email?token=${encodeURIComponent(token)}`;
+  const html = `<!DOCTYPE html><html><body style="margin:0;padding:20px;background:#f5f5f5;font-family:-apple-system,'Segoe UI',sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;">
+      <div style="background:#129b82;color:white;padding:30px;text-align:center;"><h1 style="margin:0;font-size:22px;">Verify your email</h1></div>
+      <div style="padding:30px;color:#1a1a1a;">
+        <p>Hi ${name || 'there'},</p>
+        <p>Please confirm your email address by clicking below. The link is valid for 24 hours.</p>
+        <p style="margin:24px 0;"><a href="${verifyUrl}" style="display:inline-block;padding:12px 28px;background:#129b82;color:white;text-decoration:none;border-radius:6px;font-weight:500;">Verify email</a></p>
+        <p style="color:#666;font-size:13px;">If you didn't sign up for Cadence, you can ignore this email.</p>
+      </div>
+    </div>
+  </body></html>`;
+  await provider.send({
+    to: email,
+    subject: 'Verify your email — Cadence',
+    html,
+    text: `Verify your email: ${verifyUrl} (valid 24 hours)`,
+  });
+}
+
+// POST /api/auth/send-verification — auth'd; idempotent (no double-send while a token is live).
+router.post('/send-verification', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = db.connection.prepare(`SELECT id, email, name, email_verified FROM users WHERE id = ?`).get(req.user!.userId) as any;
+    if (!user) throw new AppError('User not found', 404);
+    if (!user.email) throw new AppError('No email on file', 400);
+    if (user.email_verified) return res.json({ alreadyVerified: true });
+    await sendVerificationEmail(user.id, user.email, user.name);
+    res.json({ sent: true });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to send verification email', 500);
+  }
+});
+
+// GET /api/auth/verify-email/:token — public; consumes the token + marks user verified.
+router.get('/verify-email/:token', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+    if (!token || token.length > 200) throw new AppError('Invalid token', 400);
+
+    const row = db.connection.prepare(`
+      SELECT token, user_id, expires_at, used FROM email_verification_tokens WHERE token = ?
+    `).get(token) as any;
+    if (!row) throw new AppError('Invalid or expired token', 400);
+    if (row.used) throw new AppError('Token already used', 400);
+    if (new Date(row.expires_at) < new Date()) throw new AppError('Token expired', 400);
+
+    const txn = db.connection.transaction(() => {
+      db.connection.prepare(`UPDATE email_verification_tokens SET used = 1 WHERE token = ?`).run(token);
+      db.connection.prepare(`UPDATE users SET email_verified = 1, updated_at = datetime('now') WHERE id = ?`).run(row.user_id);
+    });
+    txn();
+
+    res.json({ verified: true });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Verification failed', 500);
   }
 });
 

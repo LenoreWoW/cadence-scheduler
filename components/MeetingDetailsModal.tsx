@@ -1,8 +1,9 @@
-import React from 'react';
-import { Meeting, Language, VideoPlatform } from '../types';
+import React, { useState } from 'react';
+import { Meeting, Language, VideoPlatform, User } from '../types';
 import { Button } from './Button';
 import { CATEGORY_CONFIG, VIDEO_PLATFORM_CONFIG } from '../constants';
 import { MeetingAttachmentsPanel } from './MeetingAttachmentsPanel';
+import { MeetingReassignModal } from './MeetingReassignModal';
 
 interface MeetingDetailsModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface MeetingDetailsModalProps {
   meeting: Meeting | null;
   t: (key: string) => string;
   lang: Language;
+  currentUser?: User | null;
+  onReassigned?: () => void;
 }
 
 export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
@@ -17,11 +20,25 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   onClose,
   meeting,
   t,
-  lang
+  lang,
+  currentUser,
+  onReassigned
 }) => {
+  const [reassignOpen, setReassignOpen] = useState(false);
+
   if (!isOpen || !meeting) return null;
 
   const category = CATEGORY_CONFIG[meeting.category] || CATEGORY_CONFIG.general;
+
+  // Reassign visibility: admin, manager, or the host of the meeting (not the attendee).
+  const canReassign = !!currentUser && (
+    currentUser.role === 'admin' ||
+    currentUser.role === 'manager' ||
+    currentUser.id === meeting.hostId
+  );
+
+  // `locationAddress` is not yet in the Meeting type but the backend may send it.
+  const locationAddress = (meeting as any).locationAddress as string | undefined;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -100,6 +117,18 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
                          </p>
                       </div>
                    </div>
+
+                   {locationAddress && meeting.meetingFormat === 'in-person' && (
+                      <div className="flex items-start gap-3">
+                         <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-dune shrink-0">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                         </div>
+                         <div>
+                            <p className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">{lang === 'ar' ? 'العنوان' : 'Address'}</p>
+                            <p className="font-medium text-charcoal whitespace-pre-line">{locationAddress}</p>
+                         </div>
+                      </div>
+                   )}
                 </div>
              </div>
 
@@ -181,11 +210,29 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
             lang={lang}
           />
 
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-6 gap-3">
+             {canReassign && (
+                <Button variant="secondary" onClick={() => setReassignOpen(true)}>
+                   {lang === 'ar' ? 'إعادة تعيين' : 'Reassign'}
+                </Button>
+             )}
              <Button variant="secondary" onClick={onClose}>Close</Button>
           </div>
         </div>
       </div>
+
+      <MeetingReassignModal
+        isOpen={reassignOpen}
+        onClose={() => setReassignOpen(false)}
+        meetingId={meeting.id}
+        currentHostId={meeting.hostId}
+        onReassigned={() => {
+          setReassignOpen(false);
+          onReassigned?.();
+          onClose();
+        }}
+        lang={lang}
+      />
     </div>
   );
 };

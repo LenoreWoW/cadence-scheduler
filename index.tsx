@@ -45,6 +45,8 @@ import { AuditLogViewer } from './components/AuditLogViewer';
 import { TeamCompetitionLeaderboard } from './components/TeamCompetitionLeaderboard';
 import { BookingCalendarView } from './components/BookingCalendarView';
 import { RoutingFormPublicPage } from './components/RoutingFormPublicPage';
+import { VerifyEmailPage } from './components/VerifyEmailPage';
+import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { setTokens } from './services/api';
 import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
 import { storageService } from './services/storageService';
@@ -538,6 +540,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
       <div className={`min-h-screen flex flex-col bg-white dark:bg-[#0a0a0a] text-charcoal dark:text-gray-100 font-sans transition-colors duration-300 pb-16 md:pb-0`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <LiveRegion message={announcement} />
+        <EmailVerificationBanner currentUser={currentUser} lang={lang} />
         
         {/* Global Achievement Toast */}
         <AchievementPopup achievements={newAchievements} onClose={() => setNewAchievements([])} />
@@ -1096,6 +1099,13 @@ const Router: React.FC = () => {
       </ErrorBoundary>
     );
   }
+  if (route.type === 'verify-email') {
+    return (
+      <ErrorBoundary>
+        <VerifyEmailPage token={route.token} />
+      </ErrorBoundary>
+    );
+  }
 
   return <App initialAuthMode={route.authMode} />;
 };
@@ -1115,6 +1125,9 @@ function resolveRoute(path: string, search: string): RouteState {
   }
   if (path === '/manage-booking') {
     return { type: 'manage-booking', token: params.get('token') || '' };
+  }
+  if (path === '/verify-email') {
+    return { type: 'verify-email', token: params.get('token') || '' };
   }
   const teamBookingMatch = path.match(/^\/book\/team\/([^/]+)$/);
   if (teamBookingMatch) {
@@ -1141,6 +1154,7 @@ type RouteState =
   | { type: 'privacy' }
   | { type: 'terms' }
   | { type: 'accept-invite' }
+  | { type: 'verify-email'; token: string }
   | { type: 'routing-form'; formId: string };
 
 const container = document.getElementById('root');

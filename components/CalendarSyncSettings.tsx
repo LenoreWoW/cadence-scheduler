@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { Language } from '../types';
+import { CalDavConnect } from './CalDavConnect';
 
 interface CalendarConnection {
   provider: 'google' | 'microsoft';
@@ -481,6 +482,9 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
           </>
         )}
       </div>
+
+      {/* Apple / CalDAV */}
+      <CalDavConnect lang={lang} />
 
       {/* Info Box */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">

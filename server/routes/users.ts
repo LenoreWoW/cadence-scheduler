@@ -342,6 +342,139 @@ router.put('/:id/meeting-settings', authenticateToken, async (req: Authenticated
   }
 });
 
+// Update the caller's own booking caps (weekly / monthly / yearly).
+router.put('/me/booking-caps', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { weekly, monthly, yearly } = req.body || {};
+
+    const norm = (v: any, label: string): number | null => {
+      if (v === null || v === undefined || v === '') return null;
+      const n = Number(v);
+      if (!Number.isInteger(n) || n < 0) {
+        throw new AppError(`${label} must be a non-negative integer or null`, 400);
+      }
+      return n;
+    };
+
+    const w = norm(weekly, 'weekly');
+    const m = norm(monthly, 'monthly');
+    const y = norm(yearly, 'yearly');
+
+    db.connection.prepare(`
+      UPDATE users
+      SET weekly_booking_cap = ?, monthly_booking_cap = ?, yearly_booking_cap = ?, updated_at = datetime('now')
+      WHERE id = ?
+    `).run(w, m, y, req.user!.userId);
+
+    res.json({
+      weeklyBookingCap: w,
+      monthlyBookingCap: m,
+      yearlyBookingCap: y,
+    });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to update booking caps', 500);
+  }
+});
+
+// Get the caller's own attribute map.
+router.get('/me/attributes', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const row = db.connection.prepare(`SELECT attributes FROM users WHERE id = ?`).get(req.user!.userId) as any;
+    if (!row) throw new AppError('User not found', 404);
+    let attrs: any = {};
+    try { attrs = JSON.parse(row.attributes || '{}'); } catch {}
+    res.json({ attributes: attrs });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to fetch attributes', 500);
+  }
+});
+
+function validateAttributes(input: any): Record<string, string | number | boolean> {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    throw new AppError('attributes must be an object', 400);
+  }
+  const keys = Object.keys(input);
+  if (keys.length > 30) throw new AppError('Up to 30 attribute keys allowed', 400);
+  const out: Record<string, string | number | boolean> = {};
+  for (const k of keys) {
+    if (typeof k !== 'string' || k.length === 0 || k.length > 100) {
+      throw new AppError('Invalid attribute key', 400);
+    }
+    const v = input[k];
+    if (typeof v === 'string') {
+      if (v.length > 200) throw new AppError(`Attribute ${k} value too long`, 400);
+      out[k] = v;
+    } else if (typeof v === 'number' && Number.isFinite(v)) {
+      out[k] = v;
+    } else if (typeof v === 'boolean') {
+      out[k] = v;
+    } else {
+      throw new AppError(`Invalid value for ${k}`, 400);
+    }
+  }
+  return out;
+}
+
+router.put('/me/attributes', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { attributes } = req.body || {};
+    const cleaned = validateAttributes(attributes);
+    db.connection.prepare(`
+      UPDATE users SET attributes = ?, updated_at = datetime('now') WHERE id = ?
+    `).run(JSON.stringify(cleaned), req.user!.userId);
+    res.json({ attributes: cleaned });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to update attributes', 500);
+  }
+});
+
+// Manager / admin: read/write another user's attributes.
+function canManageUserAttributes(callerId: string, callerRole: string, targetUserId: string): boolean {
+  if (callerRole === 'admin') return true;
+  const target = db.connection.prepare(`SELECT team_id FROM users WHERE id = ?`).get(targetUserId) as any;
+  if (!target?.team_id) return false;
+  const team = db.connection.prepare(`SELECT leader_id FROM teams WHERE id = ?`).get(target.team_id) as any;
+  return !!team && team.leader_id === callerId;
+}
+
+router.get('/:userId/attributes', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    if (req.user!.userId !== userId && !canManageUserAttributes(req.user!.userId, req.user!.role, userId)) {
+      throw new AppError('Forbidden', 403);
+    }
+    const row = db.connection.prepare(`SELECT attributes FROM users WHERE id = ?`).get(userId) as any;
+    if (!row) throw new AppError('User not found', 404);
+    let attrs: any = {};
+    try { attrs = JSON.parse(row.attributes || '{}'); } catch {}
+    res.json({ attributes: attrs });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to fetch attributes', 500);
+  }
+});
+
+router.put('/:userId/attributes', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    if (req.user!.userId !== userId && !canManageUserAttributes(req.user!.userId, req.user!.role, userId)) {
+      throw new AppError('Forbidden', 403);
+    }
+    const { attributes } = req.body || {};
+    const cleaned = validateAttributes(attributes);
+    db.connection.prepare(`
+      UPDATE users SET attributes = ?, updated_at = datetime('now') WHERE id = ?
+    `).run(JSON.stringify(cleaned), userId);
+    res.json({ attributes: cleaned });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to update attributes', 500);
+  }
+});
+
 // Delete user (admin only)
 router.delete('/:id', authenticateToken, requireRole('admin'), async (req: AuthenticatedRequest, res: Response) => {
   try {

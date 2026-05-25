@@ -257,7 +257,8 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
     const {
       slug, title, description, durationOptions, defaultDuration,
       isActive, maxBookingsPerDay, bufferBefore, bufferAfter, customMessage, expiresAt,
-      questions
+      questions,
+      theme, hideDetails, bookableStartDate, externalRefTemplate, recordMeetings,
     } = req.body;
 
     // Verify ownership
@@ -300,6 +301,22 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       questionsJson = JSON.stringify(questions);
     }
 
+    // Validate theme
+    if (theme !== undefined && theme !== null && !['light', 'dark', 'system'].includes(theme)) {
+      throw new AppError('Invalid theme', 400);
+    }
+    // Validate bookableStartDate
+    if (bookableStartDate !== undefined && bookableStartDate !== null && bookableStartDate !== '') {
+      if (typeof bookableStartDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(bookableStartDate)) {
+        throw new AppError('Invalid bookableStartDate (YYYY-MM-DD)', 400);
+      }
+    }
+    if (externalRefTemplate !== undefined && externalRefTemplate !== null && externalRefTemplate !== '') {
+      if (typeof externalRefTemplate !== 'string' || externalRefTemplate.length > 200) {
+        throw new AppError('externalRefTemplate too long', 400);
+      }
+    }
+
     db.connection.prepare(`
       UPDATE booking_links SET
         slug = COALESCE(?, slug),
@@ -314,6 +331,11 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
         custom_message = ?,
         expires_at = ?,
         questions = COALESCE(?, questions),
+        theme = COALESCE(?, theme),
+        hide_details = COALESCE(?, hide_details),
+        bookable_start_date = ?,
+        external_ref_template = ?,
+        record_meetings = COALESCE(?, record_meetings),
         updated_at = ?
       WHERE id = ?
     `).run(
@@ -329,6 +351,11 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       customMessage !== undefined ? customMessage : existing.custom_message,
       expiresAt !== undefined ? expiresAt : existing.expires_at,
       questionsJson,
+      theme || null,
+      hideDetails !== undefined ? (hideDetails ? 1 : 0) : null,
+      bookableStartDate !== undefined ? (bookableStartDate || null) : existing.bookable_start_date,
+      externalRefTemplate !== undefined ? (externalRefTemplate || null) : existing.external_ref_template,
+      recordMeetings !== undefined ? (recordMeetings ? 1 : 0) : null,
       new Date().toISOString(),
       id
     );
@@ -452,6 +479,9 @@ router.get('/public/:slug', asyncHandler(async (req: Request, res: Response) => 
       brandLogoUrl: link.brand_logo_url || null,
       brandColor: link.brand_color || null,
       brandFont: link.brand_font || null,
+      theme: link.theme || 'system',
+      hideDetails: !!link.hide_details,
+      bookableStartDate: link.bookable_start_date || null,
       restrictionSchedule: restriction,
       analyticsPixels: pixels.map((p: any) => ({ provider: p.provider, trackingId: p.tracking_id })),
       oooNotice,
@@ -495,6 +525,11 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
       if (diffDays > link.bookable_window_days) {
         return res.json({ slots: [], outsideBookableWindow: true });
       }
+    }
+
+    // Bookable start-date — refuse any date before the configured floor.
+    if (link.bookable_start_date && (date as string) < link.bookable_start_date) {
+      return res.json({ slots: [], beforeBookableStartDate: true, bookableStartDate: link.bookable_start_date });
     }
 
     // Get existing meetings for this date
@@ -653,11 +688,21 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       date, time, duration, title,
       attendeeName, attendeeEmail, notes,
       meetingFormat, meetingLink,
-      routingSubmissionId
+      routingSubmissionId,
+      locationAddress,
     } = req.body;
 
     if (!date || !time || !attendeeName || !attendeeEmail) {
       throw new AppError('Missing required fields', 400);
+    }
+
+    // Validate locationAddress (only when format=in-person; public flow ignores otherwise)
+    let locationAddressClean: string | null = null;
+    if (locationAddress !== undefined && locationAddress !== null && locationAddress !== '') {
+      if (typeof locationAddress !== 'string' || locationAddress.length > 500) {
+        throw new AppError('Invalid locationAddress', 400);
+      }
+      locationAddressClean = locationAddress;
     }
 
     // ---- input validation (public surface — hard caps + format checks) ----
@@ -778,6 +823,17 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       if (diffDays > link.bookable_window_days) {
         throw new AppError(`Bookings cannot be made more than ${link.bookable_window_days} days in advance`, 400);
       }
+    }
+
+    // Bookable start date — refuse anything before this calendar date.
+    if (link.bookable_start_date && date < link.bookable_start_date) {
+      throw new AppError(`Bookings begin on ${link.bookable_start_date}`, 400);
+    }
+
+    // User-wide booking caps (host-level weekly/monthly/yearly).
+    {
+      const { enforceUserBookingCaps } = await import('./meetings');
+      enforceUserBookingCaps(link.host_id);
     }
 
     // ---- working-day + time-off check ----
@@ -933,9 +989,43 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
             finalPlatform = 'teams';
             teamsMeetingIdPersist = t.id;
           }
+        } else if (platform === 'daily' || (!finalMeetingLink && !platform)) {
+          // Daily.co — also try as a fallback when host has Daily connected but
+          // no specific preference and no static link.
+          const { isDailyConfigured, createDailyRoom } = await import('../services/dailyVideo');
+          if (isDailyConfigured(link.host_id)) {
+            const room = await createDailyRoom({
+              topic: meetingTitle,
+              durationMinutes: bookingDuration,
+              forUserId: link.host_id,
+            });
+            finalMeetingLink = room.url;
+            finalPlatform = 'daily';
+          }
         }
       } catch (e) {
         console.error('Native conferencing creation failed (falling back to static link):', e);
+      }
+    }
+
+    // External-ID template — interpolate { date, slug, counter, uuid }.
+    // Public booking never lets the caller override externalId (auth'd POST only).
+    let externalIdPersist: string | null = null;
+    if (link.external_ref_template && typeof link.external_ref_template === 'string') {
+      try {
+        const countRow = db.connection.prepare(
+          `SELECT COUNT(*) as c FROM meetings WHERE host_id = ?`
+        ).get(link.host_id) as any;
+        const counter = (countRow?.c || 0) + 1;
+        const { interpolateExternalIdTemplate } = await import('./meetings');
+        externalIdPersist = interpolateExternalIdTemplate(link.external_ref_template, {
+          date,
+          slug,
+          hostId: link.host_id,
+          counter,
+        });
+      } catch (e) {
+        console.error('external_ref_template interpolation failed:', e);
       }
     }
 
@@ -944,8 +1034,9 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
         id, title, date, time, duration_minutes, attendee_name, attendee_email,
         host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform,
         attendee_token, approval_required, approver_id,
-        zoom_meeting_id, teams_meeting_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?, ?, ?, ?, ?)
+        zoom_meeting_id, teams_meeting_id,
+        location_address, external_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       meetingId, meetingTitle, date, time, bookingDuration,
       attendeeName, attendeeEmail, link.host_id, notes || null,
@@ -953,7 +1044,9 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       attendeeToken,
       approvalRequired ? 1 : 0,
       approvalRequired ? link.host_id : null,
-      zoomMeetingIdPersist, teamsMeetingIdPersist
+      zoomMeetingIdPersist, teamsMeetingIdPersist,
+      format === 'in-person' ? locationAddressClean : null,
+      externalIdPersist
     );
 
     // Log activity
@@ -1028,6 +1121,8 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
           durationMinutes: bookingDuration, attendeeName, attendeeEmail,
           hostName: link.host_name, hostEmail: visibleHostEmail,
           meetingLink: finalMeetingLink, notes,
+          locationAddress: format === 'in-person' ? locationAddressClean || undefined : undefined,
+          meetingFormat: format,
           replyTo: customReplyTo,
         });
         // Host notification still always goes to the actual host inbox.
@@ -1037,6 +1132,8 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
             durationMinutes: bookingDuration, attendeeName, attendeeEmail,
             hostName: link.host_name, hostEmail: link.host_email,
             meetingLink: finalMeetingLink, notes,
+            locationAddress: format === 'in-person' ? locationAddressClean || undefined : undefined,
+            meetingFormat: format,
             replyTo: customReplyTo,
           });
         }

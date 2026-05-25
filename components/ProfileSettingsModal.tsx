@@ -17,6 +17,10 @@ import { TravelSchedulesEditor } from './TravelSchedulesEditor';
 import { CRMConnectionsPanel } from './CRMConnectionsPanel';
 import { WorkflowsPanel } from './WorkflowsPanel';
 import { BlocklistManager } from './BlocklistManager';
+import { UserAttributesEditor } from './UserAttributesEditor';
+import { UserBookingCapsEditor } from './UserBookingCapsEditor';
+import { VideoConnectionsPanel } from './VideoConnectionsPanel';
+import { DomainVerificationPanel } from './DomainVerificationPanel';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -264,13 +268,17 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                          </div>
                          <div>
                             <label className="block text-xs font-bold uppercase tracking-widest text-dune mb-2">Avatar URL</label>
-                            <input 
-                              type="text" 
-                              value={formData.avatar} 
+                            <input
+                              type="text"
+                              value={formData.avatar}
                               onChange={e => setFormData({...formData, avatar: e.target.value})}
                               className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                             />
                          </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-gray-100">
+                         <UserAttributesEditor scope="me" lang={lang} />
                       </div>
                    </div>
                 )}
@@ -367,6 +375,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                       <div className="pt-6 border-t border-gray-100">
                          <TravelSchedulesEditor lang={lang} />
                       </div>
+                      <UserBookingCapsEditor lang={lang} />
                    </div>
                 )}
 
@@ -583,6 +592,10 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                       <CRMConnectionsPanel lang={lang} />
 
                       <div className="pt-6 border-t border-gray-100">
+                         <VideoConnectionsPanel lang={lang} />
+                      </div>
+
+                      <div className="pt-6 border-t border-gray-100">
                          <WorkflowsPanel lang={lang} scope="user" />
                       </div>
 
@@ -613,6 +626,9 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                       <AccountSettingsPage userEmail={currentUser.email} lang={lang} section="all" />
                       <div className="pt-6 border-t border-gray-100">
                          <BlocklistManager lang={lang} />
+                      </div>
+                      <div className="pt-6 border-t border-gray-100">
+                         <DomainVerificationPanel lang={lang} />
                       </div>
                    </div>
                 )}

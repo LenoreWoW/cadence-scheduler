@@ -45,6 +45,8 @@ import blocklistRoutes from './routes/blocklist';
 import restrictionSchedulesRoutes from './routes/restrictionSchedules';
 import analyticsPixelsRoutes from './routes/analyticsPixels';
 import crmHubspotRoutes from './routes/crmHubspot';
+import videoConnectionsRoutes from './routes/videoConnections';
+import domainsRoutes from './routes/domains';
 import { initReminderScheduler } from './jobs/reminderScheduler';
 import { initCalendarSyncScheduler } from './jobs/calendarSyncJob';
 import { initRetentionJob } from './jobs/retentionJob';
@@ -168,6 +170,8 @@ app.use('/api/blocklist', blocklistRoutes);
 app.use('/api/restriction-schedules', restrictionSchedulesRoutes);
 app.use('/api/analytics-pixels', analyticsPixelsRoutes);
 app.use('/api/crm/hubspot', crmHubspotRoutes);
+app.use('/api/video-connections', videoConnectionsRoutes);
+app.use('/api/domains', domainsRoutes);
 
 // 404 Handler
 app.use('/api/*', (_req: Request, res: Response) => {

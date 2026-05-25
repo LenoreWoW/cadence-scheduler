@@ -136,6 +136,22 @@ All environment variables are documented in [`env.example.txt`](./env.example.tx
 
 Sample deploy configs are included for **Render** (`render.yaml`), **Fly.io** (`fly.toml`), and **Docker** (`Dockerfile`).
 
+### Plug-and-play SMTP
+
+Cadence ships with Resend by default, but you can route transactional email through **any standard SMTP provider** — corporate Exchange, AWS SES, Mailgun, SendGrid, Postmark, Office 365, Gmail App Passwords, you name it.
+
+Just set the following environment variables and the email provider auto-detects SMTP — **no code changes required**. SMTP, when configured, takes precedence over Resend.
+
+| Var | Example | Notes |
+| --- | --- | --- |
+| `SMTP_HOST` | `smtp.your-provider.com` | Host of your SMTP server. |
+| `SMTP_PORT` | `587` | Usually 587 (STARTTLS) or 465 (TLS). |
+| `SMTP_USER` | `apikey` or your username | Auth identity. |
+| `SMTP_PASS` | `••••••••` | App password / API key. |
+| `EMAIL_FROM` | `Cadence <no-reply@yourco.com>` | Must be authorized by the SMTP host. |
+
+If `SMTP_HOST` is set, Cadence will use SMTP. If not, it falls back to `RESEND_API_KEY` (if present) and finally to the console-logging provider for local dev.
+
 The Express server needs a real Node host with persistent disk for SQLite — Netlify and Vercel serverless are not viable for the backend. Frontend builds to `dist/` and deploys anywhere static.
 
 ---

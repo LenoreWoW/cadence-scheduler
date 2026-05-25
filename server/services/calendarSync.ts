@@ -41,7 +41,7 @@ export const initCalendarTables = () => {
       CREATE TABLE IF NOT EXISTS calendar_connections (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL,
-        provider TEXT NOT NULL CHECK (provider IN ('google', 'microsoft')),
+        provider TEXT NOT NULL,
         access_token TEXT NOT NULL,
         refresh_token TEXT,
         token_expires_at TEXT,
@@ -196,48 +196,52 @@ export async function createGoogleEvent(
     endTime: string; // ISO string
     attendees?: { email: string; name?: string }[];
     meetingLink?: string;
+    /** If true and there's no non-Google meeting link, Google auto-creates a Meet link. */
+    createMeetLink?: boolean;
   }
-): Promise<{ id: string; htmlLink: string }> {
-  const googleEvent = {
+): Promise<{ id: string; htmlLink: string; hangoutLink?: string }> {
+  // If the meeting already has a non-Google video link (Zoom/Teams/Daily),
+  // attach it as a custom entryPoint. Otherwise, if createMeetLink is true,
+  // ask Google to auto-mint a Meet link.
+  const hasExternalLink = !!event.meetingLink &&
+    !/(meet\.google\.com|hangouts\.google\.com)/i.test(event.meetingLink);
+
+  let googleEvent: any = {
     summary: event.title,
     description: event.description || '',
-    start: {
-      dateTime: event.startTime,
-      timeZone: 'UTC'
-    },
-    end: {
-      dateTime: event.endTime,
-      timeZone: 'UTC'
-    },
+    start: { dateTime: event.startTime, timeZone: 'UTC' },
+    end: { dateTime: event.endTime, timeZone: 'UTC' },
     attendees: event.attendees?.map(a => ({
       email: a.email,
-      displayName: a.name
+      displayName: a.name,
     })),
-    conferenceData: event.meetingLink ? {
-      entryPoints: [{
-        entryPointType: 'video',
-        uri: event.meetingLink
-      }]
-    } : undefined
   };
-  
-  const response = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(googleEvent)
-    }
-  );
-  
+
+  if (hasExternalLink) {
+    googleEvent.conferenceData = {
+      entryPoints: [{ entryPointType: 'video', uri: event.meetingLink }],
+    };
+  } else if (event.createMeetLink) {
+    const { enrichEventWithMeet } = await import('./googleMeetCreator');
+    googleEvent = enrichEventWithMeet(googleEvent);
+  }
+
+  // conferenceDataVersion=1 is required for Google to honor createRequest.
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?conferenceDataVersion=1`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(googleEvent),
+  });
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Failed to create Google event: ${error}`);
   }
-  
+
   return response.json();
 }
 
@@ -601,23 +605,27 @@ export async function syncMeetingToCalendar(meetingId: string): Promise<{ google
     startTime: startDate.toISOString(),
     endTime: endDate.toISOString(),
     attendees: [{ email: meeting.attendee_email, name: meeting.attendee_name }],
-    meetingLink: meeting.meeting_link
+    meetingLink: meeting.meeting_link,
+    // Auto-create a Google Meet link when this is an online meeting without
+    // an external (Zoom/Teams/Daily) link already attached.
+    createMeetLink: meeting.meeting_format === 'online' &&
+      (!meeting.meeting_link || /(meet\.google\.com|hangouts\.google\.com)/i.test(meeting.meeting_link)),
   };
-  
+
   // Sync to Google
   const googleToken = await getValidAccessToken(meeting.host_id, 'google');
   if (googleToken) {
     const connection = db.connection.prepare(`
       SELECT calendar_id FROM calendar_connections WHERE user_id = ? AND provider = 'google'
     `).get(meeting.host_id) as any;
-    
+
     if (connection?.calendar_id) {
       try {
         // Check if already synced
         const existing = db.connection.prepare(`
           SELECT external_event_id FROM synced_meetings WHERE meeting_id = ? AND provider = 'google'
         `).get(meetingId) as any;
-        
+
         if (existing) {
           // Update existing event
           await updateGoogleEvent(googleToken, connection.calendar_id, existing.external_event_id, eventData);
@@ -625,13 +633,25 @@ export async function syncMeetingToCalendar(meetingId: string): Promise<{ google
         } else {
           // Create new event
           const event = await createGoogleEvent(googleToken, connection.calendar_id, eventData);
-          
+
           db.connection.prepare(`
             INSERT INTO synced_meetings (id, meeting_id, provider, external_event_id)
             VALUES (?, ?, 'google', ?)
           `).run(uuidv4(), meetingId, event.id);
-          
+
           results.google = event.id;
+
+          // If Google minted a fresh Meet link, write it back to the meeting
+          // so confirmation emails + the UI surface the actual join URL.
+          if (event.hangoutLink && !meeting.meeting_link) {
+            try {
+              db.connection.prepare(
+                `UPDATE meetings SET meeting_link = ?, meeting_platform = COALESCE(meeting_platform, 'google-meet') WHERE id = ?`
+              ).run(event.hangoutLink, meetingId);
+            } catch (e) {
+              console.error('Failed to persist Google Meet link:', e);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to sync to Google:', error);
@@ -761,7 +781,7 @@ export async function pullExternalEvents(userId: string): Promise<number> {
     const connection = db.connection.prepare(`
       SELECT calendar_id FROM calendar_connections WHERE user_id = ? AND provider = 'microsoft'
     `).get(userId) as any;
-    
+
     if (connection?.calendar_id) {
       try {
         const events = await fetchMicrosoftEvents(
@@ -770,7 +790,7 @@ export async function pullExternalEvents(userId: string): Promise<number> {
           now.toISOString(),
           futureDate.toISOString()
         );
-        
+
         for (const event of events) {
           db.connection.prepare(`
             INSERT OR REPLACE INTO external_events (id, user_id, provider, external_id, title, start_time, end_time, all_day, updated_at)
@@ -786,7 +806,7 @@ export async function pullExternalEvents(userId: string): Promise<number> {
           );
           totalImported++;
         }
-        
+
         db.connection.prepare(`
           UPDATE calendar_connections SET last_sync_at = datetime('now') WHERE user_id = ? AND provider = 'microsoft'
         `).run(userId);
@@ -795,7 +815,22 @@ export async function pullExternalEvents(userId: string): Promise<number> {
       }
     }
   }
-  
+
+  // Pull from CalDAV (Apple/Yahoo/Fastmail/generic) — lazy import to avoid cycles.
+  try {
+    const caldavRow = db.connection.prepare(
+      `SELECT id FROM calendar_connections WHERE user_id = ? AND provider = 'caldav'`
+    ).get(userId);
+    if (caldavRow) {
+      const { pullCalDavEvents } = await import('./calDavSync');
+      await pullCalDavEvents(userId);
+      // pullCalDavEvents writes directly to external_events; we don't have a
+      // per-call count, so we don't increment totalImported for caldav.
+    }
+  } catch (error) {
+    console.error('Failed to pull CalDAV events:', error);
+  }
+
   return totalImported;
 }
 

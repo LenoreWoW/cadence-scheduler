@@ -23,6 +23,7 @@ export type TriggerEvent =
   | 'booking.cancelled'
   | 'booking.approved'
   | 'booking.rejected'
+  | 'booking.reassigned'
   | 'before_meeting'
   | 'after_meeting';
 

@@ -55,6 +55,68 @@ export class ConsoleEmailProvider implements EmailProvider {
   }
 }
 
+// SMTP Provider — plug-and-play, lazily instantiates a nodemailer transport.
+// Activated when SMTP_HOST is set. Overrides Resend.
+export class SmtpEmailProvider implements EmailProvider {
+  name = 'SMTP';
+  private transportPromise: Promise<any> | null = null;
+
+  private async getTransport(): Promise<any> {
+    if (!this.transportPromise) {
+      this.transportPromise = (async () => {
+        // Lazy import so nodemailer doesn't load unless SMTP is configured.
+        const mod = await import('nodemailer');
+        const nodemailer = (mod as any).default || mod;
+        const port = parseInt(process.env.SMTP_PORT || '587', 10);
+        // STARTTLS on 587 (secure=false), implicit TLS on 465 (secure=true).
+        const secure = port === 465;
+        return nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port,
+          secure,
+          auth: process.env.SMTP_USER
+            ? {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+              }
+            : undefined,
+        });
+      })();
+    }
+    return this.transportPromise;
+  }
+
+  async send(options: EmailOptions) {
+    const transport = await this.getTransport();
+    const from = options.from || process.env.EMAIL_FROM || process.env.SMTP_USER || 'Cadence <no-reply@example.com>';
+    const attachments = options.attachments?.map((a) => {
+      // Calendar invites are typically text/calendar — pass content as a string.
+      // For other binary content, callers pass base64 in `content`.
+      const isText = !a.contentType || /^text\//i.test(a.contentType);
+      return {
+        filename: a.filename,
+        content: isText ? a.content : Buffer.from(a.content, 'base64'),
+        contentType: a.contentType,
+      };
+    });
+
+    const info = await transport.sendMail({
+      from,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+      replyTo: options.replyTo,
+      attachments,
+    });
+
+    return {
+      success: true,
+      messageId: info.messageId || `smtp_${Date.now()}`,
+    };
+  }
+}
+
 // Resend Provider — single API key configuration
 export class ResendEmailProvider implements EmailProvider {
   name = 'Resend';
@@ -112,11 +174,14 @@ let cachedProvider: EmailProvider | null = null;
 export function getEmailProvider(): EmailProvider {
   if (cachedProvider) return cachedProvider;
 
-  if (process.env.RESEND_API_KEY) {
+  // SMTP wins if configured — plug-and-play for self-hosters / forks.
+  if (process.env.SMTP_HOST) {
+    cachedProvider = new SmtpEmailProvider();
+  } else if (process.env.RESEND_API_KEY) {
     cachedProvider = new ResendEmailProvider(process.env.RESEND_API_KEY);
   } else {
-    console.log('💡 Tip: Add RESEND_API_KEY to .env for real email sending');
-    console.log('   Get your free API key at: https://resend.com');
+    console.log('💡 Tip: Add SMTP_HOST or RESEND_API_KEY to .env for real email sending');
+    console.log('   Resend: https://resend.com — SMTP works with any provider (Mailgun, SES, Postmark, your own server).');
     cachedProvider = new ConsoleEmailProvider();
   }
   return cachedProvider;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from './Button';
 import { calendarIntegration } from '../services/calendarIntegration';
 import { BookingSuccess3D } from './BookingSuccess3D';
+import { LocationAddressField } from './LocationAddressField';
 
 interface TimeSlot {
   time: string;
@@ -57,6 +58,11 @@ interface BookingLinkData {
   redirectUrlOnSuccess?: string | null;
   // Analytics pixels to inject
   pixels?: AnalyticsPixel[];
+  // Theme & embed preferences
+  theme?: 'system' | 'light' | 'dark' | null;
+  hideDetails?: boolean | null;
+  // Display-only address provided by the link itself.
+  locationAddress?: string | null;
 }
 
 interface PublicBookingPageProps {
@@ -86,8 +92,19 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
     attendeeName: '',
     attendeeEmail: '',
     notes: '',
-    meetingFormat: 'in-person' as 'online' | 'in-person'
+    meetingFormat: 'in-person' as 'online' | 'in-person',
+    locationAddress: ''
   });
+
+  // Detect embed mode (?embed=1)
+  const isEmbed = useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('embed') === '1';
+    } catch {
+      return false;
+    }
+  }, []);
 
   // Current month for calendar
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -180,6 +197,49 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
     };
   }, [bookingData?.pixels]);
 
+  // Apply per-link theme to document.body so dark-mode Tailwind variants
+  // pick it up for the duration of this page.
+  useEffect(() => {
+    const theme = bookingData?.theme || 'system';
+    const body = document.body;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyDark = (on: boolean) => {
+      if (on) body.classList.add('dark');
+      else body.classList.remove('dark');
+    };
+
+    let listener: ((ev: MediaQueryListEvent) => void) | null = null;
+
+    if (theme === 'dark') {
+      applyDark(true);
+    } else if (theme === 'light') {
+      applyDark(false);
+    } else {
+      applyDark(mql.matches);
+      listener = (ev) => applyDark(ev.matches);
+      try {
+        mql.addEventListener('change', listener);
+      } catch {
+        // Safari fallback
+        // @ts-ignore
+        mql.addListener(listener);
+      }
+    }
+
+    return () => {
+      applyDark(false);
+      if (listener) {
+        try {
+          mql.removeEventListener('change', listener);
+        } catch {
+          // @ts-ignore
+          mql.removeListener(listener);
+        }
+      }
+    };
+  }, [bookingData?.theme]);
+
   // Fetch available slots when date changes
   useEffect(() => {
     if (!selectedDate || !bookingData) return;
@@ -261,7 +321,10 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
           attendeeName: formData.attendeeName,
           attendeeEmail: formData.attendeeEmail,
           notes: formData.notes,
-          meetingFormat: formData.meetingFormat
+          meetingFormat: formData.meetingFormat,
+          locationAddress: formData.meetingFormat === 'in-person'
+            ? (formData.locationAddress || bookingData.locationAddress || null)
+            : null
         })
       });
 
@@ -392,10 +455,13 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
   const brandFont = bookingData.brandFont || null;
   const rootStyle: React.CSSProperties = brandFont ? { fontFamily: brandFont } : {};
 
+  // When embedded with ?embed=1 and hideDetails set, show only the slot picker.
+  const embedHideDetails = isEmbed && !!bookingData.hideDetails;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100" style={rootStyle}>
       {/* Optional brand logo */}
-      {brandLogo && (
+      {brandLogo && !embedHideDetails && (
         <div className="bg-white border-b border-slate-100">
           <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-center">
             <img src={brandLogo} alt="" className="max-h-10 object-contain" />
@@ -403,6 +469,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
         </div>
       )}
       {/* Header */}
+      {!embedHideDetails && (
       <div className="bg-white border-b border-slate-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -437,10 +504,12 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
           </div>
         </div>
       </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Title Section */}
+        {!embedHideDetails && (
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-slate-800 mb-2">{bookingData.title}</h2>
           {bookingData.description && (
@@ -452,6 +521,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
             </div>
           )}
         </div>
+        )}
 
         {/* Duration Selection */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 mb-6">
@@ -697,6 +767,15 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                       </button>
                     </div>
                   </div>
+
+                  {formData.meetingFormat === 'in-person' && (
+                    <LocationAddressField
+                      value={formData.locationAddress}
+                      onChange={(v) => setFormData({ ...formData, locationAddress: v })}
+                      presetAddress={bookingData.locationAddress || null}
+                      lang="en"
+                    />
+                  )}
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
