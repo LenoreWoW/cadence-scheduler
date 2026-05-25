@@ -18,6 +18,7 @@ export interface EmailOptions {
   html: string;
   text?: string;
   from?: string;
+  replyTo?: string;
   attachments?: EmailAttachment[];
 }
 
@@ -71,6 +72,10 @@ export class ResendEmailProvider implements EmailProvider {
       html: options.html,
       text: options.text,
     };
+
+    if (options.replyTo) {
+      body.reply_to = options.replyTo;
+    }
 
     if (options.attachments && options.attachments.length > 0) {
       // Resend expects { filename, content } where content is a string (text or base64).

@@ -523,6 +523,22 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
             questions: [],
           }}
           lang={lang}
+          link={advancedLink}
+          onRefresh={async () => {
+            try {
+              const res = await fetch(`${API_BASE}/booking-links/my-links`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              });
+              if (res.ok) {
+                const data = await res.json();
+                setLinks(data);
+                const refreshed = (data as BookingLink[]).find((l) => l.id === advancedLink.id);
+                if (refreshed) setAdvancedLink(refreshed);
+              }
+            } catch (err) {
+              console.error('Failed to refresh booking links:', err);
+            }
+          }}
           onSave={async (config: BookingLinkAdvancedConfig) => {
             try {
               await fetch(`${API_BASE}/booking-links/${advancedLink.id}`, {

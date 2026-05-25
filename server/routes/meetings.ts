@@ -273,18 +273,61 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     const meetingId = uuidv4();
     const userId = req.user?.userId || null;
     const bookedBy = req.user?.role || 'guest';
-    
+
     // Auto-approve for managers/admins, pending for guests
     const status = ['admin', 'manager', 'subordinate'].includes(bookedBy) ? 'approved' : 'pending';
 
+    // Native conferencing — create a Zoom/Teams meeting if configured for the
+    // host's preferred platform. Fall back to the static link on any error.
+    let zoomMeetingIdPersist: string | null = null;
+    let teamsMeetingIdPersist: string | null = null;
+    if (format === 'online' && finalMeetingPlatform) {
+      const platform = String(finalMeetingPlatform).toLowerCase();
+      const dur = Number(durationMinutes || 30);
+      const startMs = new Date(`${date}T${time}:00`);
+      try {
+        if (platform === 'zoom') {
+          const { isZoomConfigured, createZoomMeeting } = await import('../services/zoomMeetings');
+          if (isZoomConfigured()) {
+            const hostRow = db.connection.prepare(`SELECT email FROM users WHERE id = ?`).get(hostId) as any;
+            const z = await createZoomMeeting({
+              topic: title,
+              startTimeISO: startMs.toISOString(),
+              durationMinutes: dur,
+              timezone: 'UTC',
+              hostEmail: hostRow?.email || undefined,
+            });
+            finalMeetingLink = z.joinUrl;
+            zoomMeetingIdPersist = z.id;
+          }
+        } else if (platform === 'teams') {
+          const { isTeamsConfigured, createTeamsMeeting } = await import('../services/teamsMeetings');
+          if (isTeamsConfigured()) {
+            const endMs = new Date(startMs.getTime() + dur * 60_000);
+            const t = await createTeamsMeeting({
+              subject: title,
+              startTimeISO: startMs.toISOString(),
+              endTimeISO: endMs.toISOString(),
+              hostUserId: hostId,
+            });
+            finalMeetingLink = t.joinUrl;
+            teamsMeetingIdPersist = t.id;
+          }
+        }
+      } catch (e) {
+        console.error('Native conferencing creation failed (using static link):', e);
+      }
+    }
+
     db.connection.prepare(`
-      INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, additional_attendees, user_id, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, additional_attendees, user_id, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform, zoom_meeting_id, teams_meeting_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       meetingId, title, date, time, durationMinutes || 30,
       attendeeName, attendeeEmail, additionalAttendees || null,
       userId, hostId, status, bookedBy, notes || null, category || 'general',
-      format, finalMeetingLink || null, finalMeetingPlatform || null
+      format, finalMeetingLink || null, finalMeetingPlatform || null,
+      zoomMeetingIdPersist, teamsMeetingIdPersist
     );
 
     // Log activity
@@ -313,6 +356,23 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       });
     } catch {}
     try { trackChallengeProgress(hostId, 'bookings_received', 1); } catch {}
+
+    // Workflow dispatch — fire-and-forget.
+    (async () => {
+      try {
+        const { dispatchTrigger, scheduleForMeeting } = await import('../services/workflowEngine');
+        const host = db.connection.prepare(`SELECT id, name, email FROM users WHERE id = ?`).get(hostId) as any;
+        const meeting = db.connection.prepare(`SELECT * FROM meetings WHERE id = ?`).get(meetingId);
+        await dispatchTrigger('booking.created', {
+          meeting,
+          attendee: { name: attendeeName, email: attendeeEmail },
+          host: host ? { id: host.id, name: host.name, email: host.email } : { id: hostId },
+        });
+        if (status === 'approved') {
+          await scheduleForMeeting(meetingId);
+        }
+      } catch (e) { console.error('workflow dispatch failed:', e); }
+    })();
 
     res.status(201).json({
       id: meetingId,
@@ -368,6 +428,23 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
       deleteSyncedEvent(id).catch(err => {
         console.error('Failed to delete synced event:', err);
       });
+      // Best-effort cleanup of native conferencing meetings (Zoom/Teams).
+      if (meeting.zoom_meeting_id) {
+        (async () => {
+          try {
+            const { isZoomConfigured, deleteZoomMeeting } = await import('../services/zoomMeetings');
+            if (isZoomConfigured()) await deleteZoomMeeting(meeting.zoom_meeting_id);
+          } catch (e) { console.error('Zoom meeting delete failed:', e); }
+        })();
+      }
+      if (meeting.teams_meeting_id) {
+        (async () => {
+          try {
+            const { isTeamsConfigured, deleteTeamsMeeting } = await import('../services/teamsMeetings');
+            if (isTeamsConfigured()) await deleteTeamsMeeting(meeting.teams_meeting_id, meeting.host_id);
+          } catch (e) { console.error('Teams meeting delete failed:', e); }
+        })();
+      }
     }
 
     // Webhook + XP hooks for status changes
@@ -386,6 +463,37 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
         dispatchWebhook(meeting.host_id, 'booking.cancelled', { ...webhookBase, cancelledBy: req.user?.username });
       }
     } catch {}
+
+    // Workflow dispatch + schedule/unschedule.
+    (async () => {
+      try {
+        const { dispatchTrigger, scheduleForMeeting } = await import('../services/workflowEngine');
+        const host = db.connection.prepare(`SELECT id, name, email FROM users WHERE id = ?`).get(meeting.host_id) as any;
+        const ctx = {
+          meeting,
+          attendee: { name: meeting.attendee_name, email: meeting.attendee_email },
+          host: host ? { id: host.id, name: host.name, email: host.email } : { id: meeting.host_id },
+        };
+        if (status === 'approved') {
+          await dispatchTrigger('booking.approved', ctx);
+          await scheduleForMeeting(meeting.id);
+        } else if (status === 'rejected') {
+          await dispatchTrigger('booking.rejected', ctx);
+          try {
+            db.connection.prepare(
+              `UPDATE workflow_executions SET status = 'cancelled' WHERE meeting_id = ? AND status = 'scheduled'`
+            ).run(meeting.id);
+          } catch {}
+        } else if (status === 'cancelled') {
+          await dispatchTrigger('booking.cancelled', ctx);
+          try {
+            db.connection.prepare(
+              `UPDATE workflow_executions SET status = 'cancelled' WHERE meeting_id = ? AND status = 'scheduled'`
+            ).run(meeting.id);
+          } catch {}
+        }
+      } catch (e) { console.error('workflow dispatch failed:', e); }
+    })();
 
     // Email notifications + in-app feed entries
     (async () => {

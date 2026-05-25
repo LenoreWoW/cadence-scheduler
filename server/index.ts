@@ -35,9 +35,20 @@ import auditRoutes from './routes/audit';
 import adminRoutes from './routes/admin';
 import ssoRoutes from './routes/sso';
 import embedRoutes from './routes/embed';
+import routingFormsRoutes from './routes/routingForms';
+import workflowsRoutes from './routes/workflows';
+import commonSchedulesRoutes from './routes/commonSchedules';
+import dateOverridesRoutes from './routes/dateOverrides';
+import oooRoutes from './routes/ooo';
+import travelSchedulesRoutes from './routes/travelSchedules';
+import blocklistRoutes from './routes/blocklist';
+import restrictionSchedulesRoutes from './routes/restrictionSchedules';
+import analyticsPixelsRoutes from './routes/analyticsPixels';
+import crmHubspotRoutes from './routes/crmHubspot';
 import { initReminderScheduler } from './jobs/reminderScheduler';
 import { initCalendarSyncScheduler } from './jobs/calendarSyncJob';
 import { initRetentionJob } from './jobs/retentionJob';
+import { initWorkflowExecutor } from './jobs/workflowExecutor';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/logger';
 
@@ -147,6 +158,16 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sso', ssoRoutes);
 app.use('/api/embed', embedRoutes);
+app.use('/api/routing-forms', routingFormsRoutes);
+app.use('/api/workflows', workflowsRoutes);
+app.use('/api/common-schedules', commonSchedulesRoutes);
+app.use('/api/date-overrides', dateOverridesRoutes);
+app.use('/api/ooo', oooRoutes);
+app.use('/api/travel-schedules', travelSchedulesRoutes);
+app.use('/api/blocklist', blocklistRoutes);
+app.use('/api/restriction-schedules', restrictionSchedulesRoutes);
+app.use('/api/analytics-pixels', analyticsPixelsRoutes);
+app.use('/api/crm/hubspot', crmHubspotRoutes);
 
 // 404 Handler
 app.use('/api/*', (_req: Request, res: Response) => {
@@ -164,6 +185,7 @@ async function startServer() {
     initReminderScheduler();
     initCalendarSyncScheduler();
     initRetentionJob();
+    initWorkflowExecutor();
 
     app.listen(PORT, () => {
       console.log(`🚀 Cadence server running on port ${PORT}`);

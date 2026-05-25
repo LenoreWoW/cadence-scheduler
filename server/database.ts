@@ -483,6 +483,279 @@ class DatabaseManager {
       `ALTER TABLE meetings ADD COLUMN approver_id TEXT`
     );
 
+    // ====== Cal.com gap-closing migrations ======
+
+    runOnce(
+      '20240200_routing_forms',
+      `CREATE TABLE IF NOT EXISTS routing_forms (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        team_id TEXT,
+        booking_link_id TEXT,
+        name TEXT NOT NULL,
+        description TEXT,
+        fields TEXT NOT NULL DEFAULT '[]',
+        routing_rules TEXT NOT NULL DEFAULT '[]',
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+        FOREIGN KEY (booking_link_id) REFERENCES booking_links(id) ON DELETE SET NULL
+      )`
+    );
+    runOnce(
+      '20240201_routing_form_submissions',
+      `CREATE TABLE IF NOT EXISTS routing_form_submissions (
+        id TEXT PRIMARY KEY,
+        form_id TEXT NOT NULL,
+        answers TEXT NOT NULL,
+        routed_to_user_id TEXT,
+        routed_to_link_slug TEXT,
+        attendee_email TEXT,
+        meeting_id TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (form_id) REFERENCES routing_forms(id) ON DELETE CASCADE,
+        FOREIGN KEY (routed_to_user_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL
+      )`
+    );
+
+    runOnce(
+      '20240210_workflows',
+      `CREATE TABLE IF NOT EXISTS workflows (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        team_id TEXT,
+        name TEXT NOT NULL,
+        trigger_type TEXT NOT NULL,
+        trigger_config TEXT NOT NULL DEFAULT '{}',
+        conditions TEXT NOT NULL DEFAULT '[]',
+        actions TEXT NOT NULL DEFAULT '[]',
+        active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL
+      )`
+    );
+    runOnce(
+      '20240211_workflow_executions',
+      `CREATE TABLE IF NOT EXISTS workflow_executions (
+        id TEXT PRIMARY KEY,
+        workflow_id TEXT NOT NULL,
+        meeting_id TEXT,
+        trigger_event TEXT NOT NULL,
+        status TEXT NOT NULL,
+        actions_executed TEXT,
+        error TEXT,
+        scheduled_at TEXT,
+        executed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON DELETE CASCADE,
+        FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL
+      )`
+    );
+    runOnce(
+      '20240212_workflow_executions_index',
+      `CREATE INDEX IF NOT EXISTS idx_workflow_executions_scheduled ON workflow_executions(status, scheduled_at)`
+    );
+
+    runOnce(
+      '20240220_common_schedules',
+      `CREATE TABLE IF NOT EXISTS common_schedules (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        availability TEXT NOT NULL,
+        is_default INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240221_booking_links_common_schedule',
+      `ALTER TABLE booking_links ADD COLUMN common_schedule_id TEXT`
+    );
+
+    runOnce(
+      '20240230_date_overrides',
+      `CREATE TABLE IF NOT EXISTS date_overrides (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        start_hour INTEGER,
+        end_hour INTEGER,
+        available INTEGER DEFAULT 1,
+        note TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240231_date_overrides_index',
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_date_overrides_user_date ON date_overrides(user_id, date)`
+    );
+
+    runOnce(
+      '20240240_ooo_periods',
+      `CREATE TABLE IF NOT EXISTS ooo_periods (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        delegate_user_id TEXT,
+        note TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (delegate_user_id) REFERENCES users(id) ON DELETE SET NULL
+      )`
+    );
+
+    runOnce(
+      '20240250_travel_schedules',
+      `CREATE TABLE IF NOT EXISTS travel_schedules (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        timezone TEXT NOT NULL,
+        note TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+
+    runOnce(
+      '20240260_blocked_emails',
+      `CREATE TABLE IF NOT EXISTS blocked_emails (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        pattern TEXT NOT NULL,
+        reason TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240261_blocked_emails_index',
+      `CREATE INDEX IF NOT EXISTS idx_blocked_emails_user ON blocked_emails(user_id)`
+    );
+
+    runOnce(
+      '20240270_restriction_schedules',
+      `CREATE TABLE IF NOT EXISTS restriction_schedules (
+        id TEXT PRIMARY KEY,
+        booking_link_id TEXT NOT NULL,
+        days_of_week TEXT NOT NULL,
+        start_hour INTEGER,
+        end_hour INTEGER,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (booking_link_id) REFERENCES booking_links(id) ON DELETE CASCADE
+      )`
+    );
+
+    runOnce(
+      '20240280_crm_connections',
+      `CREATE TABLE IF NOT EXISTS crm_connections (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        access_token TEXT,
+        refresh_token TEXT,
+        token_expires_at TEXT,
+        portal_id TEXT,
+        account_id TEXT,
+        sync_enabled INTEGER DEFAULT 1,
+        last_sync_at TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )`
+    );
+    runOnce(
+      '20240281_crm_sync_events',
+      `CREATE TABLE IF NOT EXISTS crm_sync_events (
+        id TEXT PRIMARY KEY,
+        connection_id TEXT NOT NULL,
+        meeting_id TEXT,
+        event_type TEXT NOT NULL,
+        external_id TEXT,
+        status TEXT NOT NULL,
+        error TEXT,
+        synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (connection_id) REFERENCES crm_connections(id) ON DELETE CASCADE,
+        FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL
+      )`
+    );
+
+    runOnce(
+      '20240290_analytics_pixels',
+      `CREATE TABLE IF NOT EXISTS analytics_pixels (
+        id TEXT PRIMARY KEY,
+        booking_link_id TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        tracking_id TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (booking_link_id) REFERENCES booking_links(id) ON DELETE CASCADE
+      )`
+    );
+
+    // booking_links extension columns for Cal.com parity
+    runOnce(
+      '20240300_booking_links_hide_organizer_email',
+      `ALTER TABLE booking_links ADD COLUMN hide_organizer_email INTEGER DEFAULT 0`
+    );
+    runOnce(
+      '20240301_booking_links_custom_reply_to',
+      `ALTER TABLE booking_links ADD COLUMN custom_reply_to TEXT`
+    );
+    runOnce(
+      '20240302_booking_links_brand_logo_url',
+      `ALTER TABLE booking_links ADD COLUMN brand_logo_url TEXT`
+    );
+    runOnce(
+      '20240303_booking_links_brand_color',
+      `ALTER TABLE booking_links ADD COLUMN brand_color TEXT`
+    );
+    runOnce(
+      '20240304_booking_links_brand_font',
+      `ALTER TABLE booking_links ADD COLUMN brand_font TEXT`
+    );
+    runOnce(
+      '20240305_booking_links_redirect_url',
+      `ALTER TABLE booking_links ADD COLUMN redirect_url_on_success TEXT`
+    );
+    runOnce(
+      '20240306_booking_links_max_per_attendee_count',
+      `ALTER TABLE booking_links ADD COLUMN max_per_attendee_count INTEGER`
+    );
+    runOnce(
+      '20240307_booking_links_max_per_attendee_period',
+      `ALTER TABLE booking_links ADD COLUMN max_per_attendee_period TEXT`
+    );
+    runOnce(
+      '20240308_booking_links_max_total_minutes',
+      `ALTER TABLE booking_links ADD COLUMN max_total_minutes INTEGER`
+    );
+    runOnce(
+      '20240309_booking_links_total_minutes_period',
+      `ALTER TABLE booking_links ADD COLUMN total_minutes_period TEXT`
+    );
+
+    // meetings columns for native conferencing + routing
+    runOnce(
+      '20240310_meetings_zoom_meeting_id',
+      `ALTER TABLE meetings ADD COLUMN zoom_meeting_id TEXT`
+    );
+    runOnce(
+      '20240311_meetings_teams_meeting_id',
+      `ALTER TABLE meetings ADD COLUMN teams_meeting_id TEXT`
+    );
+    runOnce(
+      '20240312_meetings_routing_submission_id',
+      `ALTER TABLE meetings ADD COLUMN routing_submission_id TEXT`
+    );
+
     // Meetings table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS meetings (

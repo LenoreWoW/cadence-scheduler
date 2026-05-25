@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
+import { RestrictionScheduleEditor } from './RestrictionScheduleEditor';
+import { BookingLinkBranding } from './BookingLinkBranding';
+import { FrequencyLimitsEditor } from './FrequencyLimitsEditor';
+import { AnalyticsPixelsEditor } from './AnalyticsPixelsEditor';
+import { CommonSchedulesPicker } from './CommonSchedulesPicker';
+import { RoutingFormBuilder } from './RoutingFormBuilder';
 
 export interface AvailabilityOverride {
   startHour: number;
@@ -31,6 +37,10 @@ interface Props {
   initial: BookingLinkAdvancedConfig;
   onSave: (config: BookingLinkAdvancedConfig) => Promise<void> | void;
   lang?: 'en' | 'ar';
+  /** Full booking link record — when provided, enables per-link sub-panels (branding, pixels, frequency, etc). */
+  link?: any;
+  /** Called after a sub-panel mutates the link server-side, so the parent can refetch. */
+  onRefresh?: () => void;
 }
 
 const DAYS = [
@@ -50,7 +60,7 @@ const DAYS = [
  * availability override, bookable window, slot capacity, approval flag,
  * and a custom-questions editor.
  */
-export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, initial, onSave, lang = 'en' }) => {
+export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, initial, onSave, lang = 'en', link, onRefresh }) => {
   const isRTL = lang === 'ar';
 
   const [override, setOverride] = useState<AvailabilityOverride>(
@@ -63,6 +73,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
   const [questions, setQuestions] = useState<QuestionDef[]>(initial.questions || []);
   const [submitting, setSubmitting] = useState(false);
   const [newTimeOff, setNewTimeOff] = useState('');
+  const [showRoutingBuilder, setShowRoutingBuilder] = useState(false);
 
   if (!isOpen) return null;
 
@@ -286,6 +297,48 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
               </label>
             </section>
 
+            {link?.id && (
+              <>
+                <section className="pt-6 border-t border-gray-100">
+                  <RestrictionScheduleEditor linkId={link.id} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <BookingLinkBranding link={link} onChange={onRefresh} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <FrequencyLimitsEditor link={link} onChange={onRefresh} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <AnalyticsPixelsEditor linkId={link.id} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <CommonSchedulesPicker link={link} onChange={onRefresh} lang={lang} />
+                </section>
+
+                <section className="pt-6 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-charcoal">
+                        {lang === 'ar' ? 'نموذج التوجيه' : 'Routing form'}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {lang === 'ar'
+                          ? 'وجه الزوار بناءً على إجاباتهم.'
+                          : 'Route visitors based on their answers.'}
+                      </p>
+                    </div>
+                    <Button type="button" variant="secondary" onClick={() => setShowRoutingBuilder(true)}>
+                      {lang === 'ar' ? 'إعداد' : 'Configure'}
+                    </Button>
+                  </div>
+                </section>
+              </>
+            )}
+
             <section>
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-bold text-charcoal">{labels.questions}</h4>
@@ -369,6 +422,18 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
           </div>
         </div>
       </div>
+
+      {showRoutingBuilder && link?.id && (
+        <RoutingFormBuilder
+          bookingLinkId={link.id}
+          lang={lang}
+          onClose={() => setShowRoutingBuilder(false)}
+          onSave={() => {
+            setShowRoutingBuilder(false);
+            onRefresh?.();
+          }}
+        />
+      )}
     </div>
   );
 };

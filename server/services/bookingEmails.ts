@@ -41,6 +41,9 @@ interface BaseArgs {
   hostEmail?: string;
   meetingLink?: string;
   notes?: string;
+  // Optional custom Reply-To header (per booking link). Forwarded to the
+  // provider as `reply_to`.
+  replyTo?: string;
 }
 
 export interface ConfirmationArgs extends BaseArgs {
@@ -172,6 +175,7 @@ export async function sendBookingConfirmation(args: ConfirmationArgs): Promise<v
     html: emailShell(`📬 ${headerTitle}`, '#129b82', content, 'Cadence', dir),
     text: `${headerTitle}: ${args.meetingTitle} on ${dateStr} at ${args.time}. Manage: ${manageUrl}`,
     attachments: buildICSAttachment(args, 'TENTATIVE'),
+    replyTo: args.replyTo,
   });
 }
 
@@ -209,6 +213,7 @@ export async function sendBookingHostNotification(args: BaseArgs): Promise<void>
     html: emailShell(headerTitle, '#e9c56b', content, 'Cadence', dir),
     text: `${args.attendeeName} requested ${args.meetingTitle} on ${dateStr} at ${args.time}. Review at ${FRONTEND_URL}/?view=my-meetings`,
     attachments: buildICSAttachment(args, 'TENTATIVE'),
+    replyTo: args.replyTo,
   });
 }
 
@@ -245,6 +250,7 @@ export async function sendBookingApproved(args: BaseArgs & { attendeeToken?: str
     html: emailShell(`✓ ${headerTitle}`, '#129b82', content, 'Cadence', dir),
     text: `${headerTitle}: ${args.meetingTitle} with ${args.hostName} on ${dateStr} at ${args.time}.`,
     attachments: buildICSAttachment(args, 'CONFIRMED'),
+    replyTo: args.replyTo,
   });
 }
 
@@ -274,5 +280,6 @@ export async function sendBookingCancelled(args: BaseArgs & { cancelledBy?: stri
     html: emailShell(headerTitle, '#A29475', content, 'Cadence', dir),
     text: `${headerTitle}: ${args.meetingTitle} on ${dateStr} at ${args.time}.`,
     attachments: buildICSAttachment({ ...args, notes: 'Cancelled' }, 'CONFIRMED'),
+    replyTo: args.replyTo,
   });
 }

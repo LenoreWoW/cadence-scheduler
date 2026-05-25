@@ -285,7 +285,7 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
 }));
 
 router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req: Request, res: Response) => {
-  const { date, time, duration, title, attendeeName, attendeeEmail, notes, meetingFormat } = req.body ?? {};
+  const { date, time, duration, title, attendeeName, attendeeEmail, notes, meetingFormat, routingSubmissionId } = req.body ?? {};
 
   if (!date || !time || !attendeeName || !attendeeEmail) {
     throw new AppError('Missing required fields', 400);
@@ -407,13 +407,64 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
   const attendeeToken = uuidv4();
   const meetingTitle = title || `Meeting with ${attendeeName}`;
 
+  // Native conferencing — look up assigned member's preferred platform and try
+  // to create a real Zoom/Teams meeting. Falls back to the host's static link.
+  const format = meetingFormat || 'in-person';
+  let finalMeetingLink: string | null = null;
+  let finalPlatform: string | null = null;
+  let zoomMeetingIdPersist: string | null = null;
+  let teamsMeetingIdPersist: string | null = null;
+  if (format === 'online') {
+    const memberSettings = db.connection.prepare(
+      `SELECT meeting_link, preferred_platform FROM user_meeting_settings WHERE user_id = ?`
+    ).get(assignedMember.id) as any;
+    if (memberSettings) {
+      finalMeetingLink = memberSettings.meeting_link || null;
+      finalPlatform = memberSettings.preferred_platform || null;
+    }
+    const platform = String(finalPlatform || '').toLowerCase();
+    const startMs = new Date(`${date}T${time}:00`);
+    try {
+      if (platform === 'zoom') {
+        const { isZoomConfigured, createZoomMeeting } = await import('../services/zoomMeetings');
+        if (isZoomConfigured()) {
+          const z = await createZoomMeeting({
+            topic: meetingTitle,
+            startTimeISO: startMs.toISOString(),
+            durationMinutes: bookingDuration,
+            timezone: 'UTC',
+            hostEmail: assignedMember.email || undefined,
+          });
+          finalMeetingLink = z.joinUrl;
+          zoomMeetingIdPersist = z.id;
+        }
+      } else if (platform === 'teams') {
+        const { isTeamsConfigured, createTeamsMeeting } = await import('../services/teamsMeetings');
+        if (isTeamsConfigured()) {
+          const endMs = new Date(startMs.getTime() + bookingDuration * 60_000);
+          const t = await createTeamsMeeting({
+            subject: meetingTitle,
+            startTimeISO: startMs.toISOString(),
+            endTimeISO: endMs.toISOString(),
+            hostUserId: assignedMember.id,
+          });
+          finalMeetingLink = t.joinUrl;
+          teamsMeetingIdPersist = t.id;
+        }
+      }
+    } catch (e) {
+      console.error('Native conferencing failed for team booking:', e);
+    }
+  }
+
   db.connection.prepare(`
-    INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, host_id, status, booked_by, notes, category, meeting_format, attendee_token)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'team-round-robin', ?, 'general', ?, ?)
+    INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform, attendee_token, zoom_meeting_id, teams_meeting_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'team-round-robin', ?, 'general', ?, ?, ?, ?, ?, ?)
   `).run(
     meetingId, meetingTitle, date, time, bookingDuration,
     attendeeName, attendeeEmail, assignedMember.id, notes || null,
-    meetingFormat || 'in-person', attendeeToken
+    format, finalMeetingLink, finalPlatform, attendeeToken,
+    zoomMeetingIdPersist, teamsMeetingIdPersist
   );
 
   try {
@@ -440,6 +491,32 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
   } catch {}
   try { trackChallengeProgress(assignedMember.id, 'bookings_received', 1); } catch {}
 
+  // Stitch routing-form submission, if any, to the new meeting.
+  if (typeof routingSubmissionId === 'string' && routingSubmissionId.length > 0) {
+    try {
+      db.connection.prepare(`UPDATE meetings SET routing_submission_id = ? WHERE id = ?`).run(routingSubmissionId, meetingId);
+      db.connection.prepare(`
+        UPDATE routing_form_submissions SET meeting_id = ?, attendee_email = ? WHERE id = ?
+      `).run(meetingId, attendeeEmail, routingSubmissionId);
+    } catch (e) {
+      console.error('Failed to attach routing submission to team meeting:', e);
+    }
+  }
+
+  // Workflow dispatch — fire-and-forget.
+  (async () => {
+    try {
+      const { dispatchTrigger, scheduleForMeeting } = await import('../services/workflowEngine');
+      await dispatchTrigger('booking.created', {
+        meeting: db.connection.prepare(`SELECT * FROM meetings WHERE id = ?`).get(meetingId),
+        attendee: { name: attendeeName, email: attendeeEmail },
+        host: { id: assignedMember.id, name: assignedMember.name, email: assignedMember.email },
+        link: { slug: req.params.slug, teamId: link.team_id },
+      });
+      await scheduleForMeeting(meetingId);
+    } catch (e) { console.error('workflow dispatch failed:', e); }
+  })();
+
   // Fire-and-forget emails
   (async () => {
     try {
@@ -448,12 +525,14 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
         meetingId, attendeeToken, meetingTitle, date, time,
         durationMinutes: bookingDuration, attendeeName, attendeeEmail,
         hostName: assignedMember.name, hostEmail: assignedMember.email, notes,
+        meetingLink: finalMeetingLink || undefined,
       });
       if (assignedMember.email) {
         await sendBookingHostNotification({
           meetingId, meetingTitle, date, time,
           durationMinutes: bookingDuration, attendeeName, attendeeEmail,
           hostName: assignedMember.name, hostEmail: assignedMember.email, notes,
+          meetingLink: finalMeetingLink || undefined,
         });
       }
     } catch (e) {

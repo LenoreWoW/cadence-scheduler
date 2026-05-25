@@ -30,6 +30,12 @@ interface HostInfo {
   } | null;
 }
 
+interface AnalyticsPixel {
+  id: string;
+  provider: 'ga4' | 'gtm' | 'posthog' | 'fathom' | 'plausible';
+  trackingId: string;
+}
+
 interface BookingLinkData {
   id: string;
   slug: string;
@@ -44,6 +50,13 @@ interface BookingLinkData {
   showBranding: boolean; // Pro/Business users can hide branding
   hostCanAcceptBookings: boolean; // False if host hit meeting limit
   hostLimitMessage?: string;
+  // Branding overrides
+  brandLogoUrl?: string | null;
+  brandColor?: string | null;
+  brandFont?: string | null;
+  redirectUrlOnSuccess?: string | null;
+  // Analytics pixels to inject
+  pixels?: AnalyticsPixel[];
 }
 
 interface PublicBookingPageProps {
@@ -105,6 +118,67 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
     };
     fetchBookingData();
   }, [slug]);
+
+  // Inject analytics pixels once the booking-link data loads.
+  useEffect(() => {
+    const pixels = bookingData?.pixels;
+    if (!pixels || pixels.length === 0) return;
+    const injected: HTMLElement[] = [];
+
+    for (const p of pixels) {
+      if (!p?.trackingId) continue;
+      try {
+        if (p.provider === 'ga4') {
+          const s1 = document.createElement('script');
+          s1.async = true;
+          s1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(p.trackingId)}`;
+          document.head.appendChild(s1);
+          injected.push(s1);
+
+          const s2 = document.createElement('script');
+          s2.text = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${p.trackingId}');`;
+          document.head.appendChild(s2);
+          injected.push(s2);
+        } else if (p.provider === 'gtm') {
+          const s = document.createElement('script');
+          s.text = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${p.trackingId}');`;
+          document.head.appendChild(s);
+          injected.push(s);
+        } else if (p.provider === 'plausible') {
+          const s = document.createElement('script');
+          s.defer = true;
+          s.setAttribute('data-domain', p.trackingId);
+          s.src = 'https://plausible.io/js/script.js';
+          document.head.appendChild(s);
+          injected.push(s);
+        } else if (p.provider === 'fathom') {
+          const s = document.createElement('script');
+          s.defer = true;
+          s.setAttribute('data-site', p.trackingId);
+          s.src = 'https://cdn.usefathom.com/script.js';
+          document.head.appendChild(s);
+          injected.push(s);
+        } else if (p.provider === 'posthog') {
+          const s = document.createElement('script');
+          s.text = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init('${p.trackingId}',{api_host:'https://app.posthog.com'});`;
+          document.head.appendChild(s);
+          injected.push(s);
+        }
+      } catch {
+        /* ignore one bad pixel */
+      }
+    }
+
+    return () => {
+      for (const el of injected) {
+        try {
+          el.parentNode?.removeChild(el);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+  }, [bookingData?.pixels]);
 
   // Fetch available slots when date changes
   useEffect(() => {
@@ -197,6 +271,13 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
       }
 
       const result = await response.json();
+      // If the link or server returned a redirect URL, send the user there
+      // instead of showing the in-app success screen.
+      const redirectUrl = result?.redirectUrlOnSuccess || bookingData?.redirectUrlOnSuccess;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+        return;
+      }
       setBookedMeeting(result);
       setStep('success');
     } catch (err: any) {
@@ -305,16 +386,34 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
     );
   }
 
+  // Branding: optional per-link logo, brand color, font.
+  const brandColor = bookingData.brandColor || '#8A1538';
+  const brandLogo = bookingData.brandLogoUrl || null;
+  const brandFont = bookingData.brandFont || null;
+  const rootStyle: React.CSSProperties = brandFont ? { fontFamily: brandFont } : {};
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100" style={rootStyle}>
+      {/* Optional brand logo */}
+      {brandLogo && (
+        <div className="bg-white border-b border-slate-100">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-center">
+            <img src={brandLogo} alt="" className="max-h-10 object-contain" />
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white border-b border-slate-100 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8A1538] to-[#6d1029] flex items-center justify-center text-white font-bold text-sm shadow-lg"
-                style={host.team?.color ? { background: `linear-gradient(135deg, ${host.team.color}, ${host.team.color}dd)` } : {}}
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg"
+                style={{
+                  background: host.team?.color
+                    ? `linear-gradient(135deg, ${host.team.color}, ${host.team.color}dd)`
+                    : `linear-gradient(135deg, ${brandColor}, ${brandColor}dd)`,
+                }}
               >
                 {host.avatar ? (
                   <img src={host.avatar} alt={host.name} className="w-full h-full rounded-full object-cover" />
@@ -328,7 +427,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
               </div>
             </div>
             {host.team && (
-              <span 
+              <span
                 className="px-3 py-1 rounded-full text-xs font-bold text-white"
                 style={{ backgroundColor: host.team.color }}
               >

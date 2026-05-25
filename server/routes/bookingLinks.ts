@@ -11,6 +11,8 @@ import { AppError } from '../middleware/errorHandler';
 import { awardXp, incrementBookingStat } from '../services/userStatsSync';
 import { dispatchWebhook } from '../services/outboundWebhooks';
 import { trackChallengeProgress } from './challenges';
+import { getActiveOOO } from './ooo';
+import { isBlocked } from './blocklist';
 
 // Public booking endpoint is unauthenticated by design — apply per-IP-per-slug throttling.
 const publicBookingLimiter = rateLimit({
@@ -50,8 +52,93 @@ function generateSlug(name: string, existingSlugs: string[]): string {
     slug = `${baseSlug}-${counter}`;
     counter++;
   }
-  
+
   return slug;
+}
+
+// ---- Cal.com-parity helpers used by the public booking flow ----
+
+interface LinkFreqRow {
+  max_per_attendee_count: number | null;
+  max_per_attendee_period: string | null;
+  max_total_minutes: number | null;
+  total_minutes_period: string | null;
+}
+
+function periodStartDate(period: string | null | undefined): string {
+  const now = new Date();
+  if (period === 'week') {
+    const day = now.getUTCDay();
+    const start = new Date(now);
+    start.setUTCDate(now.getUTCDate() - day);
+    start.setUTCHours(0, 0, 0, 0);
+    return start.toISOString().slice(0, 10);
+  }
+  if (period === 'month') {
+    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+  }
+  // default 'day'
+  return now.toISOString().slice(0, 10);
+}
+
+function enforceFrequencyLimits(linkRow: LinkFreqRow, hostId: string, attendeeEmail: string, bookingDurationMinutes: number) {
+  if (linkRow.max_per_attendee_count && linkRow.max_per_attendee_count > 0) {
+    const from = periodStartDate(linkRow.max_per_attendee_period);
+    const row = db.connection.prepare(`
+      SELECT COUNT(*) as c FROM meetings
+      WHERE host_id = ? AND attendee_email = ? AND date >= ? AND status IN ('pending','approved')
+    `).get(hostId, attendeeEmail, from) as any;
+    if ((row?.c || 0) >= linkRow.max_per_attendee_count) {
+      throw new AppError('Booking frequency limit reached for this attendee', 429);
+    }
+  }
+  if (linkRow.max_total_minutes && linkRow.max_total_minutes > 0) {
+    const from = periodStartDate(linkRow.total_minutes_period);
+    const row = db.connection.prepare(`
+      SELECT COALESCE(SUM(duration_minutes), 0) as total
+      FROM meetings
+      WHERE host_id = ? AND date >= ? AND status IN ('pending','approved')
+    `).get(hostId, from) as any;
+    const used = Number(row?.total || 0);
+    if (used + bookingDurationMinutes > linkRow.max_total_minutes) {
+      throw new AppError('Total booking duration limit reached for this period', 429);
+    }
+  }
+}
+
+function getRestrictionForLink(linkId: string): { daysOfWeek: number[]; startHour: number; endHour: number } | null {
+  const row = db.connection.prepare(`
+    SELECT days_of_week, start_hour, end_hour FROM restriction_schedules WHERE booking_link_id = ?
+  `).get(linkId) as any;
+  if (!row) return null;
+  try {
+    return {
+      daysOfWeek: JSON.parse(row.days_of_week || '[]'),
+      startHour: row.start_hour,
+      endHour: row.end_hour,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function getDateOverride(userId: string, dateYYYYMMDD: string): { startHour: number | null; endHour: number | null; available: boolean } | null {
+  const row = db.connection.prepare(`
+    SELECT start_hour, end_hour, available FROM date_overrides WHERE user_id = ? AND date = ?
+  `).get(userId, dateYYYYMMDD) as any;
+  if (!row) return null;
+  return {
+    startHour: row.start_hour,
+    endHour: row.end_hour,
+    available: !!row.available,
+  };
+}
+
+function getCommonSchedule(scheduleId: string | null | undefined): any | null {
+  if (!scheduleId) return null;
+  const row = db.connection.prepare(`SELECT availability FROM common_schedules WHERE id = ?`).get(scheduleId) as any;
+  if (!row?.availability) return null;
+  try { return JSON.parse(row.availability); } catch { return null; }
 }
 
 // Get all booking links for authenticated user
@@ -309,6 +396,30 @@ router.get('/public/:slug', asyncHandler(async (req: Request, res: Response) => 
       // view_count column may not exist on very old DBs; safe to ignore.
     }
 
+    // Analytics pixels + restriction schedule loaded separately to keep the
+    // main query lean.
+    let pixels: any[] = [];
+    try {
+      pixels = db.connection.prepare(
+        `SELECT provider, tracking_id FROM analytics_pixels WHERE booking_link_id = ? AND is_active = 1`
+      ).all(link.id) as any[];
+    } catch {}
+    const restriction = getRestrictionForLink(link.id);
+
+    // If the host has an active OOO row with a delegate, surface that on the
+    // public page so the UI can show "you're being booked with X instead".
+    let oooNotice: { delegateName: string | null; closed: boolean } | null = null;
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const active = getActiveOOO(link.host_id, today);
+      if (active) {
+        oooNotice = {
+          delegateName: active.delegate?.name ?? null,
+          closed: !active.delegate,
+        };
+      }
+    } catch {}
+
     res.json({
       id: link.id,
       slug: link.slug,
@@ -323,7 +434,8 @@ router.get('/public/:slug', asyncHandler(async (req: Request, res: Response) => 
         name: link.host_name,
         title: link.host_title,
         avatar: link.host_avatar,
-        email: link.host_email,
+        // Hide host email if the link configures it.
+        email: link.hide_organizer_email ? null : link.host_email,
         team: link.team_name ? { name: link.team_name, color: link.team_color } : null,
         availability: link.start_hour !== null ? {
           startHour: link.start_hour,
@@ -337,6 +449,12 @@ router.get('/public/:slug', asyncHandler(async (req: Request, res: Response) => 
       },
       bufferBefore: link.buffer_before,
       bufferAfter: link.buffer_after,
+      brandLogoUrl: link.brand_logo_url || null,
+      brandColor: link.brand_color || null,
+      brandFont: link.brand_font || null,
+      restrictionSchedule: restriction,
+      analyticsPixels: pixels.map((p: any) => ({ provider: p.provider, trackingId: p.tracking_id })),
+      oooNotice,
     });
   } catch (error) {
     if (error instanceof AppError) throw error;
@@ -397,21 +515,50 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
       }
     }
 
+    // ---- OOO short-circuit: if the host is out and has no delegate, no slots. ----
+    // If a delegate IS set, the booking POST endpoint re-routes; slots can still
+    // be shown (using the host's availability as a UI hint).
+    try {
+      const ooo = getActiveOOO(link.host_id, date as string);
+      if (ooo && !ooo.delegate) {
+        return res.json({ slots: [], outOfOffice: true });
+      }
+    } catch {}
+
     // Per-link availability override — if set, use that JSON in place of the
     // host's global user_availability. Same shape so the rest of the math is identical.
     let override: any = null;
     if (link.availability_override) {
       try { override = JSON.parse(link.availability_override); } catch {}
     }
+
+    // common_schedule_id wins over availability_override (it's an explicit
+    // saved preset; override is freeform).
+    const commonSchedule = getCommonSchedule(link.common_schedule_id);
+    const source = commonSchedule || override;
+
     const availability = {
-      startHour: override?.startHour ?? link.start_hour ?? 9,
-      endHour: override?.endHour ?? link.end_hour ?? 17,
-      slotDuration: override?.slotDuration ?? link.slot_duration ?? 30,
-      bufferMinutes: override?.bufferMinutes ?? link.buffer_minutes ?? 0,
-      days: override?.days ?? JSON.parse(link.working_days || '[0,1,2,3,4]'),
-      timeOff: override?.timeOff ?? JSON.parse(link.time_off || '[]'),
-      minNoticeMinutes: override?.minNoticeMinutes ?? link.min_notice_minutes ?? 120,
+      startHour: source?.startHour ?? link.start_hour ?? 9,
+      endHour: source?.endHour ?? link.end_hour ?? 17,
+      slotDuration: source?.slotDuration ?? link.slot_duration ?? 30,
+      bufferMinutes: source?.bufferMinutes ?? link.buffer_minutes ?? 0,
+      days: source?.days ?? JSON.parse(link.working_days || '[0,1,2,3,4]'),
+      timeOff: source?.timeOff ?? JSON.parse(link.time_off || '[]'),
+      minNoticeMinutes: source?.minNoticeMinutes ?? link.min_notice_minutes ?? 120,
     };
+
+    // Per-date override beats the above for start/end hour and may close the
+    // date entirely.
+    const dateOverride = getDateOverride(link.host_id, date as string);
+    if (dateOverride && !dateOverride.available) {
+      return res.json({ slots: [], dateClosed: true });
+    }
+    if (dateOverride?.startHour !== null && dateOverride?.startHour !== undefined) {
+      availability.startHour = dateOverride.startHour;
+    }
+    if (dateOverride?.endHour !== null && dateOverride?.endHour !== undefined) {
+      availability.endHour = dateOverride.endHour;
+    }
 
     const slotCapacity = link.slot_capacity && link.slot_capacity > 0 ? link.slot_capacity : 1;
 
@@ -421,6 +568,19 @@ router.get('/public/:slug/slots', asyncHandler(async (req: Request, res: Respons
     // Check if it's a working day
     if (!availability.days.includes(dayOfWeek)) {
       return res.json({ slots: [], notWorkingDay: true });
+    }
+
+    // Restriction schedule narrows the window further for this booking link.
+    const restriction = getRestrictionForLink(link.id);
+    if (restriction) {
+      if (!restriction.daysOfWeek.includes(dayOfWeek)) {
+        return res.json({ slots: [], restricted: true });
+      }
+      if (restriction.startHour > availability.startHour) availability.startHour = restriction.startHour;
+      if (restriction.endHour < availability.endHour) availability.endHour = restriction.endHour;
+      if (availability.endHour <= availability.startHour) {
+        return res.json({ slots: [], restricted: true });
+      }
     }
 
     // Check time off
@@ -492,7 +652,8 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
     const {
       date, time, duration, title,
       attendeeName, attendeeEmail, notes,
-      meetingFormat, meetingLink
+      meetingFormat, meetingLink,
+      routingSubmissionId
     } = req.body;
 
     if (!date || !time || !attendeeName || !attendeeEmail) {
@@ -547,6 +708,41 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       }
     }
 
+    // ---- OOO redirect: re-route to the delegate if set; refuse if no delegate. ----
+    // Run BEFORE conflict checks so the rest of the logic targets the right host.
+    try {
+      const ooo = getActiveOOO(link.host_id, date);
+      if (ooo) {
+        if (!ooo.delegate) {
+          throw new AppError('Host is currently out of office', 410);
+        }
+        // Re-target the booking to the delegate. Pick up delegate's host info
+        // and email + preferred platform/link so downstream logic still works.
+        const delegateRow = db.connection.prepare(`
+          SELECT u.id as host_id, u.name as host_name, u.email as host_email,
+                 ums.meeting_link as default_meeting_link, ums.preferred_platform
+          FROM users u
+          LEFT JOIN user_meeting_settings ums ON u.id = ums.user_id
+          WHERE u.id = ?
+        `).get(ooo.delegate.id) as any;
+        if (delegateRow) {
+          link.host_id = delegateRow.host_id;
+          link.user_id = delegateRow.host_id;
+          link.host_name = delegateRow.host_name;
+          link.host_email = delegateRow.host_email;
+          link.default_meeting_link = delegateRow.default_meeting_link;
+          link.preferred_platform = delegateRow.preferred_platform;
+        }
+      }
+    } catch (e) {
+      if (e instanceof AppError) throw e;
+    }
+
+    // ---- Blocklist check: refuse if attendee email matches any pattern. ----
+    if (isBlocked(link.host_id, attendeeEmail)) {
+      throw new AppError('Booking not allowed', 403);
+    }
+
     // Validate duration
     const durationOptions = JSON.parse(link.duration_options || '[30]');
     const bookingDuration = duration || link.default_duration;
@@ -554,10 +750,23 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       throw new AppError('Invalid duration selected', 400);
     }
 
+    // ---- Frequency + total-duration limits ----
+    enforceFrequencyLimits(link, link.host_id, attendeeEmail, bookingDuration);
+
     // Per-link availability override — JSON shape mirrors user_availability.
     let override: any = null;
     if (link.availability_override) {
       try { override = JSON.parse(link.availability_override); } catch {}
+    }
+
+    // common_schedule_id wins over availability_override.
+    const commonSchedule = getCommonSchedule(link.common_schedule_id);
+    if (commonSchedule) override = commonSchedule;
+
+    // Per-date override beats the above for start/end hour, and may close the date.
+    const dateOverride = getDateOverride(link.host_id, date);
+    if (dateOverride && !dateOverride.available) {
+      throw new AppError('Host is not available on this date', 400);
     }
 
     // Bookable-window check
@@ -585,6 +794,28 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
     });
     if (isTimeOff) {
       throw new AppError('Host is not available on this date', 400);
+    }
+
+    // ---- Restriction schedule + date-override hour-window enforcement ----
+    const [reqHourForWindow] = (time as string).split(':').map(Number);
+    let windowStart = override?.startHour ?? link.start_hour ?? 0;
+    let windowEnd = override?.endHour ?? link.end_hour ?? 24;
+    if (dateOverride?.startHour !== null && dateOverride?.startHour !== undefined) {
+      windowStart = dateOverride.startHour;
+    }
+    if (dateOverride?.endHour !== null && dateOverride?.endHour !== undefined) {
+      windowEnd = dateOverride.endHour;
+    }
+    const restriction = getRestrictionForLink(link.id);
+    if (restriction) {
+      if (!restriction.daysOfWeek.includes(dayOfWeek)) {
+        throw new AppError('Not allowed on this day', 400);
+      }
+      if (restriction.startHour > windowStart) windowStart = restriction.startHour;
+      if (restriction.endHour < windowEnd) windowEnd = restriction.endHour;
+    }
+    if (reqHourForWindow < windowStart || reqHourForWindow >= windowEnd) {
+      throw new AppError('Time slot is outside the allowed window', 400);
     }
 
     // ---- min-notice check ----
@@ -664,19 +895,65 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
 
     const approvalRequired = !!link.approval_required;
 
+    // Native conferencing wiring — create a Zoom or Teams meeting if the host
+    // prefers one and we have the integration configured. Lazy-imported so the
+    // route doesn't pay the cost when conferencing is unconfigured. Falls back
+    // to the host's static link silently on any error.
+    let zoomMeetingIdPersist: string | null = null;
+    let teamsMeetingIdPersist: string | null = null;
+    if (format === 'online') {
+      const platform = String(link.preferred_platform || '').toLowerCase();
+      const startMs = new Date(`${date}T${time}:00`);
+      try {
+        if (platform === 'zoom') {
+          const { isZoomConfigured, createZoomMeeting } = await import('../services/zoomMeetings');
+          if (isZoomConfigured()) {
+            const z = await createZoomMeeting({
+              topic: meetingTitle,
+              startTimeISO: startMs.toISOString(),
+              durationMinutes: bookingDuration,
+              timezone: 'UTC',
+              hostEmail: link.host_email || undefined,
+            });
+            finalMeetingLink = z.joinUrl;
+            finalPlatform = 'zoom';
+            zoomMeetingIdPersist = z.id;
+          }
+        } else if (platform === 'teams') {
+          const { isTeamsConfigured, createTeamsMeeting } = await import('../services/teamsMeetings');
+          if (isTeamsConfigured()) {
+            const endMs = new Date(startMs.getTime() + bookingDuration * 60_000);
+            const t = await createTeamsMeeting({
+              subject: meetingTitle,
+              startTimeISO: startMs.toISOString(),
+              endTimeISO: endMs.toISOString(),
+              hostUserId: link.host_id,
+            });
+            finalMeetingLink = t.joinUrl;
+            finalPlatform = 'teams';
+            teamsMeetingIdPersist = t.id;
+          }
+        }
+      } catch (e) {
+        console.error('Native conferencing creation failed (falling back to static link):', e);
+      }
+    }
+
     db.connection.prepare(`
       INSERT INTO meetings (
         id, title, date, time, duration_minutes, attendee_name, attendee_email,
         host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform,
-        attendee_token, approval_required, approver_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?, ?, ?)
+        attendee_token, approval_required, approver_id,
+        zoom_meeting_id, teams_meeting_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'guest', ?, 'general', ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       meetingId, meetingTitle, date, time, bookingDuration,
       attendeeName, attendeeEmail, link.host_id, notes || null,
       format, finalMeetingLink || null, finalPlatform,
       attendeeToken,
       approvalRequired ? 1 : 0,
-      approvalRequired ? link.host_id : null
+      approvalRequired ? link.host_id : null,
+      zoomMeetingIdPersist, teamsMeetingIdPersist
     );
 
     // Log activity
@@ -684,6 +961,32 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       INSERT INTO activity_logs (id, action, details, performed_by, role)
       VALUES (?, 'PUBLIC_BOOK', ?, ?, 'guest')
     `).run(uuidv4(), `Booked "${meetingTitle}" via public link`, attendeeName);
+
+    // Stitch routing-form submission, if any, to the new meeting.
+    if (typeof routingSubmissionId === 'string' && routingSubmissionId.length > 0) {
+      try {
+        db.connection.prepare(`UPDATE meetings SET routing_submission_id = ? WHERE id = ?`).run(routingSubmissionId, meetingId);
+        db.connection.prepare(`
+          UPDATE routing_form_submissions SET meeting_id = ?, attendee_email = ? WHERE id = ?
+        `).run(meetingId, attendeeEmail, routingSubmissionId);
+      } catch (e) {
+        console.error('Failed to attach routing submission to meeting:', e);
+      }
+    }
+
+    // Workflow dispatch — fire-and-forget so a slow workflow doesn't delay the response.
+    (async () => {
+      try {
+        const { dispatchTrigger, scheduleForMeeting } = await import('../services/workflowEngine');
+        await dispatchTrigger('booking.created', {
+          meeting: db.connection.prepare(`SELECT * FROM meetings WHERE id = ?`).get(meetingId),
+          attendee: { name: attendeeName, email: attendeeEmail },
+          host: { id: link.host_id, name: link.host_name, email: link.host_email },
+          link: { slug, id: link.id },
+        });
+        await scheduleForMeeting(meetingId);
+      } catch (e) { console.error('workflow dispatch failed:', e); }
+    })();
 
     // Stats / XP / webhook / challenges — best-effort, never block the response.
     try { awardXp(link.host_id, 10, 'public booking'); } catch {}
@@ -717,18 +1020,24 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
     (async () => {
       try {
         const { sendBookingConfirmation, sendBookingHostNotification } = await import('../services/bookingEmails');
+        // Hide host email on the attendee-facing confirmation if the link says so.
+        const visibleHostEmail = link.hide_organizer_email ? undefined : link.host_email;
+        const customReplyTo = link.custom_reply_to || undefined;
         await sendBookingConfirmation({
           meetingId, attendeeToken, meetingTitle, date, time,
           durationMinutes: bookingDuration, attendeeName, attendeeEmail,
-          hostName: link.host_name, hostEmail: link.host_email,
+          hostName: link.host_name, hostEmail: visibleHostEmail,
           meetingLink: finalMeetingLink, notes,
+          replyTo: customReplyTo,
         });
+        // Host notification still always goes to the actual host inbox.
         if (link.host_email) {
           await sendBookingHostNotification({
             meetingId, meetingTitle, date, time,
             durationMinutes: bookingDuration, attendeeName, attendeeEmail,
             hostName: link.host_name, hostEmail: link.host_email,
             meetingLink: finalMeetingLink, notes,
+            replyTo: customReplyTo,
           });
         }
       } catch (e) {
@@ -748,6 +1057,8 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       status: 'pending',
       meetingFormat: format,
       attendeeToken,  // returned so the success page can offer a "manage booking" link
+      // If the link configures a redirect URL, surface it for the frontend success page.
+      redirectUrlOnSuccess: link.redirect_url_on_success || null,
       message: 'Your meeting request has been submitted! You will receive a confirmation once approved.'
     });
   } catch (error) {
@@ -883,6 +1194,23 @@ router.post('/manage/:token/cancel', manageBookingLimiter, asyncHandler(async (r
       cancelledBy: 'attendee',
     });
   } catch {}
+
+  // Workflow dispatch + cancel pending scheduled executions for this meeting
+  (async () => {
+    try {
+      const { dispatchTrigger } = await import('../services/workflowEngine');
+      await dispatchTrigger('booking.cancelled', {
+        meeting,
+        attendee: { name: meeting.attendee_name, email: meeting.attendee_email },
+        host: { id: meeting.host_id, name: meeting.host_name, email: meeting.host_email },
+      });
+      try {
+        db.connection.prepare(
+          `UPDATE workflow_executions SET status = 'cancelled' WHERE meeting_id = ? AND status = 'scheduled'`
+        ).run(meeting.id);
+      } catch {}
+    } catch (e) { console.error('workflow dispatch failed:', e); }
+  })();
 
   res.json({ success: true, status: 'cancelled' });
 }));

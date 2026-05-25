@@ -11,6 +11,12 @@ import { CalendarSyncSettings } from './CalendarSyncSettings';
 import { useReducedMotionState } from '../hooks/useReducedMotion';
 import { WebhooksPanel } from './WebhooksPanel';
 import { AccountSettingsPage } from './AccountSettingsPage';
+import { OOOEditor } from './OOOEditor';
+import { DateOverridesEditor } from './DateOverridesEditor';
+import { TravelSchedulesEditor } from './TravelSchedulesEditor';
+import { CRMConnectionsPanel } from './CRMConnectionsPanel';
+import { WorkflowsPanel } from './WorkflowsPanel';
+import { BlocklistManager } from './BlocklistManager';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -335,7 +341,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                          <div>
                             <label className="block text-xs font-bold uppercase tracking-widest text-dune mb-2">Slot Duration</label>
-                            <select 
+                            <select
                               value={formData.slotDuration}
                               onChange={e => setFormData({...formData, slotDuration: Number(e.target.value)})}
                               className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam outline-none"
@@ -345,7 +351,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                          </div>
                          <div>
                             <label className="block text-xs font-bold uppercase tracking-widest text-dune mb-2">Buffer Time</label>
-                            <select 
+                            <select
                               value={formData.bufferMinutes}
                               onChange={e => setFormData({...formData, bufferMinutes: Number(e.target.value)})}
                               className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam outline-none"
@@ -353,6 +359,13 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                                {[0, 5, 10, 15, 30].map(m => <option key={m} value={m}>{m} min</option>)}
                             </select>
                          </div>
+                      </div>
+
+                      <div className="pt-6 border-t border-gray-100">
+                         <DateOverridesEditor lang={lang} />
+                      </div>
+                      <div className="pt-6 border-t border-gray-100">
+                         <TravelSchedulesEditor lang={lang} />
                       </div>
                    </div>
                 )}
@@ -426,7 +439,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                          {formData.timeOff.map((item, index) => {
                             let label = '';
                             let sublabel = '';
-                            
+
                             if (typeof item === 'string') {
                                label = item;
                                sublabel = 'All Day';
@@ -444,8 +457,8 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                                      <span className="text-sm font-mono text-charcoal">{label}</span>
                                      <span className="text-xs text-gray-400">{sublabel}</span>
                                   </div>
-                                  <button 
-                                    type="button" 
+                                  <button
+                                    type="button"
                                     onClick={() => handleRemoveTimeOff(index)}
                                     className="text-gray-400 hover:text-salmon p-1"
                                   >
@@ -454,6 +467,10 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                                </div>
                             );
                          })}
+                      </div>
+
+                      <div className="pt-6 border-t border-gray-100">
+                         <OOOEditor lang={lang} />
                       </div>
                    </div>
                 )}
@@ -562,30 +579,41 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                 )}
 
                 {activeTab === 'integrations' && (
-                   <div className="animate-fade-in space-y-6">
-                      <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 w-fit">
-                         {(['webhooks', 'tokens'] as const).map(opt => (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => setIntegrationsSubTab(opt)}
-                              className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${integrationsSubTab === opt ? 'bg-white text-charcoal shadow-sm' : 'text-gray-500 hover:text-charcoal'}`}
-                            >
-                               {opt === 'webhooks' ? 'Webhooks' : 'API Tokens'}
-                            </button>
-                         ))}
+                   <div className="animate-fade-in space-y-8">
+                      <CRMConnectionsPanel lang={lang} />
+
+                      <div className="pt-6 border-t border-gray-100">
+                         <WorkflowsPanel lang={lang} scope="user" />
                       </div>
-                      {integrationsSubTab === 'webhooks' ? (
-                         <WebhooksPanel lang={lang} />
-                      ) : (
-                         <AccountSettingsPage userEmail={currentUser.email} lang={lang} section="tokens" />
-                      )}
+
+                      <div className="pt-6 border-t border-gray-100 space-y-6">
+                         <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 w-fit">
+                            {(['webhooks', 'tokens'] as const).map(opt => (
+                               <button
+                                 key={opt}
+                                 type="button"
+                                 onClick={() => setIntegrationsSubTab(opt)}
+                                 className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${integrationsSubTab === opt ? 'bg-white text-charcoal shadow-sm' : 'text-gray-500 hover:text-charcoal'}`}
+                               >
+                                  {opt === 'webhooks' ? 'Webhooks' : 'API Tokens'}
+                               </button>
+                            ))}
+                         </div>
+                         {integrationsSubTab === 'webhooks' ? (
+                            <WebhooksPanel lang={lang} />
+                         ) : (
+                            <AccountSettingsPage userEmail={currentUser.email} lang={lang} section="tokens" />
+                         )}
+                      </div>
                    </div>
                 )}
 
                 {activeTab === 'security' && (
-                   <div className="animate-fade-in">
+                   <div className="animate-fade-in space-y-8">
                       <AccountSettingsPage userEmail={currentUser.email} lang={lang} section="all" />
+                      <div className="pt-6 border-t border-gray-100">
+                         <BlocklistManager lang={lang} />
+                      </div>
                    </div>
                 )}
 

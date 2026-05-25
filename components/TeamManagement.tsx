@@ -8,6 +8,7 @@ import { DepartmentsPanel } from './DepartmentsPanel';
 import { ResourcesPanel } from './ResourcesPanel';
 import { ApprovalQueue } from './ApprovalQueue';
 import { BulkUserImportModal } from './BulkUserImportModal';
+import { WorkflowsPanel } from './WorkflowsPanel';
 
 interface TeamManagementProps {
   t: (key: string) => string;
@@ -21,7 +22,7 @@ interface TeamWithLeader extends Team {
 }
 
 export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, currentUser }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'teams' | 'invitations' | 'departments' | 'resources' | 'approvals'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'teams' | 'invitations' | 'departments' | 'resources' | 'approvals' | 'workflows'>('users');
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<TeamWithLeader[]>([]);
@@ -178,6 +179,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
               { id: 'departments', label: lang === 'ar' ? 'الأقسام' : 'Departments', show: isAdmin },
               { id: 'resources', label: lang === 'ar' ? 'الموارد' : 'Resources', show: isAdmin || isManager },
               { id: 'approvals', label: lang === 'ar' ? 'الموافقات' : 'Approvals', show: isAdmin || isManager },
+              { id: 'workflows', label: lang === 'ar' ? 'سير العمل' : 'Workflows', show: isAdmin || isManager },
             ] as const).map(tab => tab.show && (
               <button
                 key={tab.id}
@@ -203,6 +205,8 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
              <ResourcesPanel lang={lang} teamId={currentUser?.teamId} />
           ) : activeTab === 'approvals' ? (
              <ApprovalQueue lang={lang} />
+          ) : activeTab === 'workflows' ? (
+             <WorkflowsPanel lang={lang} scope="team" teamId={currentUser?.teamId} />
           ) : (<>
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="relative w-full md:w-64">
