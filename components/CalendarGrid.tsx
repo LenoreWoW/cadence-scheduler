@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { CalendarDay, Language, Meeting } from '../types';
+import { getMeetingAccent } from '../services/localityService';
 
 interface CalendarGridProps {
   currentDate: Date;
@@ -254,7 +255,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 
                 {/* Meeting Indicator */}
                 {!isRangeMode && day.isCurrentMonth && dayMeetings.length > 0 && !day.isSelected && (
-                  <div className="absolute bottom-1 w-1 h-1 bg-al-adaam rounded-full"></div>
+                  <div className="absolute bottom-1 flex gap-0.5">
+                    {Array.from(new Set(dayMeetings.map(m => getMeetingAccent(m).colorVar))).slice(0, 2).map((c, i) => (
+                      <div key={i} className="w-1 h-1 rounded-full" style={{ background: c }}></div>
+                    ))}
+                  </div>
                 )}
               </button>
             </div>
