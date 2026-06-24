@@ -494,6 +494,10 @@ class DatabaseManager {
       '20240501_meetings_backfill_locality',
       `UPDATE meetings SET locality = CASE WHEN booked_by = 'guest' OR category = 'client' THEN 'external' ELSE 'internal' END WHERE locality IS NULL`
     );
+    runOnce(
+      '20240502_meetings_add_on_behalf',
+      `ALTER TABLE meetings ADD COLUMN on_behalf INTEGER DEFAULT 0`
+    );
 
     // ====== Cal.com gap-closing migrations ======
 
