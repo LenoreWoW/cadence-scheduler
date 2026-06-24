@@ -1002,6 +1002,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
             onClose={() => setIsProfileModalOpen(false)}
             onSave={handleUpdateProfile}
             currentUser={currentUser}
+            users={availableHosts}
             t={t}
             lang={lang}
           />
