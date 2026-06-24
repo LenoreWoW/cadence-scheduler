@@ -122,7 +122,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleNext = () => { if (formData.title) setStep(prev => prev + 1); };
   const handleBack = () => { setStep(prev => prev - 1); };
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSubmit(formData); setStep(4); };
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSubmit({ ...formData, bookOnBehalf }); setStep(4); };
 
   const steps = [
      { id: 1, label: t('meetingTitle') }, // Actually Details

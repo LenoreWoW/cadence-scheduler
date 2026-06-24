@@ -369,6 +369,32 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const handleBookingSubmit = (formData: any) => {
     if (!selectedSlot || !currentUser || !selectedHost) return;
 
+    if (formData.bookOnBehalf && selectedHost.id !== currentUser.id) {
+      const baseDateStr = selectedDate.toISOString().split('T')[0];
+      import('./services/delegationApi').then(({ createOnBehalfMeeting }) =>
+        createOnBehalfMeeting({
+          title: formData.title,
+          category: formData.category || 'general',
+          date: baseDateStr,
+          time: selectedSlot.label,
+          durationMinutes: formData.duration || bookingDuration,
+          attendeeName: formData.attendeeName,
+          attendeeEmail: formData.attendeeEmail,
+          additionalAttendees: formData.additionalAttendees,
+          notes: formData.notes,
+          hostId: selectedHost.id,
+          meetingFormat: formData.meetingFormat || 'in-person',
+          meetingLink: formData.meetingLink,
+          locationAddress: formData.meetingFormat === 'in-person' ? formData.locationAddress : undefined,
+          locality: formData.locality || 'internal',
+        })
+      ).then((created) => {
+        setMeetings(prev => [...prev, { ...(created as any), bookedBy: currentUser.role, userId: currentUser.id }]);
+        addToast('success', t('awaitingConfirmation'));
+      }).catch((e: any) => addToast('error', e?.body?.error || e?.message || 'Failed'));
+      return;
+    }
+
     const baseDateStr = selectedDate.toISOString().split('T')[0];
     const newMeetingData = {
       title: formData.title,
