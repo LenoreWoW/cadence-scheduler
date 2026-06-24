@@ -260,9 +260,12 @@ export const rescheduleMeeting = (
   newDate: string,
   newTime: string
 ): Meeting[] => {
-  return meetings.map(m => 
-    m.id === meetingId ? { ...m, date: newDate, time: newTime, status: 'approved' } : m 
-  );
+  return meetings.map(m => {
+    if (m.id !== meetingId) return m;
+    // Preserve a tentative on-behalf meeting; otherwise (re)confirm as before.
+    const status = (m.status === 'pending' && m.onBehalf) ? 'pending' : 'approved';
+    return { ...m, date: newDate, time: newTime, status };
+  });
 };
 
 // ============================================
