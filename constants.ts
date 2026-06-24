@@ -1,4 +1,4 @@
-import { Meeting, User, Team, MeetingCategory, VideoPlatform } from './types';
+import { Meeting, User, Team, MeetingCategory, VideoPlatform, MeetingLocality } from './types';
 
 export const VIDEO_PLATFORM_CONFIG: Record<VideoPlatform, { label: string, icon: string, color: string }> = {
   'zoom': { label: 'Zoom', icon: '📹', color: '#2D8CFF' },
@@ -22,6 +22,13 @@ export const CATEGORY_CONFIG: Record<MeetingCategory, { label: string, color: st
   client: { label: 'Client', color: '#129b82', bg: '#e8f5f3' }, // Palm
   hr: { label: 'HR & Talent', color: '#dd7877', bg: '#fcf1f1' }, // Salmon
   general: { label: 'General', color: '#8067a4', bg: '#f3f0f7' } // Purple
+};
+
+// Locality drives the primary meeting accent: internal = RED, external = BLACK.
+// Colors are applied via CSS variables (see index.css) so dark mode adapts.
+export const LOCALITY_CONFIG: Record<MeetingLocality, { labelKey: string; cssVar: string; hex: string }> = {
+  internal: { labelKey: 'localityInternal', cssVar: '--meeting-internal', hex: '#DC2626' },
+  external: { labelKey: 'localityExternal', cssVar: '--meeting-external', hex: '#000000' },
 };
 
 // Map Teams to specific palette colors and images
@@ -122,6 +129,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     notes: 'Discussing Q3 goals',
     hostId: '1',
     category: 'strategy',
+    locality: 'internal',
     meetingFormat: 'online',
     meetingLink: 'https://zoom.us/j/123456789',
     meetingPlatform: 'zoom'
@@ -139,6 +147,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     notes: 'Weekly standup',
     hostId: '1',
     category: 'operation',
+    locality: 'internal',
     meetingFormat: 'in-person'
   },
   {
@@ -154,6 +163,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     notes: 'Portfolio update',
     hostId: '1', // Moved to Manager 1 for visibility testing
     category: 'client',
+    locality: 'external',
     meetingFormat: 'online',
     meetingLink: 'https://teams.microsoft.com/l/meetup-join/123',
     meetingPlatform: 'teams'
@@ -171,6 +181,7 @@ export const INITIAL_MEETINGS: Meeting[] = [
     notes: 'Initial consultation',
     hostId: '1', 
     category: 'general',
+    locality: 'internal',
     meetingFormat: 'in-person'
   }
 ];

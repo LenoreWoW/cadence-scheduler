@@ -78,6 +78,8 @@ export interface TimeSlot {
 
 export type MeetingStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
+export type MeetingLocality = 'internal' | 'external';
+
 export interface Meeting {
   id: string;
   title: string;
@@ -96,6 +98,9 @@ export interface Meeting {
   meetingFormat: MeetingFormat; // online or in-person
   meetingLink?: string; // Video conferencing link (for online meetings)
   meetingPlatform?: VideoPlatform; // Platform type (for online meetings)
+  locality?: MeetingLocality; // internal (in-building, RED) vs external (different-building, BLACK)
+  onBehalf?: boolean;         // tentative meeting scheduled on behalf of the host (boss)
+  locationAddress?: string;   // physical address for in-person meetings (was read via `as any`)
 }
 
 export interface CalendarDay {
@@ -141,4 +146,11 @@ export interface UserStats {
   meetingPartners: MeetingPartnerStats[]; // Track who you meet with most
   weeklyMeetings: number; // Meetings this week
   monthlyMeetings: number; // Meetings this month
+}
+
+export interface Delegate {
+  principalUserId: string;
+  delegateUserId: string;
+  name?: string;     // counterpart user's display name (server-joined)
+  scope?: string;    // defaults to 'calendar'
 }
