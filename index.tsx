@@ -134,7 +134,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
         if (!Array.isArray(server) || server.length === 0) return;
         setMeetings(prev => {
           const ids = new Set(prev.map(m => m.id));
-          const merged = server.filter(m => (m as any).onBehalf && !ids.has(m.id));
+          const merged = server.filter(m => m.onBehalf && !ids.has(m.id));
           return merged.length ? [...prev, ...merged] : prev;
         });
       }).catch(() => { /* offline / not logged into server — in-app still works */ })
@@ -262,7 +262,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     if (!currentUser || currentUser.role === 'guest') return [];
     return meetings.filter(m =>
       m.status === 'pending' &&
-      (m.hostId === currentUser.id || ((m as any).onBehalf && m.userId === currentUser.id))
+      (m.hostId === currentUser.id || (m.onBehalf && m.userId === currentUser.id))
     );
   }, [meetings, currentUser]);
 
@@ -489,7 +489,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const handleApprove = (id: string) => {
     const m = meetings.find(x => x.id === id);
     setMeetings(prev => updateMeetingStatus(prev, id, 'approved'));
-    if ((m as any)?.onBehalf) import('./services/delegationApi').then(({ confirmMeeting }) => confirmMeeting(id)).catch(() => {});
+    if (m?.onBehalf) import('./services/delegationApi').then(({ confirmMeeting }) => confirmMeeting(id)).catch(() => {});
     if (currentUser) storageService.addLog({ action: 'APPROVE', details: `Approved ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
     addToast('success', t('confirmed'));
   };
@@ -497,7 +497,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const handleReject = (id: string) => {
     const m = meetings.find(x => x.id === id);
     setMeetings(prev => updateMeetingStatus(prev, id, 'rejected'));
-    if ((m as any)?.onBehalf) import('./services/delegationApi').then(({ declineMeeting }) => declineMeeting(id)).catch(() => {});
+    if (m?.onBehalf) import('./services/delegationApi').then(({ declineMeeting }) => declineMeeting(id)).catch(() => {});
     if (currentUser) storageService.addLog({ action: 'REJECT', details: `Rejected ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
     addToast('error', t('decline'));
   };

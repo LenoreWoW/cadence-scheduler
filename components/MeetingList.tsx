@@ -84,7 +84,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({
             const canCancel = meeting.hostId === currentUser.id || meeting.userId === currentUser.id;
 
             const isSelected = selectedId === meeting.id;
-            const isTentative = meeting.status === 'pending' && (meeting as any).onBehalf;
+            const isTentative = meeting.status === 'pending' && meeting.onBehalf;
 
             return (
               <div 
