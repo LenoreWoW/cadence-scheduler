@@ -320,7 +320,23 @@ export const translations: Record<Language, TranslationKeys> = {
     pbNoAvailableTimes: "No available times for this date",
     pbBookingUnavailable: "Booking Unavailable",
     pbLinkExpired: "This booking link has expired",
-    pbLinkNotFound: "This booking page is not available"
+    pbLinkNotFound: "This booking page is not available",
+    localityLabel: "Location",
+    localityInternal: "Internal",
+    localityExternal: "External",
+    tentative: "Tentative",
+    confirmed: "Confirmed",
+    awaitingConfirmation: "Awaiting confirmation",
+    scheduledOnBehalf: "Scheduled by {by} for {for}",
+    accept: "Accept",
+    decline: "Decline",
+    manageDelegates: "Manage delegates",
+    addDelegate: "Add delegate",
+    whoCanBookForMe: "Who can book on my behalf",
+    whoseCalendarIManage: "Calendars I manage",
+    confirmInviteTitle: "Confirm your meeting",
+    confirmInviteCta: "Confirm",
+    confirmInviteDone: "Your meeting is confirmed."
   },
   ar: {
     appName: "Cadence",
@@ -636,6 +652,22 @@ export const translations: Record<Language, TranslationKeys> = {
     pbNoAvailableTimes: "لا توجد أوقات متاحة لهذا التاريخ",
     pbBookingUnavailable: "الحجز غير متاح",
     pbLinkExpired: "انتهت صلاحية هذا الرابط",
-    pbLinkNotFound: "صفحة الحجز هذه غير متاحة"
+    pbLinkNotFound: "صفحة الحجز هذه غير متاحة",
+    localityLabel: "الموقع",
+    localityInternal: "داخلي",
+    localityExternal: "خارجي",
+    tentative: "مبدئي",
+    confirmed: "مؤكد",
+    awaitingConfirmation: "بانتظار التأكيد",
+    scheduledOnBehalf: "حجزه {by} نيابة عن {for}",
+    accept: "قبول",
+    decline: "رفض",
+    manageDelegates: "إدارة المفوضين",
+    addDelegate: "إضافة مفوض",
+    whoCanBookForMe: "من يمكنه الحجز نيابة عني",
+    whoseCalendarIManage: "التقويمات التي أديرها",
+    confirmInviteTitle: "أكد اجتماعك",
+    confirmInviteCta: "تأكيد",
+    confirmInviteDone: "تم تأكيد اجتماعك."
   }
 };
