@@ -37,6 +37,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { AcceptInvitePage } from './components/AcceptInvitePage';
+import { ConfirmInvitePage } from './components/ConfirmInvitePage';
 import { CookieBanner } from './components/CookieBanner';
 import { XpLevelBadge } from './components/XpLevelBadge';
 import { ChallengesCard } from './components/ChallengesCard';
@@ -1145,6 +1146,13 @@ const Router: React.FC = () => {
       </ErrorBoundary>
     );
   }
+  if (route.type === 'confirm-invite') {
+    return (
+      <ErrorBoundary>
+        <ConfirmInvitePage />
+      </ErrorBoundary>
+    );
+  }
   if (route.type === 'verify-email') {
     return (
       <ErrorBoundary>
@@ -1163,6 +1171,7 @@ function resolveRoute(path: string, search: string): RouteState {
   if (path === '/privacy') return { type: 'privacy' };
   if (path === '/terms') return { type: 'terms' };
   if (path === '/accept-invite') return { type: 'accept-invite' };
+  if (path === '/confirm-invite') return { type: 'confirm-invite' };
 
   const params = new URLSearchParams(search);
 
@@ -1200,6 +1209,7 @@ type RouteState =
   | { type: 'privacy' }
   | { type: 'terms' }
   | { type: 'accept-invite' }
+  | { type: 'confirm-invite' }
   | { type: 'verify-email'; token: string }
   | { type: 'routing-form'; formId: string };
 
