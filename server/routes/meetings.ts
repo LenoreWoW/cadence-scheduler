@@ -2,7 +2,7 @@
  * Meeting Routes
  */
 
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction, Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../database';
 import { authenticateToken, optionalAuth, AuthenticatedRequest } from '../middleware/auth';
@@ -14,6 +14,9 @@ import { trackChallengeProgress } from './challenges';
 import { canActOnBehalf } from './delegates';
 
 const router = Router();
+
+const asyncHandler = (fn: (req: any, res: Response, next: NextFunction) => Promise<any>) =>
+  (req: Request, res: Response, next: NextFunction) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // ----- User-wide booking caps helper -----
 
@@ -296,7 +299,7 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
 });
 
 // Create meeting (auth required — public booking goes through /api/booking-links/public/:slug/book)
-router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const {
       title, date, time, durationMinutes, attendeeName, attendeeEmail,
@@ -465,10 +468,9 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     if (isOnBehalf) {
       (async () => {
         try {
-          const emailSvc = await import('../services/bookingEmails') as any;
-          const sendBookingRequested: ((...args: any[]) => Promise<void>) | undefined = emailSvc.sendBookingRequested;
+          const { sendBookingRequested } = await import('../services/bookingEmails');
           const host = db.connection.prepare(`SELECT name, email FROM users WHERE id = ?`).get(hostId) as any;
-          await sendBookingRequested?.({
+          await sendBookingRequested({
             meetingId, meetingTitle: title, date, time, durationMinutes: durationMinutes || 30,
             attendeeName, attendeeEmail, hostName: host?.name ?? 'Host', hostEmail: host?.email,
             attendeeToken, notes: notes || null,
@@ -528,10 +530,10 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to create meeting', 500);
   }
-});
+}));
 
 // Update meeting status
-router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:id/status', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -677,7 +679,7 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to update meeting', 500);
   }
-});
+}));
 
 // Reschedule meeting
 router.patch('/:id/reschedule', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
@@ -843,7 +845,7 @@ router.post('/:id/reassign', authenticateToken, async (req: AuthenticatedRequest
 });
 
 // Invitee confirms a tentative meeting via their attendee token -> approved.
-router.post('/:id/confirm-by-token', async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id/confirm-by-token', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { token } = req.body || {};
@@ -875,7 +877,7 @@ router.post('/:id/confirm-by-token', async (req: AuthenticatedRequest, res: Resp
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to confirm meeting', 500);
   }
-});
+}));
 
 // Delete meeting
 router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {

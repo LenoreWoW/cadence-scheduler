@@ -199,6 +199,21 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     }
   }, [currentUser, currentUser?.onboardingCompleted]);
 
+  // Re-merge server tentatives when a user logs in during the session (without a page reload).
+  useEffect(() => {
+    if (!currentUser) return;
+    import('./services/delegationApi').then(({ fetchMyTentatives }) =>
+      fetchMyTentatives().then((server) => {
+        if (!Array.isArray(server) || server.length === 0) return;
+        setMeetings(prev => {
+          const ids = new Set(prev.map(m => m.id));
+          const merged = server.filter(m => m.onBehalf && !ids.has(m.id));
+          return merged.length ? [...prev, ...merged] : prev;
+        });
+      }).catch(() => { /* offline / not logged in — no-op */ })
+    );
+  }, [currentUser]);
+
   const announce = (msg: string) => {
      setAnnouncement(msg);
      setTimeout(() => setAnnouncement(''), 1000);
