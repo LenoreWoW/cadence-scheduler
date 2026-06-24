@@ -176,6 +176,7 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
       notes: m.notes,
       category: m.category,
       meetingFormat: m.meeting_format || 'in-person',
+      locality: m.locality || ((m.booked_by === 'guest' || m.category === 'client') ? 'external' : 'internal'),
       meetingLink: m.meeting_link,
       meetingPlatform: m.meeting_platform,
       locationAddress: m.location_address,
@@ -275,6 +276,7 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       notes: meeting.notes,
       category: meeting.category,
       meetingFormat: meeting.meeting_format || 'in-person',
+      locality: meeting.locality || ((meeting.booked_by === 'guest' || meeting.category === 'client') ? 'external' : 'internal'),
       meetingLink: meeting.meeting_link,
       meetingPlatform: meeting.meeting_platform,
       locationAddress: meeting.location_address,
@@ -296,7 +298,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     const {
       title, date, time, durationMinutes, attendeeName, attendeeEmail,
       additionalAttendees, hostId, notes, category, meetingFormat, meetingLink, meetingPlatform,
-      locationAddress, externalId,
+      locationAddress, externalId, locality,
     } = req.body;
 
     if (!title || !date || !time || !hostId || !attendeeName || !attendeeEmail) {
@@ -308,6 +310,8 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     if (!['online', 'in-person'].includes(format)) {
       throw new AppError('Invalid meeting format', 400);
     }
+
+    const localityClean: 'internal' | 'external' = locality === 'external' ? 'external' : 'internal';
 
     // Validate locationAddress (only meaningful for in-person)
     let locationAddressClean: string | null = null;
@@ -412,8 +416,8 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     }
 
     db.connection.prepare(`
-      INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, additional_attendees, user_id, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform, zoom_meeting_id, teams_meeting_id, location_address, external_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, additional_attendees, user_id, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform, zoom_meeting_id, teams_meeting_id, location_address, external_id, locality)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       meetingId, title, date, time, durationMinutes || 30,
       attendeeName, attendeeEmail, additionalAttendees || null,
@@ -422,6 +426,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       zoomMeetingIdPersist, teamsMeetingIdPersist,
       format === 'in-person' ? locationAddressClean : null,
       typeof externalId === 'string' && externalId.length > 0 ? externalId : null,
+      localityClean,
     );
 
     // Log activity
@@ -481,7 +486,8 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       category: category || 'general',
       meetingFormat: format,
       meetingLink: finalMeetingLink,
-      meetingPlatform: finalMeetingPlatform
+      meetingPlatform: finalMeetingPlatform,
+      locality: localityClean,
     });
   } catch (error) {
     if (error instanceof AppError) throw error;
