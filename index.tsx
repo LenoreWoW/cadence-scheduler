@@ -375,8 +375,8 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
       category: formData.category || 'general',
       date: baseDateStr,
       time: selectedSlot.label,
-      durationMinutes: formData.duration || bookingDuration, 
-      attendeeName: formData.attendeeName, 
+      durationMinutes: formData.duration || bookingDuration,
+      attendeeName: formData.attendeeName,
       attendeeEmail: formData.attendeeEmail,
       additionalAttendees: formData.additionalAttendees,
       bookedBy: currentUser.role,
@@ -384,7 +384,9 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
       notes: formData.notes,
       hostId: selectedHost.id,
       meetingFormat: formData.meetingFormat || 'in-person',
-      meetingLink: formData.meetingLink
+      meetingLink: formData.meetingLink,
+      locationAddress: formData.meetingFormat === 'in-person' ? formData.locationAddress : undefined,
+      locality: formData.locality || 'internal'
     };
 
     const buffer = selectedHost.availability?.bufferMinutes || 0;
