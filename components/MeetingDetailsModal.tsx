@@ -14,6 +14,8 @@ interface MeetingDetailsModalProps {
   lang: Language;
   currentUser?: User | null;
   onReassigned?: () => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
 }
 
 export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
@@ -23,7 +25,9 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   t,
   lang,
   currentUser,
-  onReassigned
+  onReassigned,
+  onApprove,
+  onReject
 }) => {
   const [reassignOpen, setReassignOpen] = useState(false);
 
@@ -207,6 +211,9 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
             <p className="text-xs text-gray-500">
                Booked by: <span className="font-medium">{meeting.bookedBy}</span> | ID: {meeting.id}
             </p>
+            {(meeting as any).onBehalf && (
+              <p className="text-xs text-gray-500 mt-1">{t('scheduledOnBehalf').replace('{by}', meeting.bookedBy).replace('{for}', meeting.hostId)}</p>
+            )}
           </div>
 
           {/* Attachments */}
@@ -217,6 +224,12 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
           />
 
           <div className="flex justify-end mt-6 gap-3">
+             {meeting.status === 'pending' && currentUser && (meeting.hostId === currentUser.id || ((meeting as any).onBehalf && meeting.userId === currentUser.id) || currentUser.role === 'admin') && (
+               <>
+                 <Button variant="success" onClick={() => { onApprove?.(meeting.id); onClose(); }}>{t('accept')}</Button>
+                 <Button variant="secondary" onClick={() => { onReject?.(meeting.id); onClose(); }}>{t('decline')}</Button>
+               </>
+             )}
              {canReassign && (
                 <Button variant="secondary" onClick={() => setReassignOpen(true)}>
                    {lang === 'ar' ? 'إعادة تعيين' : 'Reassign'}

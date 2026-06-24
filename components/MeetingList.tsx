@@ -79,11 +79,12 @@ export const MeetingList: React.FC<MeetingListProps> = ({
             
             // Logic: I can approve if I am the HOST and the status is pending
             const canApprove = meeting.hostId === currentUser.id && meeting.status === 'pending';
-            
+
             // Logic: I can cancel if I am the HOST or the BOOKER (User)
             const canCancel = meeting.hostId === currentUser.id || meeting.userId === currentUser.id;
 
             const isSelected = selectedId === meeting.id;
+            const isTentative = meeting.status === 'pending' && (meeting as any).onBehalf;
 
             return (
               <div 
@@ -91,6 +92,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({
                 id={`meeting-${meeting.id}`}
                 className={`group relative bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 transition-all duration-300 md:hover:shadow-lg md:hover:-translate-y-1 border overflow-hidden cursor-pointer active:bg-gray-50 dark:active:bg-gray-700/50
                   ${isSelected ? 'ring-2 ring-al-adaam shadow-lg border-transparent' : 'border-gray-100 dark:border-gray-700'}
+                  ${isTentative ? 'opacity-80 border-dashed' : ''}
                 `}
                 style={{ borderLeft: `4px solid ${accent.colorVar}` }}
                 onClick={() => setViewMeeting(meeting)}
@@ -108,6 +110,11 @@ export const MeetingList: React.FC<MeetingListProps> = ({
                          {meeting.status === 'pending' && (
                              <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-salmon text-white">
                                 {t('pending')}
+                             </span>
+                         )}
+                         {isTentative && (
+                             <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 border border-dashed border-gray-400">
+                                {t('tentative')}
                              </span>
                          )}
                          {meeting.meetingFormat === 'online' && (
@@ -221,6 +228,8 @@ export const MeetingList: React.FC<MeetingListProps> = ({
         t={t}
         lang={lang}
         currentUser={currentUser}
+        onApprove={onApprove}
+        onReject={onReject}
       />
     </>
   );
