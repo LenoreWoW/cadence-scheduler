@@ -5,6 +5,7 @@ import { Button } from './Button';
 import { EmptyState3D } from './EmptyState3D';
 import { AchievementGallery } from './AchievementGallery';
 import { gamificationService, Achievement } from '../services/gamificationService';
+import { getMeetingAccent } from '../services/localityService';
 
 interface DashboardProps {
   user: User;
@@ -324,7 +325,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
 
         {/* Center/Right: Next Meeting Feature */}
         <div className="lg:col-span-2">
-           <div className={`h-full min-h-[280px] md:min-h-[320px] rounded-2xl p-5 md:p-8 relative overflow-hidden flex flex-col justify-between group shadow-xl md:shadow-2xl transition-all duration-500 ${isHappeningNow ? 'bg-al-adaam text-white' : 'bg-charcoal dark:bg-gray-800 text-white'}`}>
+           <div
+              className={`h-full min-h-[280px] md:min-h-[320px] rounded-2xl p-5 md:p-8 relative overflow-hidden flex flex-col justify-between group shadow-xl md:shadow-2xl transition-all duration-500 ${isHappeningNow ? 'bg-al-adaam text-white' : 'bg-charcoal dark:bg-gray-800 text-white'}`}
+              style={nextMeeting ? { borderLeft: `4px solid ${getMeetingAccent(nextMeeting).colorVar}` } : undefined}
+           >
               {/* Decorative Elements */}
               <div className="absolute top-0 right-0 w-48 md:w-64 h-48 md:h-64 bg-gradient-to-br from-white/10 to-transparent opacity-20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:opacity-30 transition-opacity duration-700"></div>
               
@@ -414,7 +418,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
             {meetings.slice(0, 3).map((m, i) => (
               <div key={m.id} className="flex items-center justify-between p-3 md:p-4 border-b border-gray-50 dark:border-gray-700/50 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors active:bg-gray-100 dark:active:bg-gray-700 press-effect">
                  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${m.status === 'approved' ? 'bg-palm' : m.status === 'pending' ? 'bg-salmon' : 'bg-gray-300'}`}></div>
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: getMeetingAccent(m).colorVar }}></div>
                     <div className="min-w-0 flex-1">
                        <p className="text-sm font-bold text-charcoal dark:text-white truncate">{m.title}</p>
                        <p className="text-xs text-gray-500 truncate">with {m.attendeeName}</p>
