@@ -261,6 +261,72 @@ export async function sendBookingApproved(args: BaseArgs & { attendeeToken?: str
   });
 }
 
+export interface BookingRequestedArgs {
+  meetingId: string;
+  meetingTitle: string;
+  date: string;
+  time: string;
+  durationMinutes: number;
+  attendeeName: string;
+  attendeeEmail: string;
+  hostName: string;
+  hostEmail?: string;
+  attendeeToken: string | null;
+  notes?: string | null;
+}
+
+export async function sendBookingRequested(args: BookingRequestedArgs): Promise<void> {
+  const provider = getEmailProvider();
+  const lang = getPreferredLanguageByEmail(args.attendeeEmail);
+  const dir = dirFor(lang);
+  const locale = lang === 'ar' ? 'ar' : 'en-US';
+
+  const dateStr = new Date(args.date + 'T00:00:00').toLocaleDateString(locale, {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+
+  const confirmUrl = args.attendeeToken
+    ? `${FRONTEND_URL}/confirm-invite?id=${encodeURIComponent(args.meetingId)}&token=${encodeURIComponent(args.attendeeToken)}`
+    : null;
+
+  const headerTitle = 'Meeting Invitation — Please Confirm';
+  const content = `
+    <h2 style="margin-top:0;color:#1a1a1a;">${htmlEscape(args.meetingTitle)}</h2>
+    <p style="color:#666;margin:0 0 24px;">A meeting has been tentatively scheduled on your behalf by <strong>${htmlEscape(args.hostName)}</strong>. Please confirm your attendance using the link below.</p>
+    ${detailBlock('Date', dateStr)}
+    ${detailBlock('Time', args.time)}
+    ${detailBlock('Duration', `${args.durationMinutes} minutes`)}
+    ${detailBlock('Host', args.hostName)}
+    ${args.notes ? detailBlock('Notes', args.notes) : ''}
+    ${confirmUrl ? `
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;">
+      <div style="color:#A29475;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Action required</div>
+      <a href="${htmlEscape(confirmUrl)}" style="display:inline-block;padding:12px 24px;background:#129b82;color:white;text-decoration:none;border-radius:6px;font-size:15px;font-weight:600;">Confirm attendance</a>
+    </div>` : ''}
+  `;
+
+  const baseArgs: BaseArgs = {
+    meetingId: args.meetingId,
+    meetingTitle: args.meetingTitle,
+    date: args.date,
+    time: args.time,
+    durationMinutes: args.durationMinutes,
+    attendeeName: args.attendeeName,
+    attendeeEmail: args.attendeeEmail,
+    hostName: args.hostName,
+    hostEmail: args.hostEmail,
+    notes: args.notes ?? undefined,
+  };
+
+  await provider.send({
+    to: args.attendeeEmail,
+    subject: `${headerTitle}: ${args.meetingTitle}`,
+    html: emailShell(`📬 ${headerTitle}`, '#A29475', content, 'Cadence', dir),
+    text: `You have been invited to "${args.meetingTitle}" on ${dateStr} at ${args.time} with ${args.hostName}.${confirmUrl ? ` Confirm: ${confirmUrl}` : ''}`,
+    attachments: buildICSAttachment(baseArgs, 'TENTATIVE'),
+  });
+}
+
 export async function sendBookingCancelled(args: BaseArgs & { cancelledBy?: string }): Promise<void> {
   const provider = getEmailProvider();
   const lang = getPreferredLanguageByEmail(args.attendeeEmail);

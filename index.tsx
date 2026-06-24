@@ -37,6 +37,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { AcceptInvitePage } from './components/AcceptInvitePage';
+import { ConfirmInvitePage } from './components/ConfirmInvitePage';
 import { CookieBanner } from './components/CookieBanner';
 import { XpLevelBadge } from './components/XpLevelBadge';
 import { ChallengesCard } from './components/ChallengesCard';
@@ -129,6 +130,16 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
     storageService.init();
     setMeetings(storageService.getMeetings());
+    import('./services/delegationApi').then(({ fetchMyTentatives }) =>
+      fetchMyTentatives().then((server) => {
+        if (!Array.isArray(server) || server.length === 0) return;
+        setMeetings(prev => {
+          const ids = new Set(prev.map(m => m.id));
+          const merged = server.filter(m => m.onBehalf && !ids.has(m.id));
+          return merged.length ? [...prev, ...merged] : prev;
+        });
+      }).catch(() => { /* offline / not logged into server — in-app still works */ })
+    );
     setLogs(storageService.getLogs());
     setTeams(storageService.getTeams());
 
@@ -187,6 +198,21 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
        }
     }
   }, [currentUser, currentUser?.onboardingCompleted]);
+
+  // Re-merge server tentatives when a user logs in during the session (without a page reload).
+  useEffect(() => {
+    if (!currentUser) return;
+    import('./services/delegationApi').then(({ fetchMyTentatives }) =>
+      fetchMyTentatives().then((server) => {
+        if (!Array.isArray(server) || server.length === 0) return;
+        setMeetings(prev => {
+          const ids = new Set(prev.map(m => m.id));
+          const merged = server.filter(m => m.onBehalf && !ids.has(m.id));
+          return merged.length ? [...prev, ...merged] : prev;
+        });
+      }).catch(() => { /* offline / not logged in — no-op */ })
+    );
+  }, [currentUser]);
 
   const announce = (msg: string) => {
      setAnnouncement(msg);
@@ -250,7 +276,10 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
   const requestsToApprove = useMemo(() => {
     if (!currentUser || currentUser.role === 'guest') return [];
-    return meetings.filter(m => m.hostId === currentUser.id && m.status === 'pending');
+    return meetings.filter(m =>
+      m.status === 'pending' &&
+      (m.hostId === currentUser.id || (m.onBehalf && m.userId === currentUser.id))
+    );
   }, [meetings, currentUser]);
 
   // Handlers
@@ -369,14 +398,40 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const handleBookingSubmit = (formData: any) => {
     if (!selectedSlot || !currentUser || !selectedHost) return;
 
+    if (formData.bookOnBehalf && selectedHost.id !== currentUser.id) {
+      const baseDateStr = selectedDate.toISOString().split('T')[0];
+      import('./services/delegationApi').then(({ createOnBehalfMeeting }) =>
+        createOnBehalfMeeting({
+          title: formData.title,
+          category: formData.category || 'general',
+          date: baseDateStr,
+          time: selectedSlot.label,
+          durationMinutes: formData.duration || bookingDuration,
+          attendeeName: formData.attendeeName,
+          attendeeEmail: formData.attendeeEmail,
+          additionalAttendees: formData.additionalAttendees,
+          notes: formData.notes,
+          hostId: selectedHost.id,
+          meetingFormat: formData.meetingFormat || 'in-person',
+          meetingLink: formData.meetingLink,
+          locationAddress: formData.meetingFormat === 'in-person' ? formData.locationAddress : undefined,
+          locality: formData.locality || 'internal',
+        })
+      ).then((created) => {
+        setMeetings(prev => [...prev, { ...(created as any), bookedBy: currentUser.role, userId: currentUser.id }]);
+        addToast('success', t('awaitingConfirmation'));
+      }).catch((e: any) => addToast('error', e?.body?.error || e?.message || 'Failed'));
+      return;
+    }
+
     const baseDateStr = selectedDate.toISOString().split('T')[0];
     const newMeetingData = {
       title: formData.title,
       category: formData.category || 'general',
       date: baseDateStr,
       time: selectedSlot.label,
-      durationMinutes: formData.duration || bookingDuration, 
-      attendeeName: formData.attendeeName, 
+      durationMinutes: formData.duration || bookingDuration,
+      attendeeName: formData.attendeeName,
       attendeeEmail: formData.attendeeEmail,
       additionalAttendees: formData.additionalAttendees,
       bookedBy: currentUser.role,
@@ -384,7 +439,9 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
       notes: formData.notes,
       hostId: selectedHost.id,
       meetingFormat: formData.meetingFormat || 'in-person',
-      meetingLink: formData.meetingLink
+      meetingLink: formData.meetingLink,
+      locationAddress: formData.meetingFormat === 'in-person' ? formData.locationAddress : undefined,
+      locality: formData.locality || 'internal'
     };
 
     const buffer = selectedHost.availability?.bufferMinutes || 0;
@@ -446,15 +503,19 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   };
 
   const handleApprove = (id: string) => {
+    const m = meetings.find(x => x.id === id);
     setMeetings(prev => updateMeetingStatus(prev, id, 'approved'));
-    if(currentUser) storageService.addLog({ action: 'APPROVE', details: `Approved ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
-    addToast('success', 'Meeting Approved');
+    if (m?.onBehalf) import('./services/delegationApi').then(({ confirmMeeting }) => confirmMeeting(id)).catch(() => {});
+    if (currentUser) storageService.addLog({ action: 'APPROVE', details: `Approved ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
+    addToast('success', t('confirmed'));
   };
 
   const handleReject = (id: string) => {
+    const m = meetings.find(x => x.id === id);
     setMeetings(prev => updateMeetingStatus(prev, id, 'rejected'));
-    if(currentUser) storageService.addLog({ action: 'REJECT', details: `Rejected ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
-    addToast('error', 'Meeting Rejected');
+    if (m?.onBehalf) import('./services/delegationApi').then(({ declineMeeting }) => declineMeeting(id)).catch(() => {});
+    if (currentUser) storageService.addLog({ action: 'REJECT', details: `Rejected ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
+    addToast('error', t('decline'));
   };
   
   const handleRemind = (id: string) => {
@@ -1000,6 +1061,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
             onClose={() => setIsProfileModalOpen(false)}
             onSave={handleUpdateProfile}
             currentUser={currentUser}
+            users={availableHosts}
             t={t}
             lang={lang}
           />
@@ -1099,6 +1161,13 @@ const Router: React.FC = () => {
       </ErrorBoundary>
     );
   }
+  if (route.type === 'confirm-invite') {
+    return (
+      <ErrorBoundary>
+        <ConfirmInvitePage />
+      </ErrorBoundary>
+    );
+  }
   if (route.type === 'verify-email') {
     return (
       <ErrorBoundary>
@@ -1117,6 +1186,7 @@ function resolveRoute(path: string, search: string): RouteState {
   if (path === '/privacy') return { type: 'privacy' };
   if (path === '/terms') return { type: 'terms' };
   if (path === '/accept-invite') return { type: 'accept-invite' };
+  if (path === '/confirm-invite') return { type: 'confirm-invite' };
 
   const params = new URLSearchParams(search);
 
@@ -1154,6 +1224,7 @@ type RouteState =
   | { type: 'privacy' }
   | { type: 'terms' }
   | { type: 'accept-invite' }
+  | { type: 'confirm-invite' }
   | { type: 'verify-email'; token: string }
   | { type: 'routing-form'; formId: string };
 

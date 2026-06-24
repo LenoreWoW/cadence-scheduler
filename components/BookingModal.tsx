@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Meeting, Role, TimeSlot, Language, User, MeetingCategory } from '../types';
+import { Meeting, Role, TimeSlot, Language, User, MeetingCategory, MeetingLocality } from '../types';
 import { Button } from './Button';
 import { storageService } from '../services/storageService';
-import { CATEGORY_CONFIG } from '../constants';
+import { CATEGORY_CONFIG, LOCALITY_CONFIG } from '../constants';
+import { deriveLocality } from '../services/localityService';
 import { calendarIntegration } from '../services/calendarIntegration';
 import { smartDefaults } from '../services/smartDefaults';
 import { BookingSuccess3D } from './BookingSuccess3D';
@@ -42,7 +43,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     occurrences: 1,
     meetingFormat: 'in-person' as 'online' | 'in-person',
     meetingLink: '',
-    locationAddress: ''
+    locationAddress: '',
+    locality: 'internal' as MeetingLocality
   });
 
   useEffect(() => {
@@ -63,7 +65,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         occurrences: 1,
         meetingFormat: 'in-person',
         meetingLink: '',
-        locationAddress: ''
+        locationAddress: '',
+        locality: deriveLocality({ bookedBy: role, category: role === 'guest' ? 'client' : 'general', attendeeEmail: currentUser.email, hostEmail: host?.email })
       });
       setTitleSuggestions([]);
     }
@@ -119,7 +122,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleNext = () => { if (formData.title) setStep(prev => prev + 1); };
   const handleBack = () => { setStep(prev => prev - 1); };
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSubmit(formData); setStep(4); };
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSubmit({ ...formData, bookOnBehalf }); setStep(4); };
 
   const steps = [
      { id: 1, label: t('meetingTitle') }, // Actually Details
@@ -284,6 +287,25 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                          />
                       </div>
                    )}
+                </div>
+
+                {/* Locality (internal=RED / external=BLACK) */}
+                <div>
+                   <label className="block text-xs font-bold uppercase tracking-widest text-dune mb-3">{t('localityLabel')}</label>
+                   <div className="flex bg-gray-100 p-1 rounded-lg">
+                      {(['internal', 'external'] as MeetingLocality[]).map(loc => (
+                         <button
+                           key={loc}
+                           type="button"
+                           onClick={() => setFormData({ ...formData, locality: loc })}
+                           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-bold transition-all ${formData.locality === loc ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-charcoal'}`}
+                           style={formData.locality === loc ? { color: `var(${LOCALITY_CONFIG[loc].cssVar})` } : undefined}
+                         >
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ background: `var(${LOCALITY_CONFIG[loc].cssVar})` }}></span>
+                            {t(LOCALITY_CONFIG[loc].labelKey)}
+                         </button>
+                      ))}
+                   </div>
                 </div>
 
                 {/* Duration */}

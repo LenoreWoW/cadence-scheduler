@@ -2,7 +2,7 @@
  * Meeting Routes
  */
 
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction, Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../database';
 import { authenticateToken, optionalAuth, AuthenticatedRequest } from '../middleware/auth';
@@ -11,8 +11,12 @@ import { syncMeetingToCalendar, deleteSyncedEvent, getExternalBusyTimes } from '
 import { awardXp, incrementBookingStat } from '../services/userStatsSync';
 import { dispatchWebhook } from '../services/outboundWebhooks';
 import { trackChallengeProgress } from './challenges';
+import { canActOnBehalf } from './delegates';
 
 const router = Router();
+
+const asyncHandler = (fn: (req: any, res: Response, next: NextFunction) => Promise<any>) =>
+  (req: Request, res: Response, next: NextFunction) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // ----- User-wide booking caps helper -----
 
@@ -176,6 +180,8 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
       notes: m.notes,
       category: m.category,
       meetingFormat: m.meeting_format || 'in-person',
+      locality: m.locality || ((m.booked_by === 'guest' || m.category === 'client') ? 'external' : 'internal'),
+      onBehalf: !!m.on_behalf,
       meetingLink: m.meeting_link,
       meetingPlatform: m.meeting_platform,
       locationAddress: m.location_address,
@@ -275,6 +281,8 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
       notes: meeting.notes,
       category: meeting.category,
       meetingFormat: meeting.meeting_format || 'in-person',
+      locality: meeting.locality || ((meeting.booked_by === 'guest' || meeting.category === 'client') ? 'external' : 'internal'),
+      onBehalf: !!meeting.on_behalf,
       meetingLink: meeting.meeting_link,
       meetingPlatform: meeting.meeting_platform,
       locationAddress: meeting.location_address,
@@ -291,12 +299,12 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
 });
 
 // Create meeting (auth required — public booking goes through /api/booking-links/public/:slug/book)
-router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const {
       title, date, time, durationMinutes, attendeeName, attendeeEmail,
       additionalAttendees, hostId, notes, category, meetingFormat, meetingLink, meetingPlatform,
-      locationAddress, externalId,
+      locationAddress, externalId, locality,
     } = req.body;
 
     if (!title || !date || !time || !hostId || !attendeeName || !attendeeEmail) {
@@ -308,6 +316,8 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     if (!['online', 'in-person'].includes(format)) {
       throw new AppError('Invalid meeting format', 400);
     }
+
+    const localityClean: 'internal' | 'external' = locality === 'external' ? 'external' : 'internal';
 
     // Validate locationAddress (only meaningful for in-person)
     let locationAddressClean: string | null = null;
@@ -356,8 +366,20 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     const userId = req.user?.userId || null;
     const bookedBy = req.user?.role || 'guest';
 
-    // Auto-approve for managers/admins, pending for guests
-    const status = ['admin', 'manager', 'subordinate'].includes(bookedBy) ? 'approved' : 'pending';
+    const requesterId = req.user?.userId || null;
+    // ANY create targeting another user's calendar is treated as "on behalf".
+    // This also closes the previously-open hole where any authed user could set
+    // an arbitrary hostId: canActOnBehalf returns true ONLY for admins and
+    // registered delegates of that host.
+    const isOnBehalf = !!hostId && hostId !== requesterId;
+    if (isOnBehalf && (!requesterId || !canActOnBehalf(requesterId, hostId, bookedBy))) {
+      throw new AppError('You are not authorized to schedule on behalf of this host', 403);
+    }
+    // On-behalf meetings stay tentative (pending) until confirmed; otherwise the usual role rule.
+    const status = isOnBehalf
+      ? 'pending'
+      : (['admin', 'manager', 'subordinate'].includes(bookedBy) ? 'approved' : 'pending');
+    const attendeeToken = isOnBehalf ? uuidv4() : null;
 
     // Native conferencing — create a Zoom/Teams meeting if configured for the
     // host's preferred platform. Fall back to the static link on any error.
@@ -412,8 +434,8 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
     }
 
     db.connection.prepare(`
-      INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, additional_attendees, user_id, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform, zoom_meeting_id, teams_meeting_id, location_address, external_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO meetings (id, title, date, time, duration_minutes, attendee_name, attendee_email, additional_attendees, user_id, host_id, status, booked_by, notes, category, meeting_format, meeting_link, meeting_platform, zoom_meeting_id, teams_meeting_id, location_address, external_id, locality, on_behalf, approval_required, approver_id, attendee_token)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       meetingId, title, date, time, durationMinutes || 30,
       attendeeName, attendeeEmail, additionalAttendees || null,
@@ -422,6 +444,11 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       zoomMeetingIdPersist, teamsMeetingIdPersist,
       format === 'in-person' ? locationAddressClean : null,
       typeof externalId === 'string' && externalId.length > 0 ? externalId : null,
+      localityClean,
+      isOnBehalf ? 1 : 0,
+      isOnBehalf ? 1 : 0,
+      isOnBehalf ? hostId : null,
+      attendeeToken,
     );
 
     // Log activity
@@ -436,6 +463,20 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       syncMeetingToCalendar(meetingId).catch(err => {
         console.error('Failed to sync meeting to calendar:', err);
       });
+    }
+
+    if (isOnBehalf) {
+      (async () => {
+        try {
+          const { sendBookingRequested } = await import('../services/bookingEmails');
+          const host = db.connection.prepare(`SELECT name, email FROM users WHERE id = ?`).get(hostId) as any;
+          await sendBookingRequested({
+            meetingId, meetingTitle: title, date, time, durationMinutes: durationMinutes || 30,
+            attendeeName, attendeeEmail, hostName: host?.name ?? 'Host', hostEmail: host?.email,
+            attendeeToken, notes: notes || null,
+          });
+        } catch (e) { console.error('Tentative on-behalf email failed (non-blocking):', e); }
+      })();
     }
 
     // Stats / XP / webhook / challenges hooks
@@ -481,16 +522,18 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
       category: category || 'general',
       meetingFormat: format,
       meetingLink: finalMeetingLink,
-      meetingPlatform: finalMeetingPlatform
+      meetingPlatform: finalMeetingPlatform,
+      locality: localityClean,
+      onBehalf: isOnBehalf,
     });
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to create meeting', 500);
   }
-});
+}));
 
 // Update meeting status
-router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:id/status', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -504,9 +547,16 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
       throw new AppError('Meeting not found', 404);
     }
 
-    // Only host can approve/reject
-    if (['approved', 'rejected'].includes(status) && meeting.host_id !== req.user!.userId && req.user!.role !== 'admin') {
-      throw new AppError('Only the host can approve or reject', 403);
+    // Host, admin, creator, or registered delegate can approve/reject
+    if (['approved', 'rejected'].includes(status)) {
+      const callerId = req.user!.userId;
+      const callerRole = req.user!.role;
+      const allowed =
+        callerRole === 'admin' ||
+        meeting.host_id === callerId ||
+        meeting.user_id === callerId ||
+        canActOnBehalf(callerId, meeting.host_id, callerRole);
+      if (!allowed) throw new AppError('Not authorized to confirm or decline this meeting', 403);
     }
 
     db.connection.prepare(`
@@ -629,7 +679,7 @@ router.patch('/:id/status', authenticateToken, async (req: AuthenticatedRequest,
     if (error instanceof AppError) throw error;
     throw new AppError('Failed to update meeting', 500);
   }
-});
+}));
 
 // Reschedule meeting
 router.patch('/:id/reschedule', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
@@ -656,9 +706,10 @@ router.patch('/:id/reschedule', authenticateToken, async (req: AuthenticatedRequ
       throw new AppError('Time slot is already booked', 409);
     }
 
+    const keptStatus = (meeting.status === 'pending' && meeting.on_behalf) ? 'pending' : 'approved';
     db.connection.prepare(`
-      UPDATE meetings SET date = ?, time = ?, status = 'approved', updated_at = ? WHERE id = ?
-    `).run(date, time, new Date().toISOString(), id);
+      UPDATE meetings SET date = ?, time = ?, status = ?, updated_at = ? WHERE id = ?
+    `).run(date, time, keptStatus, new Date().toISOString(), id);
 
     // Log activity
     db.connection.prepare(`
@@ -792,6 +843,41 @@ router.post('/:id/reassign', authenticateToken, async (req: AuthenticatedRequest
     throw new AppError('Failed to reassign meeting', 500);
   }
 });
+
+// Invitee confirms a tentative meeting via their attendee token -> approved.
+router.post('/:id/confirm-by-token', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { token } = req.body || {};
+    if (typeof token !== 'string' || !token) throw new AppError('token required', 400);
+    const meeting = db.connection.prepare('SELECT * FROM meetings WHERE id = ?').get(id) as any;
+    if (!meeting) throw new AppError('Meeting not found', 404);
+    if (!meeting.attendee_token || meeting.attendee_token !== token) throw new AppError('Invalid token', 403);
+    if (meeting.status !== 'pending') {
+      return res.json({ message: `Meeting already ${meeting.status}`, status: meeting.status });
+    }
+    db.connection.prepare(`UPDATE meetings SET status = 'approved', updated_at = ? WHERE id = ?`)
+      .run(new Date().toISOString(), id);
+    syncMeetingToCalendar(id).catch(err => console.error('Failed to sync confirmed meeting:', err));
+    (async () => {
+      try {
+        const { dispatchTrigger, scheduleForMeeting } = await import('../services/workflowEngine');
+        const host = db.connection.prepare(`SELECT id, name, email FROM users WHERE id = ?`).get(meeting.host_id) as any;
+        await dispatchTrigger('booking.approved', {
+          meeting, attendee: { name: meeting.attendee_name, email: meeting.attendee_email },
+          host: host ? { id: host.id, name: host.name, email: host.email } : { id: meeting.host_id },
+        });
+        await scheduleForMeeting(id);
+      } catch (e) { console.error('confirm-by-token workflow dispatch failed:', e); }
+    })();
+    db.connection.prepare(`INSERT INTO activity_logs (id, action, details, performed_by, role) VALUES (?, 'APPROVED', ?, ?, ?)`)
+      .run(uuidv4(), `Confirmed by invitee (token) ${id}`, meeting.attendee_name || 'invitee', 'guest');
+    res.json({ message: 'Meeting confirmed', status: 'approved' });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Failed to confirm meeting', 500);
+  }
+}));
 
 // Delete meeting
 router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {

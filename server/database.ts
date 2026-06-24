@@ -482,6 +482,22 @@ class DatabaseManager {
       '20240145_meetings_approver_id',
       `ALTER TABLE meetings ADD COLUMN approver_id TEXT`
     );
+    runOnce(
+      '20240500_meetings_add_locality',
+      `ALTER TABLE meetings ADD COLUMN locality TEXT`
+    );
+    // Column is NULLABLE on purpose: rows inserted by public/round-robin paths
+    // (bookingLinks.ts, teamBookingLinks.ts, roundRobin.ts, crmHubspot.ts) never
+    // set it, so NULL + the serializer's derive-on-read fallback (Step 5) colors
+    // them correctly without editing those four INSERT sites. Backfill existing rows:
+    runOnce(
+      '20240501_meetings_backfill_locality',
+      `UPDATE meetings SET locality = CASE WHEN booked_by = 'guest' OR category = 'client' THEN 'external' ELSE 'internal' END WHERE locality IS NULL`
+    );
+    runOnce(
+      '20240502_meetings_add_on_behalf',
+      `ALTER TABLE meetings ADD COLUMN on_behalf INTEGER DEFAULT 0`
+    );
 
     // ====== Cal.com gap-closing migrations ======
 

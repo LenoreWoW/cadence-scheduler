@@ -3,7 +3,8 @@ import { Meeting, Role, User, Language } from '../types';
 import { Button } from './Button';
 import { ConfirmationModal } from './ConfirmationModal';
 import { MeetingDetailsModal } from './MeetingDetailsModal';
-import { CATEGORY_CONFIG } from '../constants';
+import { CATEGORY_CONFIG, LOCALITY_CONFIG } from '../constants';
+import { getMeetingAccent } from '../services/localityService';
 
 interface MeetingListProps {
   meetings: Meeting[];
@@ -73,14 +74,17 @@ export const MeetingList: React.FC<MeetingListProps> = ({
         ) : (
           sortedMeetings.map(meeting => {
             const category = CATEGORY_CONFIG[meeting.category] || CATEGORY_CONFIG.general;
+            const accent = getMeetingAccent(meeting);
+            const localityLabel = t(LOCALITY_CONFIG[accent.locality].labelKey);
             
             // Logic: I can approve if I am the HOST and the status is pending
             const canApprove = meeting.hostId === currentUser.id && meeting.status === 'pending';
-            
+
             // Logic: I can cancel if I am the HOST or the BOOKER (User)
             const canCancel = meeting.hostId === currentUser.id || meeting.userId === currentUser.id;
 
             const isSelected = selectedId === meeting.id;
+            const isTentative = meeting.status === 'pending' && meeting.onBehalf;
 
             return (
               <div 
@@ -88,20 +92,29 @@ export const MeetingList: React.FC<MeetingListProps> = ({
                 id={`meeting-${meeting.id}`}
                 className={`group relative bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 transition-all duration-300 md:hover:shadow-lg md:hover:-translate-y-1 border overflow-hidden cursor-pointer active:bg-gray-50 dark:active:bg-gray-700/50
                   ${isSelected ? 'ring-2 ring-al-adaam shadow-lg border-transparent' : 'border-gray-100 dark:border-gray-700'}
+                  ${isTentative ? 'opacity-80 border-dashed' : ''}
                 `}
-                style={{ borderLeft: `4px solid ${category.color}` }}
+                style={{ borderLeft: `4px solid ${accent.colorVar}` }}
                 onClick={() => setViewMeeting(meeting)}
               >
                 {/* Header with category and title */}
                 <div className="flex items-start justify-between mb-3 md:mb-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-                         <span className="inline-block px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white" style={{ backgroundColor: category.color }}>
+                         <span className="inline-block px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-white" style={{ backgroundColor: accent.colorVar }}>
+                            {localityLabel}
+                         </span>
+                         <span className="inline-block text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
                             {category.label}
                          </span>
                          {meeting.status === 'pending' && (
                              <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-salmon text-white">
                                 {t('pending')}
+                             </span>
+                         )}
+                         {isTentative && (
+                             <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 border border-dashed border-gray-400">
+                                {t('tentative')}
                              </span>
                          )}
                          {meeting.meetingFormat === 'online' && (
@@ -111,7 +124,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({
                            </span>
                          )}
                       </div>
-                      <h4 className="font-serif font-bold text-base md:text-lg text-charcoal dark:text-white leading-tight line-clamp-2">{meeting.title}</h4>
+                      <h4 className="font-serif font-bold text-base md:text-lg leading-tight line-clamp-2" style={{ color: accent.colorVar }}>{meeting.title}</h4>
                     </div>
                 </div>
 
@@ -215,6 +228,8 @@ export const MeetingList: React.FC<MeetingListProps> = ({
         t={t}
         lang={lang}
         currentUser={currentUser}
+        onApprove={onApprove}
+        onReject={onReject}
       />
     </>
   );

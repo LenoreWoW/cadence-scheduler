@@ -47,6 +47,7 @@ import analyticsPixelsRoutes from './routes/analyticsPixels';
 import crmHubspotRoutes from './routes/crmHubspot';
 import videoConnectionsRoutes from './routes/videoConnections';
 import domainsRoutes from './routes/domains';
+import delegatesRoutes from './routes/delegates';
 import { initReminderScheduler } from './jobs/reminderScheduler';
 import { initCalendarSyncScheduler } from './jobs/calendarSyncJob';
 import { initRetentionJob } from './jobs/retentionJob';
@@ -172,6 +173,7 @@ app.use('/api/analytics-pixels', analyticsPixelsRoutes);
 app.use('/api/crm/hubspot', crmHubspotRoutes);
 app.use('/api/video-connections', videoConnectionsRoutes);
 app.use('/api/domains', domainsRoutes);
+app.use('/api/delegates', delegatesRoutes);
 
 // 404 Handler
 app.use('/api/*', (_req: Request, res: Response) => {

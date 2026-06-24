@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { apiJson } from '../services/api';
 import { Button } from './Button';
+import { getMeetingAccent } from '../services/localityService';
 
 interface Meeting {
   id: string;
@@ -11,6 +12,7 @@ interface Meeting {
   attendeeName?: string;
   status?: string;
   meetingFormat?: string;
+  locality?: 'internal' | 'external';
 }
 
 interface Props {
@@ -167,7 +169,8 @@ export const BookingCalendarView: React.FC<Props> = ({ lang = 'en' }) => {
                   {list.slice(0, 3).map((m) => (
                     <div
                       key={m.id}
-                      className="text-[10px] truncate bg-gray-100 text-charcoal px-1.5 py-0.5 rounded"
+                      className="text-[10px] truncate text-charcoal px-1.5 py-0.5 rounded border-l-2"
+                      style={{ borderColor: getMeetingAccent(m).colorVar, background: '#f3f4f6' }}
                       title={`${m.time} – ${m.title}`}
                     >
                       <span className="font-mono text-gray-500 mr-1">{m.time}</span>

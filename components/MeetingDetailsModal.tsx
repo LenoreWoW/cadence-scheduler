@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Meeting, Language, VideoPlatform, User } from '../types';
 import { Button } from './Button';
-import { CATEGORY_CONFIG, VIDEO_PLATFORM_CONFIG } from '../constants';
+import { CATEGORY_CONFIG, VIDEO_PLATFORM_CONFIG, LOCALITY_CONFIG } from '../constants';
+import { getMeetingAccent } from '../services/localityService';
 import { MeetingAttachmentsPanel } from './MeetingAttachmentsPanel';
 import { MeetingReassignModal } from './MeetingReassignModal';
 
@@ -13,6 +14,8 @@ interface MeetingDetailsModalProps {
   lang: Language;
   currentUser?: User | null;
   onReassigned?: () => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
 }
 
 export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
@@ -22,13 +25,17 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   t,
   lang,
   currentUser,
-  onReassigned
+  onReassigned,
+  onApprove,
+  onReject
 }) => {
   const [reassignOpen, setReassignOpen] = useState(false);
 
   if (!isOpen || !meeting) return null;
 
   const category = CATEGORY_CONFIG[meeting.category] || CATEGORY_CONFIG.general;
+  const accent = getMeetingAccent(meeting);
+  const localityLabel = t(LOCALITY_CONFIG[accent.locality].labelKey);
 
   // Reassign visibility: admin, manager, or the host of the meeting (not the attendee).
   const canReassign = !!currentUser && (
@@ -37,8 +44,8 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
     currentUser.id === meeting.hostId
   );
 
-  // `locationAddress` is not yet in the Meeting type but the backend may send it.
-  const locationAddress = (meeting as any).locationAddress as string | undefined;
+  // `locationAddress` is now typed in Meeting type.
+  const locationAddress = meeting.locationAddress;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -61,9 +68,12 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white" style={{ backgroundColor: category.color }}>
                     {category.label}
                  </span>
+                 <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white" style={{ backgroundColor: accent.colorVar }}>
+                    {localityLabel}
+                 </span>
                  <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest
-                    ${meeting.status === 'approved' ? 'bg-palm/10 text-palm' : 
-                      meeting.status === 'pending' ? 'bg-salmon/10 text-salmon' : 
+                    ${meeting.status === 'approved' ? 'bg-palm/10 text-palm' :
+                      meeting.status === 'pending' ? 'bg-salmon/10 text-salmon' :
                       'bg-gray-100 text-gray-500'}`}>
                     {t(meeting.status)}
                  </span>
@@ -201,6 +211,9 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
             <p className="text-xs text-gray-500">
                Booked by: <span className="font-medium">{meeting.bookedBy}</span> | ID: {meeting.id}
             </p>
+            {meeting.onBehalf && (
+              <p className="text-xs text-gray-500 mt-1">{t('scheduledOnBehalf').replace('{by}', meeting.bookedBy).replace('{for}', meeting.hostId)}</p>
+            )}
           </div>
 
           {/* Attachments */}
@@ -211,6 +224,12 @@ export const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
           />
 
           <div className="flex justify-end mt-6 gap-3">
+             {meeting.status === 'pending' && currentUser && (meeting.hostId === currentUser.id || (meeting.onBehalf && meeting.userId === currentUser.id) || currentUser.role === 'admin') && (
+               <>
+                 <Button variant="success" onClick={() => { onApprove?.(meeting.id); onClose(); }}>{t('accept')}</Button>
+                 <Button variant="secondary" onClick={() => { onReject?.(meeting.id); onClose(); }}>{t('decline')}</Button>
+               </>
+             )}
              {canReassign && (
                 <Button variant="secondary" onClick={() => setReassignOpen(true)}>
                    {lang === 'ar' ? 'إعادة تعيين' : 'Reassign'}

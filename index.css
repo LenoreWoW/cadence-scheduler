@@ -29,6 +29,10 @@
   --color-salmon: #dd7877;
   --color-dark-purple: #511C3C;
 
+  /* Meeting locality accents (Feature 1) */
+  --meeting-internal: #DC2626; /* RED — internal / in-building */
+  --meeting-external: #000000; /* BLACK — external / different-building */
+
   /* Type Scale */
   --text-hero: 64px;
   --text-display: 48px;
@@ -68,6 +72,7 @@
 :root.dark {
   --color-charcoal: #FFFFFF;
   --color-off-white: #121212;
+  --meeting-external: #E5E7EB; /* high-contrast equivalent of black on the dark theme */
   --bg-primary: #0a0a0a;
   --bg-secondary: #1a1a1a;
   --bg-card: #242424;
