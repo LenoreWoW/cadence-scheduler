@@ -547,15 +547,18 @@ router.patch('/:id/status', authenticateToken, asyncHandler(async (req: Authenti
       throw new AppError('Meeting not found', 404);
     }
 
-    // Host, admin, creator, or registered delegate can approve/reject
+    // Host or admin can always approve/reject. For an on-behalf tentative, a
+    // current registered delegate of the host may also confirm/decline (this is
+    // how the scheduling assistant accepts on the boss's behalf). The booker's
+    // own user_id is deliberately NOT a bypass: a guest must never self-approve
+    // their own pending request — host gating is the security boundary.
     if (['approved', 'rejected'].includes(status)) {
       const callerId = req.user!.userId;
       const callerRole = req.user!.role;
       const allowed =
         callerRole === 'admin' ||
         meeting.host_id === callerId ||
-        meeting.user_id === callerId ||
-        canActOnBehalf(callerId, meeting.host_id, callerRole);
+        (meeting.on_behalf && canActOnBehalf(callerId, meeting.host_id, callerRole));
       if (!allowed) throw new AppError('Not authorized to confirm or decline this meeting', 403);
     }
 
