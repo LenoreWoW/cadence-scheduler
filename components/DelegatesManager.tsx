@@ -38,7 +38,7 @@ export const DelegatesManager: React.FC<Props> = ({ users, t, lang }) => {
           {data.myDelegates.map(d => (
             <div key={d.delegateUserId} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
               <span className="text-sm text-charcoal">{nameOf(d.delegateUserId)}</span>
-              <button onClick={() => onRemove(d.delegateUserId)} className="text-salmon text-xs font-bold">{t('decline')}</button>
+              <button type="button" onClick={() => onRemove(d.delegateUserId)} className="text-salmon text-xs font-bold">{t('decline')}</button>
             </div>
           ))}
         </div>
@@ -47,7 +47,7 @@ export const DelegatesManager: React.FC<Props> = ({ users, t, lang }) => {
             <option value="">—</option>
             {users.filter(u => u.role !== 'guest').map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
-          <Button onClick={onAdd} disabled={!picked}>{t('addDelegate')}</Button>
+          <Button type="button" onClick={onAdd} disabled={!picked}>{t('addDelegate')}</Button>
         </div>
       </div>
       <div>
