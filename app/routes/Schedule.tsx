@@ -1,9 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useMeetings } from '../lib/hooks';
+import { useAuth } from '../lib/auth';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatusPill } from '../ui/StatusPill';
+import { MeetingDetail } from '../ui/MeetingDetail';
 import type { Meeting } from '../../types';
 
 const HIDDEN_STATUSES = new Set(['cancelled', 'rejected']);
@@ -36,7 +38,9 @@ const sortByTime = (a: Meeting, b: Meeting) => a.time.localeCompare(b.time);
 
 export const Schedule: React.FC = () => {
   const { data: meetings = [], isLoading, isError } = useMeetings();
+  const { user } = useAuth();
   const [showAll, setShowAll] = React.useState(false);
+  const [selected, setSelected] = React.useState<Meeting | null>(null);
 
   const visible = React.useMemo(
     () => meetings.filter((m) => showAll || !HIDDEN_STATUSES.has(m.status)),
@@ -125,28 +129,34 @@ export const Schedule: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(i * 0.03, 0.2) }}
                   >
-                    <Card className="flex items-center gap-4">
-                      <div className="w-16 shrink-0 text-center">
-                        <p className="font-display text-lg font-semibold leading-none">{m.time}</p>
-                        <p className="text-muted text-[11px] mt-1">{m.durationMinutes} min</p>
-                      </div>
-                      <div className="w-px self-stretch bg-[color:var(--border)]" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">{m.title}</p>
-                        <p className="text-muted text-sm truncate">
-                          {m.attendeeName}
-                          {m.hostName ? ` · with ${m.hostName}` : ''}
-                          {m.meetingFormat ? ` · ${m.meetingFormat === 'online' ? 'Online' : 'In person'}` : ''}
-                        </p>
-                      </div>
-                      <StatusPill status={m.status} />
-                    </Card>
+                    <button type="button" onClick={() => setSelected(m)} className="w-full text-left ring-focus rounded-2xl">
+                      <Card className="flex items-center gap-4 hover:border-al-adaam/40 transition-colors">
+                        <div className="w-16 shrink-0 text-center">
+                          <p className="font-display text-lg font-semibold leading-none">{m.time}</p>
+                          <p className="text-muted text-[11px] mt-1">{m.durationMinutes} min</p>
+                        </div>
+                        <div className="w-px self-stretch bg-[color:var(--border)]" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{m.title}</p>
+                          <p className="text-muted text-sm truncate">
+                            {m.attendeeName}
+                            {m.hostName ? ` · with ${m.hostName}` : ''}
+                            {m.meetingFormat ? ` · ${m.meetingFormat === 'online' ? 'Online' : 'In person'}` : ''}
+                          </p>
+                        </div>
+                        <StatusPill status={m.status} />
+                      </Card>
+                    </button>
                   </motion.div>
                 ))}
               </div>
             </section>
           ))}
         </div>
+      )}
+
+      {selected && (
+        <MeetingDetail meeting={selected} role={user?.role} currentUserId={user?.id} onClose={() => setSelected(null)} />
       )}
     </div>
   );

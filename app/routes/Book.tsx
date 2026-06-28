@@ -38,6 +38,11 @@ export const Book: React.FC = () => {
   const [format, setFormat] = useState<'in-person' | 'online'>('in-person');
   const [notes, setNotes] = useState('');
   const [showMore, setShowMore] = useState(false);
+  // Book on behalf of someone else (the assistant/gatekeeper flow).
+  const [forOther, setForOther] = useState(false);
+  const [otherName, setOtherName] = useState('');
+  const [otherEmail, setOtherEmail] = useState('');
+  const [locality, setLocality] = useState<'internal' | 'external'>('internal');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -67,11 +72,17 @@ export const Book: React.FC = () => {
     setFormat('in-person');
     setNotes('');
     setShowMore(false);
+    setForOther(false);
+    setOtherName('');
+    setOtherEmail('');
+    setLocality('internal');
     setError('');
     setDone(false);
   };
 
-  const canSubmit = !!hostId && !!date && !!time && title.trim().length > 0 && !submitting;
+  const canSubmit =
+    !!hostId && !!date && !!time && title.trim().length > 0 && !submitting &&
+    (!forOther || (otherName.trim().length > 0 && otherEmail.trim().length > 0));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,10 +95,11 @@ export const Book: React.FC = () => {
         date,
         time,
         durationMinutes: slotDuration || 30,
-        attendeeName: user?.name ?? '',
-        attendeeEmail: user?.email ?? '',
+        attendeeName: forOther ? otherName.trim() : (user?.name ?? ''),
+        attendeeEmail: forOther ? otherEmail.trim() : (user?.email ?? ''),
         hostId,
         meetingFormat: format,
+        locality,
         notes: notes.trim() || undefined,
       });
       setDone(true);
@@ -228,6 +240,27 @@ export const Book: React.FC = () => {
               </select>
             </div>
 
+            {/* Book on behalf of someone else (assistant / gatekeeper flow) */}
+            <div className="mt-5">
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <span className="text-sm font-semibold">Booking for someone else?</span>
+                <input
+                  type="checkbox"
+                  checked={forOther}
+                  onChange={(e) => setForOther(e.target.checked)}
+                  className="ring-focus h-5 w-5 rounded accent-al-adaam"
+                />
+              </label>
+              {forOther ? (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <input className={FIELD} placeholder="Their name" value={otherName} onChange={(e) => { setOtherName(e.target.value); setError(''); }} aria-label="Attendee name" />
+                  <input className={FIELD} type="email" placeholder="Their email" value={otherEmail} onChange={(e) => { setOtherEmail(e.target.value); setError(''); }} aria-label="Attendee email" />
+                </div>
+              ) : (
+                <p className="text-muted text-xs mt-1">Requesting as {user?.name ?? 'you'}.</p>
+              )}
+            </div>
+
             {/* Date */}
             <div className="mt-5">
               <label className="block text-sm font-semibold mb-2">Date</label>
@@ -311,6 +344,29 @@ export const Book: React.FC = () => {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Location type (internal / external) */}
+            <div className="mt-5">
+              <label className="block text-sm font-semibold mb-2">Location type</label>
+              <div className="inline-flex rounded-xl surface-2 p-1">
+                {(['internal', 'external'] as const).map((loc) => {
+                  const active = locality === loc;
+                  return (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => setLocality(loc)}
+                      className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ring-focus ${
+                        active ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'
+                      }`}
+                    >
+                      {loc === 'internal' ? 'Internal' : 'External'}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-muted text-xs mt-1">Internal = within the building · External = outside.</p>
             </div>
 
             {/* More options */}

@@ -28,3 +28,11 @@ export const useSetMeetingStatus = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['meetings'] }),
   });
 };
+
+export const useRescheduleMeeting = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, date, time }: { id: string; date: string; time: string }) => meetingsApi.reschedule(id, date, time),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['meetings'] }),
+  });
+};
