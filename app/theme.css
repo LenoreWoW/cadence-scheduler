@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Cadence — fresh design system (nuclear rebuild).
+ * Brand: Qatar GBA palette. Al-Adaam maroon is the single accent; Dune is the
+ * warm neutral; near-black/off-white surfaces. Tokens flip for dark mode.
+ * Colour *values* live in tailwind.config (bg-al-adaam etc.); these CSS vars
+ * carry surfaces/text so light+dark hold everywhere.
+ */
+:root {
+  --bg: #f7f6f4;          /* warm off-white canvas */
+  --surface: #ffffff;
+  --surface-2: #faf9f7;
+  --text: #15110f;
+  --muted: #6b6660;
+  --border: rgba(162, 148, 117, 0.22);   /* dune-tinted */
+  --accent: #8a1538;       /* al-adaam */
+  --accent-ink: #ffffff;
+  --shadow: 0 1px 2px rgba(20, 12, 8, 0.04), 0 8px 24px -12px rgba(20, 12, 8, 0.10);
+}
+:root.dark {
+  --bg: #0d0b0c;
+  --surface: #171315;
+  --surface-2: #1f1a1c;
+  --text: #f4f1ee;
+  --muted: #a39c95;
+  --border: rgba(255, 255, 255, 0.10);
+  --accent: #b81b49;       /* lifted maroon for dark contrast */
+  --accent-ink: #ffffff;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px -12px rgba(0,0,0,0.6);
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Design-system utility layer ────────────────────────────────────────── */
+@layer components {
+  .surface   { background: var(--surface); border: 1px solid var(--border); }
+  .surface-2 { background: var(--surface-2); }
+  .text-muted { color: var(--muted); }
+  .ring-focus { @apply focus:outline-none focus:ring-2 focus:ring-al-adaam/40 focus:ring-offset-2; }
+
+  /* Glassmorphism (immersive hero accents) */
+  .glass {
+    background: rgba(255, 255, 255, 0.10);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  /* Signature immersive backdrop: deep Al-Adaam → black with a slow drift */
+  .gba-aurora {
+    background:
+      radial-gradient(120% 120% at 15% 10%, rgba(138,21,56,0.55), transparent 55%),
+      radial-gradient(120% 120% at 85% 30%, rgba(81,28,60,0.50), transparent 50%),
+      radial-gradient(140% 140% at 50% 110%, rgba(162,148,117,0.18), transparent 60%),
+      #0c0608;
+    background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+    animation: gba-drift 22s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes gba-drift {
+  0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 0 0; }
+  100% { background-position: 30% 20%, 70% 30%, 50% 80%, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gba-aurora { animation: none; }
+}
+
+/* Quiet, native scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
