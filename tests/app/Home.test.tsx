@@ -25,9 +25,10 @@ describe('Home', () => {
     renderWithProviders(<Home />, { user: adminUser });
     expect(screen.getByText(/Good day, System/)).toBeInTheDocument();
     expect(screen.getByText('Your schedule, under control.')).toBeInTheDocument();
-    // Upcoming list resolves from the query.
+    // Upcoming list resolves from the query ('Intro' is unique to it).
     expect(await screen.findByText('Intro')).toBeInTheDocument();
-    expect(screen.getByText('Review')).toBeInTheDocument();
+    // Approver-only side rail.
+    expect(screen.getByText('Awaiting your review')).toBeInTheDocument();
   });
 
   it('greets a guest with the booking-focused hero', () => {
