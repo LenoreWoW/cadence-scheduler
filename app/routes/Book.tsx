@@ -5,6 +5,7 @@ import { useHosts, useCreateMeeting } from '../lib/hooks';
 import { useI18n } from '../lib/i18n';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
 
 // Local YYYY-MM-DD (avoids the UTC shift you'd get from toISOString()).
 const todayStr = () => {
@@ -227,19 +228,13 @@ export const Book: React.FC = () => {
             {/* Host */}
             <div>
               <label className="block text-sm font-semibold mb-2">{t('book.host')}</label>
-              <select
-                className={FIELD}
+              <Select
                 value={hostId}
-                onChange={(e) => onPickHost(e.target.value)}
-              >
-                <option value="">{t('book.selectHost')}</option>
-                {hosts.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.name}
-                    {h.title ? ` — ${h.title}` : ''}
-                  </option>
-                ))}
-              </select>
+                onChange={onPickHost}
+                placeholder={t('book.selectHost')}
+                ariaLabel={t('book.host')}
+                options={hosts.map((h) => ({ value: h.id, label: `${h.name}${h.title ? ` — ${h.title}` : ''}` }))}
+              />
             </div>
 
             {/* Book on behalf of someone else (assistant / gatekeeper flow) */}

@@ -22,6 +22,17 @@ export async function login(page: Page, role: RoleKey) {
   await expect(page).toHaveURL('http://localhost:5173/');
 }
 
+// Open the header account dropdown.
+export async function openAccountMenu(page: Page) {
+  await page.getByTestId('account-button').click();
+}
+
+// Sign out via the account dropdown.
+export async function signOut(page: Page) {
+  await openAccountMenu(page);
+  await page.getByTestId('account-signout').click();
+}
+
 // A YYYY-MM-DD date `days` in the future (local).
 export function futureDate(days: number): string {
   const d = new Date();

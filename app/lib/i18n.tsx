@@ -27,6 +27,7 @@ const EN = {
   'common.remove': 'Remove',
   'common.loading': 'Loading…',
   'common.connErr': 'Check your connection and try again.',
+  'account.lightMode': 'Light mode',
 
   // Roles
   'role.admin': 'Administrator',
@@ -227,6 +228,7 @@ const AR: Record<StringKey, string> = {
   'common.remove': 'إزالة',
   'common.loading': 'جارٍ التحميل…',
   'common.connErr': 'تحقق من اتصالك وحاول مرة أخرى.',
+  'account.lightMode': 'الوضع الفاتح',
 
   // Roles
   'role.admin': 'مدير النظام',

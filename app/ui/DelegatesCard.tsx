@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { Card } from './Card';
 import { Button } from './Button';
+import { Select } from './Select';
 
 // Manage who may act on your calendar (the assistant/gatekeeper model) — audit M12.
 export const DelegatesCard: React.FC = () => {
@@ -55,17 +56,15 @@ export const DelegatesCard: React.FC = () => {
           </div>
 
           <div className="mt-4 flex gap-2">
-            <select
-              className="surface-2 w-full rounded-lg px-3 py-2 text-sm ring-focus"
-              value={pick}
-              onChange={(e) => setPick(e.target.value)}
-              aria-label={t('delegates.add')}
-            >
-              <option value="">{t('delegates.addPlaceholder')}</option>
-              {candidates.map((h) => (
-                <option key={h.id} value={h.id}>{h.name}{h.title ? ` — ${h.title}` : ''}</option>
-              ))}
-            </select>
+            <div className="flex-1">
+              <Select
+                value={pick}
+                onChange={setPick}
+                ariaLabel={t('delegates.add')}
+                placeholder={t('delegates.addPlaceholder')}
+                options={candidates.map((h) => ({ value: h.id, label: `${h.name}${h.title ? ` — ${h.title}` : ''}` }))}
+              />
+            </div>
             <Button onClick={onAdd} disabled={!pick || add.isPending}>{add.isPending ? t('delegates.adding') : t('common.add')}</Button>
           </div>
 

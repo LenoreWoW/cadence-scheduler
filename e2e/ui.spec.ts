@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { login, openAccountMenu } from './helpers';
 
 test.describe('navigation, i18n & theme', () => {
   test('admin can reach every primary screen', async ({ page }) => {
@@ -15,7 +15,8 @@ test.describe('navigation, i18n & theme', () => {
     await nav.getByRole('link', { name: 'Requests' }).click();
     await expect(page.getByRole('heading', { name: 'Requests', level: 1 })).toBeVisible();
 
-    await page.getByRole('link', { name: 'System Admin' }).click();
+    await openAccountMenu(page);
+    await page.getByTestId('account-profile').click();
     await expect(page.getByRole('heading', { name: 'Profile', level: 1 })).toBeVisible();
   });
 
@@ -31,19 +32,21 @@ test.describe('navigation, i18n & theme', () => {
   test('language toggle flips the document to RTL Arabic and back', async ({ page }) => {
     await login(page, 'admin');
 
-    await page.getByRole('button', { name: 'Switch language' }).first().click();
+    await openAccountMenu(page);
+    await page.getByTestId('account-language').click();
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
     await expect(page.getByRole('navigation', { name: 'التنقل الرئيسي' })).toBeVisible();
 
-    // The toggle's accessible name is itself localized — switch back via the Arabic label.
-    await page.getByRole('button', { name: 'تبديل اللغة' }).first().click();
+    await openAccountMenu(page);
+    await page.getByTestId('account-language').click();
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   });
 
   test('dark mode preference persists across reloads', async ({ page }) => {
     await login(page, 'admin');
-    await page.getByRole('link', { name: 'System Admin' }).click();
+    await openAccountMenu(page);
+    await page.getByTestId('account-profile').click();
 
     await page.getByRole('switch', { name: 'Toggle dark mode' }).click();
     await expect(page.locator('html')).toHaveClass(/dark/);

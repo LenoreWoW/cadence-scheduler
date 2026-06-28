@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login } from './helpers';
+import { login, signOut } from './helpers';
 
 test.describe('authentication & role gating', () => {
   test('admin sees the approvals nav and the under-control hero', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('authentication & role gating', () => {
 
   test('sign out returns to the login screen', async ({ page }) => {
     await login(page, 'admin');
-    await page.getByRole('button', { name: 'Sign out' }).click();
+    await signOut(page);
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   });

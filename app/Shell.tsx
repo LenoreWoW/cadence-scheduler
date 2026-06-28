@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import { usePendingApproval } from './lib/hooks';
 import { canApprove } from './lib/roles';
 import { useI18n, type StringKey } from './lib/i18n';
-import { Button } from './ui/Button';
-import { LanguageToggle } from './ui/LanguageToggle';
+import { AccountMenu } from './ui/AccountMenu';
 
 const badge = (n: number) =>
   n > 0 ? (
@@ -13,8 +12,7 @@ const badge = (n: number) =>
   ) : null;
 
 export const Shell: React.FC = () => {
-  const { user, logout } = useAuth();
-  const nav = useNavigate();
+  const { user } = useAuth();
   const location = useLocation();
   const { t } = useI18n();
   const role = user?.role;
@@ -39,14 +37,12 @@ export const Shell: React.FC = () => {
   ];
   const links = allLinks.filter((l) => l.show);
 
-  const doLogout = async () => { await logout(); nav('/login'); };
-
   return (
     <div className="min-h-full flex flex-col">
-      <header className="sticky top-0 z-40 surface-2 border-b border-[color:var(--border)] backdrop-blur">
+      <header className="sticky top-0 z-40 surface-2 border-b border-[color:var(--border)] backdrop-blur supports-[backdrop-filter]:bg-[color:var(--surface-2)]/80">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-5 h-16">
-          <NavLink to="/" className="flex items-center gap-3 ring-focus rounded-lg">
-            <div className="w-8 h-8 rounded-xl bg-al-adaam text-white grid place-items-center font-semibold">C</div>
+          <NavLink to="/" className="flex items-center gap-2.5 ring-focus rounded-lg">
+            <div className="w-8 h-8 rounded-xl bg-al-adaam text-white grid place-items-center font-display font-semibold shadow-sm">C</div>
             <span className="font-semibold tracking-tight text-lg">Cadence</span>
           </NavLink>
 
@@ -66,10 +62,8 @@ export const Shell: React.FC = () => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
-            {user && <NavLink to="/profile" className="hidden sm:block text-sm text-muted hover:text-[color:var(--text)] ring-focus rounded">{user.name}</NavLink>}
-            <LanguageToggle className="hidden sm:inline-flex text-muted hover:text-[color:var(--text)]" />
-            <Button variant="ghost" className="hidden md:inline-flex" onClick={doLogout}>{t('common.signOut')}</Button>
+          <div className="flex items-center gap-1.5">
+            <AccountMenu />
             {/* Mobile hamburger */}
             <button
               type="button"
@@ -86,7 +80,7 @@ export const Shell: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu — primary navigation (account actions live in the avatar menu) */}
         {menuOpen && (
           <nav id="mobile-menu" aria-label={t('a11y.primaryNav')} className="md:hidden border-t border-[color:var(--border)] px-3 py-3 space-y-1">
             {links.map((l) => (
@@ -101,13 +95,6 @@ export const Shell: React.FC = () => {
                 <span>{t(l.labelKey)}</span>{badge(l.count)}
               </NavLink>
             ))}
-            <NavLink to="/profile" className="block px-3 py-3 rounded-lg text-base font-medium text-[color:var(--text)] hover:bg-[color:var(--surface-2)]">
-              {t('nav.profile')}{user ? ` · ${user.name}` : ''}
-            </NavLink>
-            <div className="px-3 py-2"><LanguageToggle className="surface-2 text-[color:var(--text)]" /></div>
-            <button onClick={doLogout} className="w-full text-start px-3 py-3 rounded-lg text-base font-medium text-bad hover:bg-[color:var(--surface-2)]">
-              {t('common.signOut')}
-            </button>
           </nav>
         )}
       </header>

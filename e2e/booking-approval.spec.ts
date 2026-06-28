@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login, futureDate } from './helpers';
+import { login, signOut, futureDate } from './helpers';
 
 // End-to-end gatekeeper flow: someone requests a meeting → an approver approves it.
 test('guest requests a meeting and an admin approves it', async ({ page }) => {
@@ -22,7 +22,7 @@ test('guest requests a meeting and an admin approves it', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Request sent' })).toBeVisible();
 
   // 2) Sign out, sign back in as an approver.
-  await page.getByRole('button', { name: 'Sign out' }).click();
+  await signOut(page);
   await expect(page).toHaveURL(/\/login$/);
   await login(page, 'admin');
 
