@@ -33,7 +33,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', showLabel = f
       className={`
         relative p-2 rounded-lg transition-all duration-200
         hover:bg-gray-100 dark:hover:bg-gray-800
-        focus:outline-none focus:ring-2 focus:ring-[#8A1538] focus:ring-offset-2
+        focus:outline-none focus:ring-2 focus:ring-al-adaam focus:ring-offset-2
         ${className}
       `}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}

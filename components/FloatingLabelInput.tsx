@@ -21,7 +21,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
       <input
         className={`
           peer pt-6 pb-2 px-4 w-full border rounded-lg bg-white dark:bg-gray-800
-          focus:outline-none focus:ring-2 focus:ring-[#8A1538] focus:border-transparent
+          focus:outline-none focus:ring-2 focus:ring-al-adaam focus:border-transparent
           disabled:bg-gray-50 disabled:text-gray-500
           transition-all duration-200
           ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-700'}
@@ -37,7 +37,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         className={`
           absolute left-4 transition-all duration-200 pointer-events-none
           ${isFocused || hasValue 
-            ? 'top-2 text-xs text-[#8A1538]' 
+            ? 'top-2 text-xs text-al-adaam'
             : 'top-1/2 -translate-y-1/2 text-gray-400'}
           ${error ? 'text-red-500' : ''}
         `}

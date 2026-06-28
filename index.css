@@ -262,10 +262,10 @@ h1, h2, h3, h4, h5, h6, .font-display {
   padding: 16px;
   padding-top: 24px;
   font-size: 16px;
-  color: #000000;
-  background: #FFFFFF;
-  border: 1.5px solid rgba(162, 148, 117, 0.4);
-  border-radius: 4px;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
   transition: all var(--transition-normal) var(--ease-editorial);
 }
 
@@ -316,7 +316,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
   position: relative;
   background: #FFFFFF;
   border: 1px solid rgba(162, 148, 117, 0.15);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 24px;
   transition: all var(--transition-normal) var(--ease-editorial);
 }

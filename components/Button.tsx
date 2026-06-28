@@ -18,14 +18,14 @@ export const Button: React.FC<ButtonProps> = ({
   onClick,
   ...props 
 }) => {
-  const baseStyle = "relative inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded font-medium text-sm uppercase tracking-wider transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden";
-  
+  const baseStyle = "relative inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg font-semibold text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden";
+
   const variants = {
-    primary: "bg-al-adaam text-white hover:bg-al-adaam-dark shadow-lg shadow-al-adaam/25 hover:shadow-xl focus:ring-al-adaam",
+    primary: "bg-al-adaam text-white hover:bg-al-adaam-dark shadow-sm focus:ring-al-adaam",
     secondary: "bg-transparent border border-dune text-charcoal hover:border-al-adaam hover:text-al-adaam focus:ring-dune",
     default: "bg-white border border-gray-200 text-charcoal hover:border-gray-300 hover:bg-gray-50 shadow-sm focus:ring-gray-300",
-    danger: "bg-salmon text-white hover:bg-red-700 focus:ring-salmon shadow-lg shadow-salmon/20",
-    success: "bg-palm text-white hover:bg-green-700 focus:ring-palm shadow-lg shadow-palm/20",
+    danger: "bg-salmon text-white hover:bg-red-700 focus:ring-salmon shadow-sm",
+    success: "bg-palm text-white hover:bg-green-700 focus:ring-palm shadow-sm",
     ghost: "bg-transparent text-dune hover:text-charcoal hover:bg-gray-100/50 focus:ring-gray-300"
   };
 
