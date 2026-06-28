@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { useAuth } from '../lib/auth';
 import { useHosts, useCreateMeeting } from '../lib/hooks';
+import { useI18n } from '../lib/i18n';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 
@@ -28,6 +29,7 @@ const FIELD =
 
 export const Book: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useI18n();
   const { data: hosts = [], isLoading, isError } = useHosts();
   const createMeeting = useCreateMeeting();
 
@@ -104,7 +106,7 @@ export const Book: React.FC = () => {
       });
       setDone(true);
     } catch (err: any) {
-      setError(err?.message || err?.body?.error || 'Could not send your request. Please try again.');
+      setError(err?.message || err?.body?.error || t('book.errSubmit'));
     } finally {
       setSubmitting(false);
     }
@@ -119,7 +121,7 @@ export const Book: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium mb-5"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-white" /> Request a meeting
+          <span className="w-1.5 h-1.5 rounded-full bg-white" /> {t('book.badge')}
         </motion.span>
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
@@ -127,7 +129,7 @@ export const Book: React.FC = () => {
           transition={{ delay: 0.05 }}
           className="font-display text-3xl md:text-5xl font-semibold leading-[1.05] max-w-2xl"
         >
-          Book time with the team.
+          {t('book.heroTitle')}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -135,7 +137,7 @@ export const Book: React.FC = () => {
           transition={{ delay: 0.12 }}
           className="text-white/70 mt-3 max-w-md"
         >
-          Pick a host and a time that works — they’ll confirm your request.
+          {t('book.heroSubtitle')}
         </motion.p>
       </div>
     </section>
@@ -165,8 +167,8 @@ export const Book: React.FC = () => {
         {header}
         <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10">
           <Card className="py-14 text-center">
-            <p className="font-display text-lg font-semibold">Couldn't load hosts</p>
-            <p className="mt-2 text-sm text-muted">Check your connection and try again.</p>
+            <p className="font-display text-lg font-semibold">{t('book.errLoadHosts')}</p>
+            <p className="mt-2 text-sm text-muted">{t('common.connErr')}</p>
           </Card>
         </div>
       </div>
@@ -180,9 +182,9 @@ export const Book: React.FC = () => {
         {header}
         <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10">
           <Card className="text-center py-14">
-            <p className="font-display text-lg font-semibold">No hosts available</p>
+            <p className="font-display text-lg font-semibold">{t('book.noHostsTitle')}</p>
             <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
-              There’s no one to book with right now. Check back once your team has set up their availability.
+              {t('book.noHostsBody')}
             </p>
           </Card>
         </div>
@@ -201,12 +203,12 @@ export const Book: React.FC = () => {
               <div className="mx-auto w-12 h-12 rounded-full grid place-items-center status-ok text-2xl">
                 ✓
               </div>
-              <h2 className="font-display text-2xl font-semibold mt-5">Request sent</h2>
+              <h2 className="font-display text-2xl font-semibold mt-5">{t('book.sentTitle')}</h2>
               <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
-                The host will approve it. You’ll see it on your schedule once it’s confirmed.
+                {t('book.sentBody')}
               </p>
               <div className="mt-7 flex justify-center">
-                <Button onClick={reset}>Book another</Button>
+                <Button onClick={reset}>{t('book.bookAnother')}</Button>
               </div>
             </Card>
           </motion.div>
@@ -224,13 +226,13 @@ export const Book: React.FC = () => {
           <Card className="max-w-2xl mx-auto">
             {/* Host */}
             <div>
-              <label className="block text-sm font-semibold mb-2">Host</label>
+              <label className="block text-sm font-semibold mb-2">{t('book.host')}</label>
               <select
                 className={FIELD}
                 value={hostId}
                 onChange={(e) => onPickHost(e.target.value)}
               >
-                <option value="">Select a host…</option>
+                <option value="">{t('book.selectHost')}</option>
                 {hosts.map((h) => (
                   <option key={h.id} value={h.id}>
                     {h.name}
@@ -243,7 +245,7 @@ export const Book: React.FC = () => {
             {/* Book on behalf of someone else (assistant / gatekeeper flow) */}
             <div className="mt-5">
               <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <span className="text-sm font-semibold">Booking for someone else?</span>
+                <span className="text-sm font-semibold">{t('book.forOther')}</span>
                 <input
                   type="checkbox"
                   checked={forOther}
@@ -253,17 +255,17 @@ export const Book: React.FC = () => {
               </label>
               {forOther ? (
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <input className={FIELD} placeholder="Their name" value={otherName} onChange={(e) => { setOtherName(e.target.value); setError(''); }} aria-label="Attendee name" />
-                  <input className={FIELD} type="email" placeholder="Their email" value={otherEmail} onChange={(e) => { setOtherEmail(e.target.value); setError(''); }} aria-label="Attendee email" />
+                  <input className={FIELD} placeholder={t('book.theirName')} value={otherName} onChange={(e) => { setOtherName(e.target.value); setError(''); }} aria-label={t('book.attendeeName')} />
+                  <input className={FIELD} type="email" placeholder={t('book.theirEmail')} value={otherEmail} onChange={(e) => { setOtherEmail(e.target.value); setError(''); }} aria-label={t('book.attendeeEmail')} />
                 </div>
               ) : (
-                <p className="text-muted text-xs mt-1">Requesting as {user?.name ?? 'you'}.</p>
+                <p className="text-muted text-xs mt-1">{t('book.requestingAs', { name: user?.name ?? t('book.you') })}</p>
               )}
             </div>
 
             {/* Date */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">Date</label>
+              <label className="block text-sm font-semibold mb-2">{t('book.date')}</label>
               <input
                 type="date"
                 className={FIELD}
@@ -278,11 +280,11 @@ export const Book: React.FC = () => {
 
             {/* Time */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">Time</label>
+              <label className="block text-sm font-semibold mb-2">{t('book.time')}</label>
               {!hostId ? (
-                <p className="text-muted text-sm">Select a host to see available times.</p>
+                <p className="text-muted text-sm">{t('book.selectHostForTimes')}</p>
               ) : slots.length === 0 ? (
-                <p className="text-muted text-sm">This host has no open times. Try a different host.</p>
+                <p className="text-muted text-sm">{t('book.noOpenTimes')}</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {slots.map((s) => {
@@ -311,12 +313,12 @@ export const Book: React.FC = () => {
 
             {/* Title */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">Title</label>
+              <label className="block text-sm font-semibold mb-2">{t('book.title')}</label>
               <input
                 type="text"
                 className={FIELD}
                 value={title}
-                placeholder="What’s this meeting about?"
+                placeholder={t('book.titlePlaceholder')}
                 onChange={(e) => {
                   setTitle(e.target.value);
                   setError('');
@@ -326,7 +328,7 @@ export const Book: React.FC = () => {
 
             {/* Format */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">Format</label>
+              <label className="block text-sm font-semibold mb-2">{t('book.format')}</label>
               <div className="inline-flex rounded-xl surface-2 p-1">
                 {(['in-person', 'online'] as const).map((f) => {
                   const active = format === f;
@@ -335,11 +337,11 @@ export const Book: React.FC = () => {
                       key={f}
                       type="button"
                       onClick={() => setFormat(f)}
-                      className={`rounded-lg px-4 py-1.5 text-sm font-medium capitalize transition-colors ring-focus ${
+                      className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ring-focus ${
                         active ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'
                       }`}
                     >
-                      {f === 'in-person' ? 'In-person' : 'Online'}
+                      {f === 'in-person' ? t('book.inPerson') : t('book.online')}
                     </button>
                   );
                 })}
@@ -348,7 +350,7 @@ export const Book: React.FC = () => {
 
             {/* Location type (internal / external) */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">Location type</label>
+              <label className="block text-sm font-semibold mb-2">{t('book.locationType')}</label>
               <div className="inline-flex rounded-xl surface-2 p-1">
                 {(['internal', 'external'] as const).map((loc) => {
                   const active = locality === loc;
@@ -361,12 +363,12 @@ export const Book: React.FC = () => {
                         active ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'
                       }`}
                     >
-                      {loc === 'internal' ? 'Internal' : 'External'}
+                      {loc === 'internal' ? t('book.internal') : t('book.external')}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-muted text-xs mt-1">Internal = within the building · External = outside.</p>
+              <p className="text-muted text-xs mt-1">{t('book.localityHint')}</p>
             </div>
 
             {/* More options */}
@@ -376,7 +378,7 @@ export const Book: React.FC = () => {
                 onClick={() => setShowMore((v) => !v)}
                 className="text-sm font-medium text-al-adaam hover:underline ring-focus rounded"
               >
-                {showMore ? 'Hide options' : 'More options'}
+                {showMore ? t('book.hideOptions') : t('book.moreOptions')}
               </button>
               {showMore && (
                 <motion.div
@@ -384,12 +386,12 @@ export const Book: React.FC = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="mt-3 overflow-hidden"
                 >
-                  <label className="block text-sm font-semibold mb-2">Notes</label>
+                  <label className="block text-sm font-semibold mb-2">{t('book.notes')}</label>
                   <textarea
                     rows={3}
                     className={`${FIELD} resize-none`}
                     value={notes}
-                    placeholder="Anything the host should know (optional)"
+                    placeholder={t('book.notesPlaceholder')}
                     onChange={(e) => setNotes(e.target.value)}
                   />
                 </motion.div>
@@ -400,11 +402,11 @@ export const Book: React.FC = () => {
 
             <div className="mt-7 flex items-center justify-between gap-4">
               <p className="text-muted text-xs">
-                Requesting as {user?.name ?? 'you'}
+                {t('book.requestingAsFooter', { name: user?.name ?? t('book.you') })}
                 {user?.email ? ` · ${user.email}` : ''}
               </p>
               <Button type="submit" disabled={!canSubmit}>
-                {submitting ? 'Sending…' : 'Send request'}
+                {submitting ? t('book.sending') : t('book.sendRequest')}
               </Button>
             </div>
           </Card>

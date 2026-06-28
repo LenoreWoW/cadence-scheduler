@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useAuth } from '../lib/auth';
+import { useI18n, roleLabelKey } from '../lib/i18n';
 import { themeService } from '../../services/themeService';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { DelegatesCard } from '../ui/DelegatesCard';
-
-const ROLE_LABEL: Record<string, string> = {
-  admin: 'Administrator',
-  manager: 'Manager',
-  subordinate: 'Team member',
-  guest: 'Guest',
-};
+import { LanguageToggle } from '../ui/LanguageToggle';
 
 const initials = (name: string): string =>
   name
@@ -23,6 +18,7 @@ const initials = (name: string): string =>
 
 export const Profile: React.FC = () => {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
 
   // Dark mode is owned by themeService (persists to localStorage + applied on load).
   const [dark, setDark] = useState<boolean>(() => themeService.isDarkMode());
@@ -41,7 +37,7 @@ export const Profile: React.FC = () => {
     try {
       await logout();
     } catch (e: any) {
-      setSignOutErr(e?.message || 'Sign out failed — please try again.');
+      setSignOutErr(e?.message || t('profile.signOutErr'));
     } finally {
       setSigningOut(false);
     }
@@ -51,10 +47,10 @@ export const Profile: React.FC = () => {
   if (!user) {
     return (
       <div className="mx-auto max-w-6xl px-5 py-8">
-        <h1 className="font-display text-3xl font-semibold mb-6">Profile</h1>
+        <h1 className="font-display text-3xl font-semibold mb-6">{t('profile.title')}</h1>
         <Card className="gba-aurora text-white text-center py-16">
-          <p className="font-display text-xl font-semibold">You're not signed in</p>
-          <p className="text-white/70 mt-2">Sign in to view and manage your profile.</p>
+          <p className="font-display text-xl font-semibold">{t('profile.notSignedIn')}</p>
+          <p className="text-white/70 mt-2">{t('profile.notSignedInBody')}</p>
         </Card>
       </div>
     );
@@ -63,8 +59,8 @@ export const Profile: React.FC = () => {
   return (
     <div className="mx-auto max-w-6xl px-5 py-8">
       <header className="mb-6">
-        <h1 className="font-display text-3xl font-semibold">Profile</h1>
-        <p className="text-muted text-sm mt-1">Manage your account and preferences.</p>
+        <h1 className="font-display text-3xl font-semibold">{t('profile.title')}</h1>
+        <p className="text-muted text-sm mt-1">{t('profile.subtitle')}</p>
       </header>
 
       <div className="space-y-4">
@@ -83,14 +79,14 @@ export const Profile: React.FC = () => {
               <p className="font-display text-xl font-semibold truncate">{user.name}</p>
               {user.title && <p className="text-muted text-sm truncate">{user.title}</p>}
               <span className="mt-2 inline-flex items-center rounded-full bg-al-adaam/10 px-2.5 py-0.5 text-xs font-semibold text-al-adaam">
-                {ROLE_LABEL[user.role] ?? user.role}
+                {roleLabelKey(user.role) ? t(roleLabelKey(user.role)!) : user.role}
               </span>
             </div>
           </div>
 
           {user.email && (
             <div className="mt-5 border-t border-[color:var(--border)] pt-4">
-              <p className="text-muted text-xs uppercase tracking-wide">Email</p>
+              <p className="text-muted text-xs uppercase tracking-wide">{t('profile.email')}</p>
               <p className="text-sm mt-1 truncate">{user.email}</p>
             </div>
           )}
@@ -98,17 +94,17 @@ export const Profile: React.FC = () => {
 
         {/* Preferences */}
         <Card>
-          <h2 className="font-display text-lg font-semibold mb-4">Preferences</h2>
+          <h2 className="font-display text-lg font-semibold mb-4">{t('profile.preferences')}</h2>
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="font-medium">Dark mode</p>
-              <p className="text-muted text-sm">Switch between light and dark appearance.</p>
+              <p className="font-medium">{t('profile.darkMode')}</p>
+              <p className="text-muted text-sm">{t('profile.darkModeDesc')}</p>
             </div>
             <button
               type="button"
               role="switch"
               aria-checked={dark}
-              aria-label="Toggle dark mode"
+              aria-label={t('a11y.toggleDark')}
               onClick={toggleDark}
               className={`ring-focus relative h-7 w-12 shrink-0 rounded-full transition-colors ${
                 dark ? 'bg-al-adaam' : 'bg-[color:var(--surface-2)]'
@@ -117,9 +113,17 @@ export const Profile: React.FC = () => {
               <motion.span
                 layout
                 transition={{ type: 'spring', stiffness: 500, damping: 32 }}
-                className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm ${dark ? 'left-6' : 'left-1'}`}
+                className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm ${dark ? 'start-6' : 'start-1'}`}
               />
             </button>
+          </div>
+
+          <div className="mt-5 border-t border-[color:var(--border)] pt-4 flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-medium">{t('profile.language')}</p>
+              <p className="text-muted text-sm">{t('profile.languageDesc')}</p>
+            </div>
+            <LanguageToggle className="surface-2 text-[color:var(--text)] hover:bg-al-adaam/10" />
           </div>
         </Card>
 
@@ -128,10 +132,10 @@ export const Profile: React.FC = () => {
 
         {/* Account actions */}
         <Card>
-          <h2 className="font-display text-lg font-semibold mb-1">Account</h2>
-          <p className="text-muted text-sm mb-4">Sign out of your current session.</p>
+          <h2 className="font-display text-lg font-semibold mb-1">{t('profile.account')}</h2>
+          <p className="text-muted text-sm mb-4">{t('profile.accountDesc')}</p>
           <Button variant="secondary" onClick={handleSignOut} disabled={signingOut}>
-            {signingOut ? 'Signing out…' : 'Sign out'}
+            {signingOut ? t('profile.signingOut') : t('common.signOut')}
           </Button>
           {signOutErr && <p role="alert" className="text-bad text-sm mt-3">{signOutErr}</p>}
         </Card>

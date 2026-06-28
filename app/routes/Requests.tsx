@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { usePendingApproval, useSetMeetingStatus } from '../lib/hooks';
+import { useI18n } from '../lib/i18n';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatusPill } from '../ui/StatusPill';
 import type { Meeting } from '../../types';
 
 export const Requests: React.FC = () => {
+  const { t } = useI18n();
   const { data: pending = [], isLoading, isError } = usePendingApproval();
   const setStatus = useSetMeetingStatus();
 
@@ -17,15 +19,15 @@ export const Requests: React.FC = () => {
 
   const decide = async (id: string, status: 'approved' | 'rejected') => {
     // Reject is consequential + effectively irreversible — confirm it (audit C3).
-    if (status === 'rejected' && !window.confirm('Reject this request? The requester will be declined.')) return;
+    if (status === 'rejected' && !window.confirm(t('requests.confirmReject'))) return;
     setActive({ id, status });
     setActionErr('');
     setNotice('');
     try {
       await setStatus.mutateAsync({ id, status });
-      setNotice(status === 'approved' ? 'Request approved — moved to the schedule.' : 'Request rejected.');
+      setNotice(status === 'approved' ? t('requests.approvedNotice') : t('requests.rejectedNotice'));
     } catch (e: any) {
-      setActionErr(e?.body?.error || e?.message || 'Could not update the request. Please try again.');
+      setActionErr(e?.body?.error || e?.message || t('requests.errUpdate'));
     } finally {
       setActive(null);
     }
@@ -34,7 +36,7 @@ export const Requests: React.FC = () => {
   return (
     <div className="mx-auto max-w-6xl px-5 py-8">
       <header className="mb-6 flex items-center gap-3">
-        <h1 className="font-display text-3xl font-semibold">Requests</h1>
+        <h1 className="font-display text-3xl font-semibold">{t('requests.title')}</h1>
         {!isLoading && pending.length > 0 && (
           <span className="inline-flex items-center rounded-full status-warn px-2.5 py-0.5 text-sm font-semibold">
             {pending.length}
@@ -52,8 +54,8 @@ export const Requests: React.FC = () => {
       {/* Load error */}
       {isError && !isLoading && (
         <Card className="py-12 text-center">
-          <p className="font-medium">Couldn't load requests</p>
-          <p className="mt-1 text-sm text-muted">Check your connection and try again.</p>
+          <p className="font-medium">{t('requests.errLoad')}</p>
+          <p className="mt-1 text-sm text-muted">{t('common.connErr')}</p>
         </Card>
       )}
 
@@ -80,8 +82,8 @@ export const Requests: React.FC = () => {
             <span className="glass mx-auto mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl text-2xl">
               ✓
             </span>
-            <h2 className="font-display text-2xl font-semibold">All caught up</h2>
-            <p className="mt-2 text-white/70">No requests waiting on your review.</p>
+            <h2 className="font-display text-2xl font-semibold">{t('requests.allCaught')}</h2>
+            <p className="mt-2 text-white/70">{t('requests.noWaiting')}</p>
           </div>
         </motion.div>
       )}
@@ -115,13 +117,13 @@ export const Requests: React.FC = () => {
                       onClick={() => decide(m.id, 'rejected')}
                       disabled={setStatus.isPending}
                     >
-                      {busy && active?.status === 'rejected' ? 'Rejecting…' : 'Reject'}
+                      {busy && active?.status === 'rejected' ? t('requests.rejecting') : t('common.reject')}
                     </Button>
                     <Button
                       onClick={() => decide(m.id, 'approved')}
                       disabled={setStatus.isPending}
                     >
-                      {busy && active?.status === 'approved' ? 'Approving…' : 'Approve'}
+                      {busy && active?.status === 'approved' ? t('requests.approving') : t('common.approve')}
                     </Button>
                   </div>
                 </Card>

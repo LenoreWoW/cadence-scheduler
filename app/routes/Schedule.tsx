@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { useMeetings } from '../lib/hooks';
 import { useAuth } from '../lib/auth';
+import { useI18n, type TFunction } from '../lib/i18n';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatusPill } from '../ui/StatusPill';
@@ -11,7 +12,7 @@ import type { Meeting } from '../../types';
 
 const HIDDEN_STATUSES = new Set(['cancelled', 'rejected']);
 
-const formatGroupDate = (date: string): string => {
+const formatGroupDate = (date: string, t: TFunction, locale: string): string => {
   // date is YYYY-MM-DD — parse as local to avoid TZ drift.
   const [y, m, d] = date.split('-').map(Number);
   const dt = new Date(y, (m ?? 1) - 1, d ?? 1);
@@ -23,15 +24,15 @@ const formatGroupDate = (date: string): string => {
   target.setHours(0, 0, 0, 0);
   const diffDays = Math.round((target.getTime() - today.getTime()) / 86_400_000);
 
-  const label = dt.toLocaleDateString('en-US', {
+  const label = dt.toLocaleDateString(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   });
-  if (diffDays === 0) return `Today · ${label}`;
-  if (diffDays === 1) return `Tomorrow · ${label}`;
-  if (diffDays === -1) return `Yesterday · ${label}`;
+  if (diffDays === 0) return `${t('date.today')} · ${label}`;
+  if (diffDays === 1) return `${t('date.tomorrow')} · ${label}`;
+  if (diffDays === -1) return `${t('date.yesterday')} · ${label}`;
   return label;
 };
 
@@ -40,6 +41,7 @@ const sortByTime = (a: Meeting, b: Meeting) => a.time.localeCompare(b.time);
 export const Schedule: React.FC = () => {
   const { data: meetings = [], isLoading, isError } = useMeetings();
   const { user } = useAuth();
+  const { t, locale } = useI18n();
   const [showAll, setShowAll] = React.useState(false);
   const [selected, setSelected] = React.useState<Meeting | null>(null);
   const [view, setView] = React.useState<'agenda' | 'month'>('agenda');
@@ -68,23 +70,23 @@ export const Schedule: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display text-3xl md:text-4xl font-semibold">Schedule</h1>
-          <p className="text-muted text-sm mt-1">Your agenda, grouped by day.</p>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold">{t('schedule.title')}</h1>
+          <p className="text-muted text-sm mt-1">{t('schedule.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex rounded-xl surface-2 p-1">
             {(['agenda', 'month'] as const).map((v) => (
               <button
                 key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium capitalize ring-focus ${view === v ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'}`}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium ring-focus ${view === v ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'}`}
               >
-                {v}
+                {t(v === 'agenda' ? 'schedule.viewAgenda' : 'schedule.viewMonth')}
               </button>
             ))}
           </div>
           {view === 'agenda' && (
             <Button variant={showAll ? 'secondary' : 'ghost'} onClick={() => setShowAll((v) => !v)} aria-pressed={showAll}>
-              {showAll ? 'Hide cancelled & rejected' : `Show cancelled & rejected${hiddenCount ? ` (${hiddenCount})` : ''}`}
+              {showAll ? t('schedule.hideCancelled') : `${t('schedule.showCancelled')}${hiddenCount ? ` (${hiddenCount})` : ''}`}
             </Button>
           )}
         </div>
@@ -105,19 +107,17 @@ export const Schedule: React.FC = () => {
       {/* Load error */}
       {isError && !isLoading && (
         <Card className="py-12 text-center">
-          <p className="font-medium">Couldn't load your schedule</p>
-          <p className="mt-1 text-sm text-muted">Check your connection and try again.</p>
+          <p className="font-medium">{t('schedule.errLoad')}</p>
+          <p className="mt-1 text-sm text-muted">{t('common.connErr')}</p>
         </Card>
       )}
 
       {/* Empty */}
       {view === 'agenda' && !isLoading && !isError && groups.length === 0 && (
         <div className="gba-aurora glass rounded-2xl text-white px-6 py-16 text-center">
-          <h2 className="font-display text-2xl font-semibold">Nothing on the calendar</h2>
+          <h2 className="font-display text-2xl font-semibold">{t('schedule.emptyTitle')}</h2>
           <p className="text-white/70 mt-2 max-w-md mx-auto text-sm">
-            {meetings.length > 0
-              ? 'Every meeting here is cancelled or rejected. Toggle them on to take a look.'
-              : 'When meetings are scheduled, they will show up here grouped by day.'}
+            {meetings.length > 0 ? t('schedule.emptyAllHidden') : t('schedule.emptyNone')}
           </p>
         </div>
       )}
@@ -128,9 +128,9 @@ export const Schedule: React.FC = () => {
           {groups.map((group) => (
             <section key={group.date}>
               <div className="flex items-baseline gap-3 mb-3">
-                <h2 className="font-display text-lg font-semibold">{formatGroupDate(group.date)}</h2>
+                <h2 className="font-display text-lg font-semibold">{formatGroupDate(group.date, t, locale)}</h2>
                 <span className="text-muted text-xs">
-                  {group.items.length} {group.items.length === 1 ? 'meeting' : 'meetings'}
+                  {group.items.length} {group.items.length === 1 ? t('unit.meeting') : t('unit.meetings')}
                 </span>
               </div>
               <div className="space-y-2">
@@ -145,15 +145,15 @@ export const Schedule: React.FC = () => {
                       <Card className="flex items-center gap-4 hover:border-al-adaam/40 transition-colors">
                         <div className="w-16 shrink-0 text-center">
                           <p className="font-display text-lg font-semibold leading-none">{m.time}</p>
-                          <p className="text-muted text-[11px] mt-1">{m.durationMinutes} min</p>
+                          <p className="text-muted text-[11px] mt-1">{m.durationMinutes} {t('unit.min')}</p>
                         </div>
                         <div className="w-px self-stretch bg-[color:var(--border)]" />
                         <div className="min-w-0 flex-1">
                           <p className="font-medium truncate">{m.title}</p>
                           <p className="text-muted text-sm truncate">
                             {m.attendeeName}
-                            {m.hostName ? ` · with ${m.hostName}` : ''}
-                            {m.meetingFormat ? ` · ${m.meetingFormat === 'online' ? 'Online' : 'In person'}` : ''}
+                            {m.hostName ? ` · ${t('meeting.with', { name: m.hostName })}` : ''}
+                            {m.meetingFormat ? ` · ${m.meetingFormat === 'online' ? t('book.online') : t('book.inPerson')}` : ''}
                           </p>
                         </div>
                         <StatusPill status={m.status} />

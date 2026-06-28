@@ -1,13 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import type { Meeting } from '../../types';
+import { useI18n, type StringKey } from '../lib/i18n';
 import { Button } from './Button';
 
 const HIDDEN = new Set(['cancelled', 'rejected']);
-const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DOW_KEYS: StringKey[] = ['cal.dowSun', 'cal.dowMon', 'cal.dowTue', 'cal.dowWed', 'cal.dowThu', 'cal.dowFri', 'cal.dowSat'];
 const key = (y: number, m: number, d: number) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
 // Month-grid density view — at-a-glance "how full is the day/week" (audit M21).
 export const MonthCalendar: React.FC<{ meetings: Meeting[]; onSelect: (m: Meeting) => void }> = ({ meetings, onSelect }) => {
+  const { t, locale } = useI18n();
   const now = new Date();
   const [cursor, setCursor] = useState({ y: now.getFullYear(), m: now.getMonth() });
 
@@ -27,7 +29,7 @@ export const MonthCalendar: React.FC<{ meetings: Meeting[]; onSelect: (m: Meetin
   const startDow = first.getDay();
   const daysInMonth = new Date(cursor.y, cursor.m + 1, 0).getDate();
   const todayKey = key(now.getFullYear(), now.getMonth(), now.getDate());
-  const monthLabel = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthLabel = first.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
   const cells: ({ day: number; k: string } | null)[] = [];
   for (let i = 0; i < startDow; i++) cells.push(null);
@@ -45,13 +47,13 @@ export const MonthCalendar: React.FC<{ meetings: Meeting[]; onSelect: (m: Meetin
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-lg font-semibold">{monthLabel}</h2>
         <div className="flex gap-1">
-          <Button variant="ghost" onClick={() => move(-1)} aria-label="Previous month">‹</Button>
-          <Button variant="ghost" onClick={() => setCursor({ y: now.getFullYear(), m: now.getMonth() })}>Today</Button>
-          <Button variant="ghost" onClick={() => move(1)} aria-label="Next month">›</Button>
+          <Button variant="ghost" onClick={() => move(-1)} aria-label={t('cal.prevMonth')}>‹</Button>
+          <Button variant="ghost" onClick={() => setCursor({ y: now.getFullYear(), m: now.getMonth() })}>{t('date.today')}</Button>
+          <Button variant="ghost" onClick={() => move(1)} aria-label={t('cal.nextMonth')}>›</Button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted mb-1">
-        {DOW.map((d) => <div key={d} className="py-1">{d}</div>)}
+        {DOW_KEYS.map((k) => <div key={k} className="py-1">{t(k)}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-1">
         {cells.map((c, i) =>
@@ -72,7 +74,7 @@ export const MonthCalendar: React.FC<{ meetings: Meeting[]; onSelect: (m: Meetin
                   </button>
                 ))}
                 {(byDate.get(c.k) ?? []).length > 3 && (
-                  <div className="px-1 text-[10px] text-muted">+{(byDate.get(c.k) ?? []).length - 3} more</div>
+                  <div className="px-1 text-[10px] text-muted">{t('cal.more', { n: (byDate.get(c.k) ?? []).length - 3 })}</div>
                 )}
               </div>
             </div>

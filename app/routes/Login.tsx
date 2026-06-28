@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
+import { useI18n, type StringKey } from '../lib/i18n';
 import { Button } from '../ui/Button';
+import { LanguageToggle } from '../ui/LanguageToggle';
 
 const DEV = import.meta.env.DEV || import.meta.env.VITE_DEV_LOGIN === 'true';
 const PORTAL_URL = (import.meta.env.VITE_PORTAL_URL as string | undefined) || '#';
-const ROLES = [
-  { u: 'admin', l: 'Admin' },
-  { u: 'manager', l: 'Manager' },
-  { u: 'sub', l: 'Subordinate' },
-  { u: 'user1', l: 'Guest' },
+const ROLES: { u: string; labelKey: StringKey }[] = [
+  { u: 'admin', labelKey: 'login.roleAdmin' },
+  { u: 'manager', labelKey: 'login.roleManager' },
+  { u: 'sub', labelKey: 'login.roleSub' },
+  { u: 'user1', labelKey: 'login.roleGuest' },
 ];
 
 export const Login: React.FC = () => {
   const { login } = useAuth();
   const nav = useNavigate();
+  const { t } = useI18n();
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
   const go = async (u: string) => {
     setErr(''); setBusy(true);
     try { await login(u, 'password'); nav('/'); }
-    catch (e: any) { setErr(e?.body?.error || e?.message || 'Sign-in failed'); }
+    catch (e: any) { setErr(e?.body?.error || e?.message || t('login.failed')); }
     finally { setBusy(false); }
   };
 
@@ -33,27 +36,30 @@ export const Login: React.FC = () => {
           <span className="font-semibold text-lg">Cadence</span>
         </div>
         <div>
-          <h1 className="font-display text-5xl font-semibold leading-tight">Scheduling,<br />handled.</h1>
-          <p className="text-white/70 mt-4 max-w-sm">Request, approve, and manage meetings for your office — one shared schedule.</p>
+          <h1 className="font-display text-5xl font-semibold leading-tight">{t('login.heroTitle1')}<br />{t('login.heroTitle2')}</h1>
+          <p className="text-white/70 mt-4 max-w-sm">{t('login.heroSubtitle')}</p>
         </div>
-        <p className="text-white/50 text-sm">Qatar GBA · Cadence</p>
+        <p className="text-white/50 text-sm">{t('login.brand')}</p>
       </div>
 
-      <div className="flex items-center justify-center p-8">
+      <div className="flex flex-col items-center justify-center p-8">
+        <div className="w-full max-w-sm flex justify-end">
+          <LanguageToggle className="text-muted hover:text-[color:var(--text)]" />
+        </div>
         <div className="w-full max-w-sm">
-          <h2 className="font-display text-2xl font-semibold mb-2">Sign in</h2>
+          <h2 className="font-display text-2xl font-semibold mb-2">{t('login.title')}</h2>
           <p className="text-muted text-sm mb-8">
-            You normally arrive authenticated from the portal.{DEV ? ' For now, choose a role to continue:' : ''}
+            {t('login.portalNote')}{DEV ? t('login.devNote') : ''}
           </p>
           {DEV ? (
             <div className="grid grid-cols-2 gap-3">
               {ROLES.map((r) => (
-                <Button key={r.u} variant="secondary" disabled={busy} onClick={() => go(r.u)}>{r.l}</Button>
+                <Button key={r.u} variant="secondary" disabled={busy} onClick={() => go(r.u)}>{t(r.labelKey)}</Button>
               ))}
             </div>
           ) : (
             <Button onClick={() => { if (PORTAL_URL !== '#') window.location.href = PORTAL_URL; }}>
-              Continue to the portal
+              {t('login.continuePortal')}
             </Button>
           )}
           {err && <p role="alert" className="text-bad text-sm mt-4">{err}</p>}
