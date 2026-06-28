@@ -151,16 +151,16 @@ export const BookingCalendarView: React.FC<Props> = ({ lang = 'en' }) => {
               <button
                 key={i}
                 onClick={() => setSelectedDay(key)}
-                className={`aspect-square md:aspect-[7/4] text-left p-2 border-b border-r border-gray-50 hover:bg-[#8A1538]/5 transition-colors ${
-                  isToday ? 'bg-[#8A1538]/5' : ''
+                className={`aspect-square md:aspect-[7/4] text-left p-2 border-b border-r border-gray-50 hover:bg-al-adaam/5 transition-colors ${
+                  isToday ? 'bg-al-adaam/5' : ''
                 }`}
               >
                 <div className="flex items-start justify-between mb-1">
-                  <span className={`text-xs font-bold ${isToday ? 'text-[#8A1538]' : 'text-charcoal'}`}>
+                  <span className={`text-xs font-bold ${isToday ? 'text-al-adaam' : 'text-charcoal'}`}>
                     {d.getDate()}
                   </span>
                   {list.length > 0 && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-[#8A1538]/10 text-[#8A1538]">
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-al-adaam/10 text-al-adaam">
                       {list.length}
                     </span>
                   )}

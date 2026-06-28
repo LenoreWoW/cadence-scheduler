@@ -140,7 +140,7 @@ export const BulkUserImportModal: React.FC<BulkUserImportModalProps> = ({ isOpen
               value={csv}
               onChange={(e) => setCsv(e.target.value)}
               rows={6}
-              className="w-full bg-gray-900 text-gray-100 rounded-lg p-4 text-xs font-mono outline-none focus:ring-2 focus:ring-[#8A1538]"
+              className="w-full bg-gray-900 text-gray-100 rounded-lg p-4 text-xs font-mono outline-none focus:ring-2 focus:ring-al-adaam"
               dir="ltr"
             />
 

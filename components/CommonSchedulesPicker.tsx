@@ -129,7 +129,7 @@ export const CommonSchedulesPicker: React.FC<Props> = ({ link, onChange, lang = 
                   <button
                     onClick={() => handleApply(s.id)}
                     disabled={savingId === s.id || !link?.id}
-                    className="text-xs font-bold text-[#8A1538] hover:text-[#5f0e26] uppercase tracking-wider disabled:opacity-50"
+                    className="text-xs font-bold text-al-adaam hover:text-al-adaam-dark uppercase tracking-wider disabled:opacity-50"
                   >
                     {labels.apply}
                   </button>
@@ -146,7 +146,7 @@ export const CommonSchedulesPicker: React.FC<Props> = ({ link, onChange, lang = 
           placeholder={labels.placeholder}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
         />
         <Button variant="secondary" onClick={handleSaveNew} loading={savingNew} disabled={!newName.trim()}>
           {labels.saveCurrent}

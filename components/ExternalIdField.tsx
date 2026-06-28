@@ -95,7 +95,7 @@ export const ExternalIdField: React.FC<Props> = ({ link, onChange, lang = 'en' }
         value={template}
         onChange={(e) => setTemplate(e.target.value)}
         placeholder="CADENCE-{{date}}-{{counter}}"
-        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] font-mono"
+        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam font-mono"
       />
 
       <div className="flex flex-wrap gap-2">

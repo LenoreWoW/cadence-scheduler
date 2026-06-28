@@ -130,8 +130,8 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
                     onClick={() => setDuration(d)}
                     className={`px-4 py-2 rounded-lg border text-sm font-medium ${
                       duration === d
-                        ? 'bg-[#8A1538] text-white border-[#8A1538]'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-[#8A1538]'
+                        ? 'bg-al-adaam text-white border-al-adaam'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-al-adaam'
                     }`}
                   >
                     {d} min
@@ -149,7 +149,7 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
                 min={new Date().toISOString().split('T')[0]}
                 value={date}
                 onChange={e => { setDate(e.target.value); setTime(''); }}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
               />
             </div>
             <div>
@@ -169,8 +169,8 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
                       onClick={() => setTime(s.time)}
                       className={`px-3 py-2 rounded-lg text-sm border ${
                         time === s.time
-                          ? 'bg-[#8A1538] text-white border-[#8A1538]'
-                          : 'bg-white text-slate-700 border-slate-200 hover:border-[#8A1538]'
+                          ? 'bg-al-adaam text-white border-al-adaam'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-al-adaam'
                       }`}
                     >
                       {s.label}
@@ -190,7 +190,7 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
                   onChange={e => setName(e.target.value)}
                   required
                   maxLength={100}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
                 />
               </div>
               <div>
@@ -201,7 +201,7 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
                   onChange={e => setEmail(e.target.value)}
                   required
                   maxLength={254}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
                 />
               </div>
               <div className="md:col-span-2">
@@ -213,7 +213,7 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
                   onChange={e => setNotes(e.target.value)}
                   maxLength={2000}
                   rows={3}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
                 />
               </div>
             </div>
@@ -226,7 +226,7 @@ export const TeamBookingPage: React.FC<{ slug: string }> = ({ slug }) => {
           <button
             type="submit"
             disabled={!date || !time || !name || !email || submitting}
-            className="w-full px-5 py-3 bg-[#8A1538] hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
+            className="w-full px-5 py-3 bg-al-adaam hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
           >
             {submitting ? 'Submitting…' : 'Request meeting'}
           </button>

@@ -140,16 +140,16 @@ export const TermsOfServicePage: React.FC = () => {
       <header className="border-b border-gray-100 bg-white sticky top-0 z-10 backdrop-blur">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 bg-[#8A1538] rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-[#8A1538]/20">
+            <div className="w-8 h-8 bg-al-adaam rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-al-adaam/20">
               C
             </div>
-            <span className="font-display font-bold tracking-tight text-lg group-hover:text-[#8A1538] transition-colors">
+            <span className="font-display font-bold tracking-tight text-lg group-hover:text-al-adaam transition-colors">
               Cadence
             </span>
           </a>
           <button
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            className="text-xs font-bold border border-gray-200 px-4 py-2 rounded-full text-gray-600 hover:bg-[#8A1538] hover:text-white hover:border-[#8A1538] transition-colors uppercase tracking-wider"
+            className="text-xs font-bold border border-gray-200 px-4 py-2 rounded-full text-gray-600 hover:bg-al-adaam hover:text-white hover:border-al-adaam transition-colors uppercase tracking-wider"
             aria-label="Toggle language"
           >
             {lang === 'en' ? 'العربية' : 'English'}
@@ -173,11 +173,11 @@ export const TermsOfServicePage: React.FC = () => {
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-100 text-xs text-gray-400 font-mono">
-          <a href="/privacy" className="hover:text-[#8A1538] transition-colors">
+          <a href="/privacy" className="hover:text-al-adaam transition-colors">
             {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
           </a>
           <span className="mx-3">·</span>
-          <a href="/" className="hover:text-[#8A1538] transition-colors">
+          <a href="/" className="hover:text-al-adaam transition-colors">
             {lang === 'en' ? 'Back to app' : 'العودة للتطبيق'}
           </a>
         </div>

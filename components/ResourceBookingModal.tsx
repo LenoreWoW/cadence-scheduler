@@ -141,7 +141,7 @@ export const ResourceBookingModal: React.FC<ResourceBookingModalProps> = ({
                     conflict
                       ? 'border-salmon/30 bg-salmon/5 opacity-60 cursor-not-allowed'
                       : selected === r.id
-                      ? 'border-[#8A1538] bg-[#8A1538]/5 ring-1 ring-[#8A1538]'
+                      ? 'border-al-adaam bg-al-adaam/5 ring-1 ring-al-adaam'
                       : 'border-gray-100 hover:border-gray-300'
                   }`}
                 >

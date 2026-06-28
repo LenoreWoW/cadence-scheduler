@@ -132,13 +132,13 @@ export const RestrictionScheduleEditor: React.FC<Props> = ({ linkId, lang = 'en'
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+          className="rounded text-al-adaam focus:ring-al-adaam"
         />
         <span className="text-sm font-bold text-charcoal">{labels.enable}</span>
       </label>
 
       {enabled && (
-        <div className="space-y-3 pl-6 rtl:pr-6 rtl:pl-0 border-l-2 border-[#8A1538]/20 rtl:border-r-2 rtl:border-l-0">
+        <div className="space-y-3 pl-6 rtl:pr-6 rtl:pl-0 border-l-2 border-al-adaam/20 rtl:border-r-2 rtl:border-l-0">
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">{labels.days}</label>
             <div className="flex flex-wrap gap-2">
@@ -149,7 +149,7 @@ export const RestrictionScheduleEditor: React.FC<Props> = ({ linkId, lang = 'en'
                   onClick={() => toggleDay(d.id)}
                   className={`w-10 h-10 rounded-lg text-xs font-bold border transition-all ${
                     days.includes(d.id)
-                      ? 'bg-[#8A1538] text-white border-[#8A1538]'
+                      ? 'bg-al-adaam text-white border-al-adaam'
                       : 'bg-white text-gray-400 border-gray-200'
                   }`}
                 >
@@ -164,7 +164,7 @@ export const RestrictionScheduleEditor: React.FC<Props> = ({ linkId, lang = 'en'
               <select
                 value={startHour}
                 onChange={(e) => setStartHour(Number(e.target.value))}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
               >
                 {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                   <option key={h} value={h}>{h}:00</option>
@@ -176,7 +176,7 @@ export const RestrictionScheduleEditor: React.FC<Props> = ({ linkId, lang = 'en'
               <select
                 value={endHour}
                 onChange={(e) => setEndHour(Number(e.target.value))}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
               >
                 {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                   <option key={h} value={h}>{h}:00</option>

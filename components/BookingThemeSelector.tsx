@@ -94,7 +94,7 @@ export const BookingThemeSelector: React.FC<Props> = ({ link, onChange, lang = '
             onClick={() => setTheme(t)}
             className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${
               theme === t
-                ? 'bg-[#8A1538] text-white border-[#8A1538]'
+                ? 'bg-al-adaam text-white border-al-adaam'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
             }`}
           >
@@ -108,7 +108,7 @@ export const BookingThemeSelector: React.FC<Props> = ({ link, onChange, lang = '
           type="checkbox"
           checked={hideDetails}
           onChange={(e) => setHideDetails(e.target.checked)}
-          className="mt-1 rounded text-[#8A1538] focus:ring-[#8A1538]"
+          className="mt-1 rounded text-al-adaam focus:ring-al-adaam"
         />
         <div>
           <p className="text-sm font-bold text-charcoal">

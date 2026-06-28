@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Language, DateRange, VideoPlatform } from '../types';
 import { Button } from './Button';
+import { avatarPlaceholder } from '../services/avatar';
 import { CalendarGrid } from './CalendarGrid';
 import { tourService } from '../services/tourService';
 import { VIDEO_PLATFORM_CONFIG } from '../constants';
@@ -234,7 +235,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                    <div className="animate-fade-in space-y-6">
                       <div className="flex items-center gap-6">
                          <div className="relative group cursor-pointer">
-                            <img src={formData.avatar || `https://ui-avatars.com/api/?name=${formData.name}`} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" alt="" />
+                            <img src={formData.avatar || avatarPlaceholder(formData.name)} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" alt="" />
                             <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                <span className="text-white text-xs font-bold uppercase">Edit</span>
                             </div>

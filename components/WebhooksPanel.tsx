@@ -191,7 +191,7 @@ export const WebhooksPanel: React.FC<WebhooksPanelProps> = ({ lang = 'en' }) => 
                   <button
                     onClick={() => handleTest(h.id)}
                     disabled={testingId === h.id}
-                    className="text-xs font-bold text-[#8A1538] hover:text-[#5f0e26] uppercase tracking-wider disabled:opacity-50"
+                    className="text-xs font-bold text-al-adaam hover:text-al-adaam-dark uppercase tracking-wider disabled:opacity-50"
                   >
                     {labels.test}
                   </button>
@@ -237,7 +237,7 @@ export const WebhooksPanel: React.FC<WebhooksPanelProps> = ({ lang = 'en' }) => 
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                 />
               </div>
               <div>
@@ -248,7 +248,7 @@ export const WebhooksPanel: React.FC<WebhooksPanelProps> = ({ lang = 'en' }) => 
                   value={form.url}
                   onChange={(e) => setForm({ ...form, url: e.target.value })}
                   placeholder="https://example.com/hooks/cadence"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                   dir="ltr"
                 />
               </div>
@@ -260,7 +260,7 @@ export const WebhooksPanel: React.FC<WebhooksPanelProps> = ({ lang = 'en' }) => 
                       key={ev}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
                         form.events.includes(ev)
-                          ? 'border-[#8A1538] bg-[#8A1538]/5'
+                          ? 'border-al-adaam bg-al-adaam/5'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -268,7 +268,7 @@ export const WebhooksPanel: React.FC<WebhooksPanelProps> = ({ lang = 'en' }) => 
                         type="checkbox"
                         checked={form.events.includes(ev)}
                         onChange={() => toggleEvent(ev)}
-                        className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                        className="rounded text-al-adaam focus:ring-al-adaam"
                       />
                       <span className="text-xs font-mono text-charcoal">{ev}</span>
                     </label>
@@ -282,7 +282,7 @@ export const WebhooksPanel: React.FC<WebhooksPanelProps> = ({ lang = 'en' }) => 
                   value={form.secret}
                   onChange={(e) => setForm({ ...form, secret: e.target.value })}
                   placeholder="whsec_..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none font-mono"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none font-mono"
                   dir="ltr"
                 />
               </div>

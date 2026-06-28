@@ -136,14 +136,14 @@ export const WorkflowsPanel: React.FC<WorkflowsPanelProps> = ({
                       onChange={() => handleToggleActive(w)}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8A1538]"></div>
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-al-adaam"></div>
                   </label>
                   <button
                     onClick={() => {
                       setEditing(w);
                       setBuilderOpen(true);
                     }}
-                    className="text-xs font-bold text-[#8A1538] hover:text-[#5f0e26] uppercase tracking-wider"
+                    className="text-xs font-bold text-al-adaam hover:text-al-adaam-dark uppercase tracking-wider"
                   >
                     {labels.edit}
                   </button>

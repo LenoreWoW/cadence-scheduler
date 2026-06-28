@@ -132,7 +132,7 @@ export const OOOEditor: React.FC<Props> = ({ lang = 'en' }) => {
             required
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
           />
         </div>
         <div className="md:col-span-3">
@@ -142,7 +142,7 @@ export const OOOEditor: React.FC<Props> = ({ lang = 'en' }) => {
             required
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
           />
         </div>
         <div className="md:col-span-4">
@@ -150,7 +150,7 @@ export const OOOEditor: React.FC<Props> = ({ lang = 'en' }) => {
           <select
             value={delegate}
             onChange={(e) => setDelegate(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
           >
             <option value="">—</option>
             {users.map((u) => (

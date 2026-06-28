@@ -163,14 +163,14 @@ export const UserAttributesEditor: React.FC<Props> = ({ scope, lang }) => {
                 placeholder={isRTL ? 'المفتاح' : 'key'}
                 value={e.key}
                 onChange={(ev) => updateRow(e.id, { key: ev.target.value })}
-                className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] font-mono"
+                className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam font-mono"
               />
               <input
                 type="text"
                 placeholder={isRTL ? 'القيمة' : 'value'}
                 value={e.value}
                 onChange={(ev) => updateRow(e.id, { value: ev.target.value })}
-                className="col-span-7 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                className="col-span-7 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
               />
               <button
                 type="button"

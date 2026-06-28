@@ -153,7 +153,7 @@ export const DomainVerificationPanel: React.FC<Props> = ({ lang }) => {
           value={newDomain}
           onChange={(e) => setNewDomain(e.target.value)}
           placeholder="example.com"
-          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] font-mono"
+          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam font-mono"
         />
         <Button onClick={handleAdd} loading={submitting} variant="secondary">
           {isRTL ? 'إضافة' : 'Add domain'}

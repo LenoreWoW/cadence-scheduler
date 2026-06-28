@@ -256,7 +256,7 @@ export const CalDavConnect: React.FC<Props> = ({ lang }) => {
                   value={autoDiscoverEmail}
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="you@icloud.com"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
                 <p className="text-[11px] text-gray-400 mt-1">
                   {isRTL
@@ -274,7 +274,7 @@ export const CalDavConnect: React.FC<Props> = ({ lang }) => {
                   value={serverUrl}
                   onChange={(e) => setServerUrl(e.target.value)}
                   placeholder="https://caldav.example.com"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] font-mono"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam font-mono"
                 />
               </div>
 
@@ -286,7 +286,7 @@ export const CalDavConnect: React.FC<Props> = ({ lang }) => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
 
@@ -299,7 +299,7 @@ export const CalDavConnect: React.FC<Props> = ({ lang }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="new-password"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
 

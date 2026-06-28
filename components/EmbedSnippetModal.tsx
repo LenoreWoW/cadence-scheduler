@@ -137,7 +137,7 @@ export const EmbedSnippetModal: React.FC<EmbedSnippetModalProps> = ({ isOpen, on
                 <select
                   value={floatingPosition}
                   onChange={(e) => setFloatingPosition(e.target.value as any)}
-                  className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                  className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                 >
                   <option value="bottom-right">bottom-right</option>
                   <option value="bottom-left">bottom-left</option>
@@ -180,7 +180,7 @@ export const EmbedSnippetModal: React.FC<EmbedSnippetModalProps> = ({ isOpen, on
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       type="button"
-                      className="px-4 py-2 bg-[#8A1538] text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-md"
+                      className="px-4 py-2 bg-al-adaam text-white text-xs font-bold uppercase tracking-wider rounded-md shadow-md"
                     >
                       Book a meeting
                     </button>
@@ -188,7 +188,7 @@ export const EmbedSnippetModal: React.FC<EmbedSnippetModalProps> = ({ isOpen, on
                 )}
                 {tab === 'floating' && (
                   <div
-                    className={`absolute ${positions.find((p) => p.id === floatingPosition)?.classes} w-12 h-12 rounded-full bg-[#8A1538] text-white flex items-center justify-center shadow-lg`}
+                    className={`absolute ${positions.find((p) => p.id === floatingPosition)?.classes} w-12 h-12 rounded-full bg-al-adaam text-white flex items-center justify-center shadow-lg`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

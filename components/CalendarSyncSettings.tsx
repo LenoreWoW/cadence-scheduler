@@ -242,7 +242,7 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8A1538]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-al-adaam" />
       </div>
     );
   }
@@ -344,7 +344,7 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
                     onChange={(e) => toggleSync('google', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="relative w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-[#8A1538]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-palm"></div>
+                  <div className="relative w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-al-adaam/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-palm"></div>
                   <span className="text-xs text-slate-500">{isRTL ? 'مزامنة' : 'Sync'}</span>
                 </label>
                 <Button onClick={() => handleDisconnect('google')} variant="ghost" className="text-red-500 hover:text-red-700">
@@ -374,7 +374,7 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
                   value={getConnectionForProvider('google')?.calendarId || ''}
                   onChange={(e) => handleCalendarChange('google', e.target.value)}
                   disabled={calendarsLoading.google}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:border-[#8A1538]"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:border-al-adaam"
                 >
                   {calendars.google.map((c: any) => (
                     <option key={c.id} value={c.id}>
@@ -435,7 +435,7 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
                     onChange={(e) => toggleSync('microsoft', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="relative w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-[#8A1538]/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-palm"></div>
+                  <div className="relative w-11 h-6 bg-slate-200 peer-focus:ring-2 peer-focus:ring-al-adaam/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-palm"></div>
                   <span className="text-xs text-slate-500">{isRTL ? 'مزامنة' : 'Sync'}</span>
                 </label>
                 <Button onClick={() => handleDisconnect('microsoft')} variant="ghost" className="text-red-500 hover:text-red-700">
@@ -465,7 +465,7 @@ export const CalendarSyncSettings: React.FC<CalendarSyncSettingsProps> = ({
                   value={getConnectionForProvider('microsoft')?.calendarId || ''}
                   onChange={(e) => handleCalendarChange('microsoft', e.target.value)}
                   disabled={calendarsLoading.microsoft}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:border-[#8A1538]"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-sm focus:outline-none focus:border-al-adaam"
                 >
                   {calendars.microsoft.map((c: any) => (
                     <option key={c.id} value={c.id}>

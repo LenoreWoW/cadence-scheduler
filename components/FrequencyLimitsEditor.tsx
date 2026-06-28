@@ -106,12 +106,12 @@ export const FrequencyLimitsEditor: React.FC<Props> = ({ link, onChange, lang = 
               min={0}
               value={perAttendeeCount}
               onChange={(e) => setPerAttendeeCount(Math.max(0, Number(e.target.value) || 0))}
-              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
             />
             <select
               value={perAttendeePeriod}
               onChange={(e) => setPerAttendeePeriod(e.target.value as Period)}
-              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
             >
               <option value="day">{labels.day}</option>
               <option value="week">{labels.week}</option>
@@ -129,12 +129,12 @@ export const FrequencyLimitsEditor: React.FC<Props> = ({ link, onChange, lang = 
               min={0}
               value={maxTotalMinutes}
               onChange={(e) => setMaxTotalMinutes(Math.max(0, Number(e.target.value) || 0))}
-              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
             />
             <select
               value={totalMinutesPeriod}
               onChange={(e) => setTotalMinutesPeriod(e.target.value as Period)}
-              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+              className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
             >
               <option value="day">{labels.day}</option>
               <option value="week">{labels.week}</option>

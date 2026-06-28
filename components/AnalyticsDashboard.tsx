@@ -141,7 +141,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               onClick={() => setTimeRange(value)}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                 timeRange === value
-                  ? 'bg-white text-[#8A1538] shadow-sm'
+                  ? 'bg-white text-al-adaam shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -159,8 +159,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <span className="text-gray-500 text-sm">
               {isRTL ? 'إجمالي الاجتماعات' : 'Total Meetings'}
             </span>
-            <span className="w-10 h-10 rounded-full bg-[#8A1538]/10 flex items-center justify-center">
-              <svg className="w-5 h-5 text-[#8A1538]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="w-10 h-10 rounded-full bg-al-adaam/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-al-adaam" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </span>
@@ -229,14 +229,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             {stats.byDayOfWeek.map((count, index) => (
               <div key={index} className="flex flex-col items-center flex-1">
                 <div 
-                  className="w-full bg-[#8A1538]/20 rounded-t transition-all duration-500"
+                  className="w-full bg-al-adaam/20 rounded-t transition-all duration-500"
                   style={{ 
                     height: `${(count / maxDayCount) * 100}%`,
                     minHeight: count > 0 ? '8px' : '0'
                   }}
                 >
                   <div 
-                    className="w-full bg-[#8A1538] rounded-t transition-all duration-500"
+                    className="w-full bg-al-adaam rounded-t transition-all duration-500"
                     style={{ height: '100%' }}
                   />
                 </div>
@@ -290,7 +290,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
           <h3 className="font-semibold text-gray-900 mb-4">{t.peakHours}</h3>
           <div className="text-center">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#8A1538] to-[#511C3C] flex items-center justify-center mx-auto">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-al-adaam to-[#511C3C] flex items-center justify-center mx-auto">
               <span className="text-2xl font-display font-bold text-white">
                 {stats.peakHour}:00
               </span>

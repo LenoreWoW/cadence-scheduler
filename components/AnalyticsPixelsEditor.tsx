@@ -123,7 +123,7 @@ export const AnalyticsPixelsEditor: React.FC<Props> = ({ linkId, lang = 'en' }) 
           <select
             value={provider}
             onChange={(e) => setProvider(e.target.value as PixelProvider)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
           >
             <option value="ga4">GA4</option>
             <option value="gtm">GTM</option>
@@ -140,7 +140,7 @@ export const AnalyticsPixelsEditor: React.FC<Props> = ({ linkId, lang = 'en' }) 
             value={trackingId}
             onChange={(e) => setTrackingId(e.target.value)}
             placeholder={placeholderFor(provider)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] font-mono"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam font-mono"
             dir="ltr"
           />
         </div>

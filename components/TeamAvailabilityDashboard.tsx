@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { apiJson } from '../services/api';
+import { avatarPlaceholder } from '../services/avatar';
 
 interface MemberSlot {
   start: string; // HH:MM
@@ -117,21 +118,21 @@ export const TeamAvailabilityDashboard: React.FC<TeamAvailabilityDashboardProps>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setWeekOffset((w) => w - 1)}
-            className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-[#8A1538] hover:text-[#8A1538] transition-colors"
+            className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-al-adaam hover:text-al-adaam transition-colors"
           >
             {labels.prev}
           </button>
           <button
             onClick={() => setWeekOffset(0)}
             className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
-              weekOffset === 0 ? 'bg-[#8A1538] text-white' : 'border border-gray-200 text-gray-500 hover:border-[#8A1538] hover:text-[#8A1538]'
+              weekOffset === 0 ? 'bg-al-adaam text-white' : 'border border-gray-200 text-gray-500 hover:border-al-adaam hover:text-al-adaam'
             }`}
           >
             {labels.today}
           </button>
           <button
             onClick={() => setWeekOffset((w) => w + 1)}
-            className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-[#8A1538] hover:text-[#8A1538] transition-colors"
+            className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-al-adaam hover:text-al-adaam transition-colors"
           >
             {labels.next}
           </button>
@@ -170,7 +171,7 @@ export const TeamAvailabilityDashboard: React.FC<TeamAvailabilityDashboardProps>
                   <div key={m.userId} className="grid grid-cols-[180px_repeat(7,1fr)] gap-2 items-center">
                     <div className="flex items-center gap-2 min-w-0">
                       <img
-                        src={m.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.userName)}`}
+                        src={m.avatar || avatarPlaceholder(m.userName)}
                         alt=""
                         className="w-8 h-8 rounded-full border border-gray-200 flex-shrink-0"
                       />
@@ -189,7 +190,7 @@ export const TeamAvailabilityDashboard: React.FC<TeamAvailabilityDashboardProps>
                               <div
                                 key={hh}
                                 title={`${hh} ${booked ? labels.booked : labels.free}`}
-                                className={`h-1.5 rounded-sm ${booked ? 'bg-[#8A1538]' : 'bg-gray-100'}`}
+                                className={`h-1.5 rounded-sm ${booked ? 'bg-al-adaam' : 'bg-gray-100'}`}
                               />
                             );
                           })}
@@ -204,7 +205,7 @@ export const TeamAvailabilityDashboard: React.FC<TeamAvailabilityDashboardProps>
             {/* Legend */}
             <div className="flex items-center gap-4 mt-6 text-xs text-gray-500">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-[#8A1538]"></span> {labels.booked}
+                <span className="w-3 h-3 rounded-sm bg-al-adaam"></span> {labels.booked}
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm bg-gray-100 border border-gray-200"></span> {labels.free}

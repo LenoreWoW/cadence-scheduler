@@ -56,7 +56,7 @@ export const ResetPasswordPage: React.FC<{ token: string }> = ({ token }) => {
             </div>
             <a
               href="/login"
-              className="block text-center w-full px-5 py-3 bg-[#8A1538] hover:bg-[#a02050] text-white rounded-lg font-medium"
+              className="block text-center w-full px-5 py-3 bg-al-adaam hover:bg-[#a02050] text-white rounded-lg font-medium"
             >
               Sign in
             </a>
@@ -74,7 +74,7 @@ export const ResetPasswordPage: React.FC<{ token: string }> = ({ token }) => {
                 required
                 minLength={8}
                 maxLength={128}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
               />
             </div>
             <div>
@@ -86,7 +86,7 @@ export const ResetPasswordPage: React.FC<{ token: string }> = ({ token }) => {
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
               />
             </div>
             {error && (
@@ -95,7 +95,7 @@ export const ResetPasswordPage: React.FC<{ token: string }> = ({ token }) => {
             <button
               type="submit"
               disabled={submitting || !password || !confirm}
-              className="w-full px-5 py-3 bg-[#8A1538] hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
+              className="w-full px-5 py-3 bg-al-adaam hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
             >
               {submitting ? 'Updating…' : 'Update password'}
             </button>

@@ -234,7 +234,7 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
                 required
                 value={currentPwd}
                 onChange={(e) => setCurrentPwd(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
               />
             </div>
             <div>
@@ -247,7 +247,7 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
                 minLength={8}
                 value={newPwd}
                 onChange={(e) => setNewPwd(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
               />
             </div>
             <div>
@@ -260,7 +260,7 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
                 minLength={8}
                 value={confirmPwd}
                 onChange={(e) => setConfirmPwd(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
               />
             </div>
             {pwdMsg && (
@@ -290,7 +290,7 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
               placeholder={labels.tokenName}
               value={newTokenName}
               onChange={(e) => setNewTokenName(e.target.value)}
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+              className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
             />
             <Button onClick={handleCreateToken} loading={creatingToken} disabled={!newTokenName.trim()}>
               {labels.create}

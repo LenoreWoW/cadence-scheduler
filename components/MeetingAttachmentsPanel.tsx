@@ -154,7 +154,7 @@ export const MeetingAttachmentsPanel: React.FC<MeetingAttachmentsPanelProps> = (
         <label
           htmlFor={`attach-${meetingId}`}
           className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg cursor-pointer transition-colors ${
-            uploading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#8A1538] text-white hover:bg-[#5f0e26]'
+            uploading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-al-adaam text-white hover:bg-al-adaam-dark'
           }`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@ export const MeetingAttachmentsPanel: React.FC<MeetingAttachmentsPanelProps> = (
               <div className="flex items-center gap-3 flex-shrink-0">
                 <button
                   onClick={() => handleDownload(att)}
-                  className="text-xs font-bold text-[#8A1538] hover:text-[#5f0e26] uppercase tracking-wider"
+                  className="text-xs font-bold text-al-adaam hover:text-al-adaam-dark uppercase tracking-wider"
                 >
                   {labels.download}
                 </button>

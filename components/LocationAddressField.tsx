@@ -61,7 +61,7 @@ export const LocationAddressField: React.FC<Props> = ({
           rows={2}
           placeholder={isRTL ? 'الطابق، رقم المكتب، المعالم...' : 'Floor, room number, landmarks…'}
           required={required}
-          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] resize-none"
+          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam resize-none"
         />
       )}
     </div>

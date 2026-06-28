@@ -221,7 +221,7 @@ export const DateOverridesEditor: React.FC<Props> = ({ lang = 'en' }) => {
                 type="checkbox"
                 checked={editing.available}
                 onChange={(e) => setEditing({ ...editing, available: e.target.checked })}
-                className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                className="rounded text-al-adaam focus:ring-al-adaam"
               />
               <span className="text-sm font-bold text-charcoal">
                 {editing.available ? labels.available : labels.unavailable}
@@ -235,7 +235,7 @@ export const DateOverridesEditor: React.FC<Props> = ({ lang = 'en' }) => {
                   <select
                     value={editing.startHour ?? 9}
                     onChange={(e) => setEditing({ ...editing, startHour: Number(e.target.value) })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
                   >
                     {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                       <option key={h} value={h}>{h}:00</option>
@@ -247,7 +247,7 @@ export const DateOverridesEditor: React.FC<Props> = ({ lang = 'en' }) => {
                   <select
                     value={editing.endHour ?? 17}
                     onChange={(e) => setEditing({ ...editing, endHour: Number(e.target.value) })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#8A1538]"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-al-adaam"
                   >
                     {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                       <option key={h} value={h}>{h}:00</option>
@@ -263,7 +263,7 @@ export const DateOverridesEditor: React.FC<Props> = ({ lang = 'en' }) => {
                 type="text"
                 value={editing.note || ''}
                 onChange={(e) => setEditing({ ...editing, note: e.target.value })}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
               />
             </div>
 

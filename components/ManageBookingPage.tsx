@@ -157,7 +157,7 @@ export const ManageBookingPage: React.FC<Props> = ({ token }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-[#8A1538] to-[#A02050] text-white p-8">
+        <div className="bg-gradient-to-r from-al-adaam to-[#A02050] text-white p-8">
           <h1 className="text-2xl font-bold mb-1">Manage your booking</h1>
           <p className="text-white/80 text-sm">With {booking.hostName}</p>
         </div>
@@ -206,7 +206,7 @@ export const ManageBookingPage: React.FC<Props> = ({ token }) => {
                   min={new Date().toISOString().split('T')[0]}
                   value={rescheduleDate}
                   onChange={e => setRescheduleDate(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
                 />
               </div>
               {rescheduleDate && (
@@ -226,8 +226,8 @@ export const ManageBookingPage: React.FC<Props> = ({ token }) => {
                           onClick={() => setRescheduleTime(s.time)}
                           className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                             rescheduleTime === s.time
-                              ? 'bg-[#8A1538] text-white border-[#8A1538]'
-                              : 'bg-white text-slate-700 border-slate-200 hover:border-[#8A1538]'
+                              ? 'bg-al-adaam text-white border-al-adaam'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-al-adaam'
                           }`}
                         >
                           {s.label}
@@ -247,7 +247,7 @@ export const ManageBookingPage: React.FC<Props> = ({ token }) => {
                 <button
                   onClick={handleReschedule}
                   disabled={!rescheduleDate || !rescheduleTime || submitting}
-                  className="px-5 py-2.5 bg-[#8A1538] hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
+                  className="px-5 py-2.5 bg-al-adaam hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
                 >
                   {submitting ? 'Updating…' : 'Confirm new time'}
                 </button>

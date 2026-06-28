@@ -102,7 +102,7 @@ export const BookingLinkBranding: React.FC<Props> = ({ link, onChange, lang = 'e
             value={logoUrl}
             onChange={(e) => setLogoUrl(e.target.value)}
             placeholder="https://example.com/logo.png"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
             dir="ltr"
           />
           {logoUrl && (
@@ -127,7 +127,7 @@ export const BookingLinkBranding: React.FC<Props> = ({ link, onChange, lang = 'e
               type="text"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-[#8A1538]"
+              className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-al-adaam"
               dir="ltr"
             />
           </div>
@@ -137,7 +137,7 @@ export const BookingLinkBranding: React.FC<Props> = ({ link, onChange, lang = 'e
           <select
             value={font}
             onChange={(e) => setFont(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
           >
             <option value="">—</option>
             {FONT_OPTIONS.map((f) => (
@@ -154,7 +154,7 @@ export const BookingLinkBranding: React.FC<Props> = ({ link, onChange, lang = 'e
             value={redirect}
             onChange={(e) => setRedirect(e.target.value)}
             placeholder="https://your-site.com/thanks"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
             dir="ltr"
           />
         </div>
