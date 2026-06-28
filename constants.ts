@@ -8,7 +8,7 @@ export const VIDEO_PLATFORM_CONFIG: Record<VideoPlatform, { label: string, icon:
   'custom': { label: 'Custom', icon: '🔗', color: '#6B7280' }
 };
 
-export const APP_NAME = "Regent";
+export const APP_NAME = "Cadence";
 
 export const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const MONTHS = [

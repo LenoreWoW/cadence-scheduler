@@ -583,10 +583,10 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
           <header className="max-w-[1440px] mx-auto flex justify-between items-center h-16 px-6 sm:px-8">
             {/* Logo */}
             <div className="group cursor-pointer flex items-center gap-3" onClick={() => setCurrentView('dashboard')}>
-              <div className="w-8 h-8 bg-al-adaam rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-al-adaam/20">R</div>
+              <div className="w-8 h-8 bg-al-adaam rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-al-adaam/20">C</div>
               <div>
                 <h1 className="text-xl font-display font-bold tracking-tight group-hover:text-al-adaam transition-colors duration-300">
-                  REGENT
+                  Cadence
                 </h1>
               </div>
             </div>
@@ -704,9 +704,9 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
           <div className="md:hidden sticky top-0 z-40 -mx-4 px-4 py-3 mb-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
              <div className="flex justify-between items-center">
                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-gradient-to-br from-al-adaam to-al-adaam-dark rounded-xl flex items-center justify-center text-white font-serif font-bold text-sm shadow-md shadow-al-adaam/20">R</div>
+                  <div className="w-9 h-9 bg-gradient-to-br from-al-adaam to-al-adaam-dark rounded-xl flex items-center justify-center text-white font-serif font-bold text-sm shadow-md shadow-al-adaam/20">C</div>
                   <div>
-                    <span className="font-bold text-base text-charcoal dark:text-white tracking-tight block leading-none">REGENT</span>
+                    <span className="font-bold text-base text-charcoal dark:text-white tracking-tight block leading-none">Cadence</span>
                     <span className="text-[9px] text-dune font-medium uppercase tracking-widest">Scheduler</span>
                   </div>
                </div>
