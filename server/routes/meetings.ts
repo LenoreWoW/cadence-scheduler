@@ -365,18 +365,19 @@ router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedReques
     const bookedBy = req.user?.role || 'guest';
 
     const requesterId = req.user?.userId || null;
-    // ANY create targeting another user's calendar is treated as "on behalf".
-    // This also closes the previously-open hole where any authed user could set
-    // an arbitrary hostId: canActOnBehalf returns true ONLY for admins and
-    // registered delegates of that host.
-    const isOnBehalf = !!hostId && hostId !== requesterId;
-    if (isOnBehalf && (!requesterId || !canActOnBehalf(requesterId, hostId, bookedBy))) {
-      throw new AppError('You are not authorized to schedule on behalf of this host', 403);
-    }
-    // On-behalf meetings stay tentative (pending) until confirmed; otherwise the usual role rule.
-    const status = isOnBehalf
-      ? 'pending'
-      : (['admin', 'manager', 'subordinate'].includes(bookedBy) ? 'approved' : 'pending');
+    const isSelfBooking = !!hostId && hostId === requesterId;
+    // "On behalf" = an admin or a registered delegate scheduling on the HOST's calendar
+    // (e.g. the boss's assistant booking for the boss). canActOnBehalf is true ONLY for
+    // admins and registered delegates of that host.
+    const isOnBehalf = !isSelfBooking && !!hostId && !!requesterId && canActOnBehalf(requesterId, hostId, bookedBy);
+    // The security boundary is APPROVAL, not creation. Anyone authenticated may *request*
+    // a host's time ("book in"), but a non-privileged requester can only ever create a
+    // PENDING request on another user's calendar — never an auto-confirmed commitment.
+    // The host/admin/delegate confirms via PATCH /:id/status (gated separately). This both
+    // enables inbound booking requests and closes the IDOR (no silent confirmed meetings).
+    const status: 'approved' | 'pending' =
+      (isSelfBooking || bookedBy === 'admin') ? 'approved' : 'pending';
+    const needsApproval = status === 'pending';
     const attendeeToken = isOnBehalf ? uuidv4() : null;
 
     // Native conferencing — create a Zoom/Teams meeting if configured for the
@@ -444,8 +445,8 @@ router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedReques
       typeof externalId === 'string' && externalId.length > 0 ? externalId : null,
       localityClean,
       isOnBehalf ? 1 : 0,
-      isOnBehalf ? 1 : 0,
-      isOnBehalf ? hostId : null,
+      needsApproval ? 1 : 0,
+      needsApproval ? hostId : null,
       attendeeToken,
     );
 
