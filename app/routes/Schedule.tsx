@@ -6,6 +6,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { StatusPill } from '../ui/StatusPill';
 import { MeetingDetail } from '../ui/MeetingDetail';
+import { MonthCalendar } from '../ui/MonthCalendar';
 import type { Meeting } from '../../types';
 
 const HIDDEN_STATUSES = new Set(['cancelled', 'rejected']);
@@ -41,6 +42,7 @@ export const Schedule: React.FC = () => {
   const { user } = useAuth();
   const [showAll, setShowAll] = React.useState(false);
   const [selected, setSelected] = React.useState<Meeting | null>(null);
+  const [view, setView] = React.useState<'agenda' | 'month'>('agenda');
 
   const visible = React.useMemo(
     () => meetings.filter((m) => showAll || !HIDDEN_STATUSES.has(m.status)),
@@ -69,13 +71,23 @@ export const Schedule: React.FC = () => {
           <h1 className="font-display text-3xl md:text-4xl font-semibold">Schedule</h1>
           <p className="text-muted text-sm mt-1">Your agenda, grouped by day.</p>
         </div>
-        <Button
-          variant={showAll ? 'secondary' : 'ghost'}
-          onClick={() => setShowAll((v) => !v)}
-          aria-pressed={showAll}
-        >
-          {showAll ? 'Hide cancelled & rejected' : `Show cancelled & rejected${hiddenCount ? ` (${hiddenCount})` : ''}`}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-xl surface-2 p-1">
+            {(['agenda', 'month'] as const).map((v) => (
+              <button
+                key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
+                className={`rounded-lg px-3 py-1.5 text-sm font-medium capitalize ring-focus ${view === v ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'}`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          {view === 'agenda' && (
+            <Button variant={showAll ? 'secondary' : 'ghost'} onClick={() => setShowAll((v) => !v)} aria-pressed={showAll}>
+              {showAll ? 'Hide cancelled & rejected' : `Show cancelled & rejected${hiddenCount ? ` (${hiddenCount})` : ''}`}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Loading */}
@@ -99,7 +111,7 @@ export const Schedule: React.FC = () => {
       )}
 
       {/* Empty */}
-      {!isLoading && !isError && groups.length === 0 && (
+      {view === 'agenda' && !isLoading && !isError && groups.length === 0 && (
         <div className="gba-aurora glass rounded-2xl text-white px-6 py-16 text-center">
           <h2 className="font-display text-2xl font-semibold">Nothing on the calendar</h2>
           <p className="text-white/70 mt-2 max-w-md mx-auto text-sm">
@@ -111,7 +123,7 @@ export const Schedule: React.FC = () => {
       )}
 
       {/* Agenda */}
-      {!isLoading && groups.length > 0 && (
+      {view === 'agenda' && !isLoading && !isError && groups.length > 0 && (
         <div className="space-y-10">
           {groups.map((group) => (
             <section key={group.date}>
@@ -153,6 +165,11 @@ export const Schedule: React.FC = () => {
             </section>
           ))}
         </div>
+      )}
+
+      {/* Month view */}
+      {view === 'month' && !isLoading && !isError && (
+        <MonthCalendar meetings={meetings} onSelect={setSelected} />
       )}
 
       {selected && (
