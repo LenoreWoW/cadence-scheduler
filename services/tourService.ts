@@ -168,19 +168,6 @@ export const tours: Record<string, TourDefinition> = {
         actionLabelAr: 'مرر للرؤية'
       },
       {
-        id: 'share-link',
-        target: '[data-tour="share-link"]',
-        title: 'Share Your Booking Page',
-        titleAr: 'شارك صفحة الحجز',
-        content: 'Share your booking link so others can schedule meetings with you. Like Calendly!',
-        contentAr: 'شارك رابط الحجز الخاص بك حتى يتمكن الآخرون من جدولة اجتماعات معك. مثل Calendly!',
-        position: 'bottom',
-        action: 'click',
-        actionLabel: 'Copy your link',
-        actionLabelAr: 'انسخ رابطك',
-        spotlightPadding: 8
-      },
-      {
         id: 'profile',
         target: '[data-tour="profile"]',
         title: 'Your Profile',
@@ -191,19 +178,6 @@ export const tours: Record<string, TourDefinition> = {
         action: 'click',
         actionLabel: 'Open settings',
         actionLabelAr: 'افتح الإعدادات'
-      },
-      {
-        id: 'booking-links',
-        target: '[data-tour="booking-links"]',
-        title: 'Booking Links',
-        titleAr: 'روابط الحجز',
-        content: 'Create shareable links like Calendly! Let anyone book time with you without logging in.',
-        contentAr: 'أنشئ روابط قابلة للمشاركة مثل Calendly! اسمح لأي شخص بحجز موعد معك دون تسجيل الدخول.',
-        position: 'bottom',
-        action: 'click',
-        actionLabel: 'Create a link',
-        actionLabelAr: 'أنشئ رابطاً',
-        spotlightPadding: 10
       },
       {
         id: 'keyboard-shortcuts',
@@ -321,60 +295,6 @@ export const tours: Record<string, TourDefinition> = {
     ]
   },
   
-  // Booking Links tour
-  bookingLinks: {
-    id: 'bookingLinks',
-    name: 'Booking Links Tour',
-    nameAr: 'جولة روابط الحجز',
-    description: 'Learn how to create shareable booking links',
-    descriptionAr: 'تعلم كيفية إنشاء روابط حجز قابلة للمشاركة',
-    version: 1,
-    steps: [
-      {
-        id: 'bl-intro',
-        target: 'body',
-        title: 'Shareable Booking Links',
-        titleAr: 'روابط الحجز القابلة للمشاركة',
-        content: 'Create links that let anyone book time with you - no login required! Just like Calendly.',
-        contentAr: 'أنشئ روابط تتيح لأي شخص حجز موعد معك - دون الحاجة لتسجيل الدخول! مثل Calendly.',
-        position: 'center',
-        action: 'none'
-      },
-      {
-        id: 'bl-create',
-        target: '[data-tour="booking-links"]',
-        title: 'Create a Booking Link',
-        titleAr: 'إنشاء رابط حجز',
-        content: 'Click here to create your first booking link. You can customize the title, durations, and more.',
-        contentAr: 'انقر هنا لإنشاء أول رابط حجز. يمكنك تخصيص العنوان والمدد والمزيد.',
-        position: 'bottom',
-        action: 'click',
-        actionLabel: 'Open Booking Links',
-        actionLabelAr: 'افتح روابط الحجز'
-      },
-      {
-        id: 'bl-share',
-        target: 'body',
-        title: 'Share Your Link',
-        titleAr: 'شارك رابطك',
-        content: 'Once created, copy your link and share it via email, social media, or anywhere! Guests can book without creating an account.',
-        contentAr: 'بمجرد إنشائه، انسخ رابطك وشاركه عبر البريد الإلكتروني أو وسائل التواصل الاجتماعي أو في أي مكان! يمكن للضيوف الحجز دون إنشاء حساب.',
-        position: 'center',
-        action: 'none'
-      },
-      {
-        id: 'bl-approval',
-        target: 'body',
-        title: 'Approve or Auto-Confirm',
-        titleAr: 'الموافقة أو التأكيد التلقائي',
-        content: 'Bookings from guests show as "pending" until you approve them. You can manage all requests from your dashboard.',
-        contentAr: 'تظهر الحجوزات من الضيوف كـ "معلقة" حتى توافق عليها. يمكنك إدارة جميع الطلبات من لوحة التحكم.',
-        position: 'center',
-        action: 'none'
-      }
-    ]
-  },
-
   // Admin features tour
   admin: {
     id: 'admin',

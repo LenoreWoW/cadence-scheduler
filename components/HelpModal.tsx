@@ -58,9 +58,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, t, lang, 
             <button onClick={() => launch('shortcuts')} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-charcoal dark:text-white text-sm font-bold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
               {t('helpStartShortcuts')}
             </button>
-            <button onClick={() => launch('bookingLinks')} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-charcoal dark:text-white text-sm font-bold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-              {t('helpStartBookingLinks')}
-            </button>
             {role === 'admin' && (
               <button onClick={() => launch('admin')} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-charcoal dark:text-white text-sm font-bold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 {t('helpStartAdmin')}
