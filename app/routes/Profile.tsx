@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { themeService } from '../../services/themeService';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { DelegatesCard } from '../ui/DelegatesCard';
 
 const ROLE_LABEL: Record<string, string> = {
   admin: 'Administrator',
@@ -121,6 +122,9 @@ export const Profile: React.FC = () => {
             </button>
           </div>
         </Card>
+
+        {/* Delegates (assistant model) */}
+        <DelegatesCard />
 
         {/* Account actions */}
         <Card>
