@@ -8,6 +8,8 @@ import { Button } from '../ui/Button';
 import { StatusPill } from '../ui/StatusPill';
 import { MeetingDetail } from '../ui/MeetingDetail';
 import { MonthCalendar } from '../ui/MonthCalendar';
+import { PageHeader } from '../ui/PageHeader';
+import { CalendarIcon } from '../ui/icons';
 import type { Meeting } from '../../types';
 
 const HIDDEN_STATUSES = new Set(['cancelled', 'rejected']);
@@ -65,112 +67,125 @@ export const Schedule: React.FC = () => {
 
   const hiddenCount = meetings.length - meetings.filter((m) => !HIDDEN_STATUSES.has(m.status)).length;
 
+  const viewToggle = (
+    <>
+      <div className="inline-flex rounded-xl surface-2 p-1">
+        {(['agenda', 'month'] as const).map((v) => (
+          <button
+            key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium ring-focus ${view === v ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'}`}
+          >
+            {t(v === 'agenda' ? 'schedule.viewAgenda' : 'schedule.viewMonth')}
+          </button>
+        ))}
+      </div>
+      {view === 'agenda' && (
+        <Button variant={showAll ? 'secondary' : 'ghost'} onClick={() => setShowAll((v) => !v)} aria-pressed={showAll}>
+          {showAll ? t('schedule.hideCancelled') : `${t('schedule.showCancelled')}${hiddenCount ? ` (${hiddenCount})` : ''}`}
+        </Button>
+      )}
+    </>
+  );
+
   return (
-    <div className="mx-auto max-w-6xl px-5 py-8">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="font-display text-3xl md:text-4xl font-semibold">{t('schedule.title')}</h1>
-          <p className="text-muted text-sm mt-1">{t('schedule.subtitle')}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-xl surface-2 p-1">
-            {(['agenda', 'month'] as const).map((v) => (
-              <button
-                key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium ring-focus ${view === v ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'}`}
-              >
-                {t(v === 'agenda' ? 'schedule.viewAgenda' : 'schedule.viewMonth')}
-              </button>
-            ))}
-          </div>
-          {view === 'agenda' && (
-            <Button variant={showAll ? 'secondary' : 'ghost'} onClick={() => setShowAll((v) => !v)} aria-pressed={showAll}>
-              {showAll ? t('schedule.hideCancelled') : `${t('schedule.showCancelled')}${hiddenCount ? ` (${hiddenCount})` : ''}`}
-            </Button>
+    <div>
+      <PageHeader
+        eyebrow={t('schedule.eyebrow')}
+        icon={<CalendarIcon size={14} />}
+        title={t('schedule.title')}
+        subtitle={t('schedule.subtitle')}
+        right={viewToggle}
+      />
+
+      <div className="relative gba-mesh">
+        <div className="mx-auto max-w-6xl px-5 py-8">
+          {/* Loading */}
+          {isLoading && (
+            <div className="space-y-3" aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <div className="h-3 w-32 rounded bg-[color:var(--border)]" />
+                  <div className="mt-3 h-4 w-2/3 rounded bg-[color:var(--border)]" />
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Load error */}
+          {isError && !isLoading && (
+            <Card className="py-12 text-center">
+              <p className="font-medium">{t('schedule.errLoad')}</p>
+              <p className="mt-1 text-sm text-muted">{t('common.connErr')}</p>
+            </Card>
+          )}
+
+          {/* Empty */}
+          {view === 'agenda' && !isLoading && !isError && groups.length === 0 && (
+            <div className="gba-aurora noise glass rounded-2xl text-white px-6 py-16 text-center overflow-hidden">
+              <span className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl glass text-white">
+                <CalendarIcon size={26} />
+              </span>
+              <h2 className="font-display text-2xl font-semibold">{t('schedule.emptyTitle')}</h2>
+              <p className="text-white/70 mt-2 max-w-md mx-auto text-sm">
+                {meetings.length > 0 ? t('schedule.emptyAllHidden') : t('schedule.emptyNone')}
+              </p>
+            </div>
+          )}
+
+          {/* Agenda */}
+          {view === 'agenda' && !isLoading && !isError && groups.length > 0 && (
+            <div className="space-y-10">
+              {groups.map((group) => (
+                <section key={group.date}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-al-adaam/10 text-al-adaam">
+                      <CalendarIcon size={16} />
+                    </span>
+                    <h2 className="font-display text-lg font-semibold">{formatGroupDate(group.date, t, locale)}</h2>
+                    <span className="text-muted text-xs">
+                      {group.items.length} {group.items.length === 1 ? t('unit.meeting') : t('unit.meetings')}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {group.items.map((m, i) => (
+                      <motion.div
+                        key={m.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(i * 0.03, 0.2) }}
+                      >
+                        <button type="button" onClick={() => setSelected(m)} className="w-full text-left ring-focus rounded-2xl">
+                          <Card interactive className="flex items-center gap-4">
+                            <div className="w-16 shrink-0 text-center">
+                              <p className="font-display text-lg font-semibold leading-none">{m.time}</p>
+                              <p className="text-muted text-[11px] mt-1">{m.durationMinutes} {t('unit.min')}</p>
+                            </div>
+                            <div className="w-px self-stretch bg-[color:var(--border)]" />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{m.title}</p>
+                              <p className="text-muted text-sm truncate">
+                                {m.attendeeName}
+                                {m.hostName ? ` · ${t('meeting.with', { name: m.hostName })}` : ''}
+                                {m.meetingFormat ? ` · ${m.meetingFormat === 'online' ? t('book.online') : t('book.inPerson')}` : ''}
+                              </p>
+                            </div>
+                            <StatusPill status={m.status} />
+                          </Card>
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* Month view */}
+          {view === 'month' && !isLoading && !isError && (
+            <MonthCalendar meetings={meetings} onSelect={setSelected} />
           )}
         </div>
       </div>
-
-      {/* Loading */}
-      {isLoading && (
-        <div className="space-y-3" aria-busy="true">
-          {[0, 1, 2].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-3 w-32 rounded bg-[color:var(--border)]" />
-              <div className="mt-3 h-4 w-2/3 rounded bg-[color:var(--border)]" />
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Load error */}
-      {isError && !isLoading && (
-        <Card className="py-12 text-center">
-          <p className="font-medium">{t('schedule.errLoad')}</p>
-          <p className="mt-1 text-sm text-muted">{t('common.connErr')}</p>
-        </Card>
-      )}
-
-      {/* Empty */}
-      {view === 'agenda' && !isLoading && !isError && groups.length === 0 && (
-        <div className="gba-aurora glass rounded-2xl text-white px-6 py-16 text-center">
-          <h2 className="font-display text-2xl font-semibold">{t('schedule.emptyTitle')}</h2>
-          <p className="text-white/70 mt-2 max-w-md mx-auto text-sm">
-            {meetings.length > 0 ? t('schedule.emptyAllHidden') : t('schedule.emptyNone')}
-          </p>
-        </div>
-      )}
-
-      {/* Agenda */}
-      {view === 'agenda' && !isLoading && !isError && groups.length > 0 && (
-        <div className="space-y-10">
-          {groups.map((group) => (
-            <section key={group.date}>
-              <div className="flex items-baseline gap-3 mb-3">
-                <h2 className="font-display text-lg font-semibold">{formatGroupDate(group.date, t, locale)}</h2>
-                <span className="text-muted text-xs">
-                  {group.items.length} {group.items.length === 1 ? t('unit.meeting') : t('unit.meetings')}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {group.items.map((m, i) => (
-                  <motion.div
-                    key={m.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.03, 0.2) }}
-                  >
-                    <button type="button" onClick={() => setSelected(m)} className="w-full text-left ring-focus rounded-2xl">
-                      <Card className="flex items-center gap-4 hover:border-al-adaam/40 transition-colors">
-                        <div className="w-16 shrink-0 text-center">
-                          <p className="font-display text-lg font-semibold leading-none">{m.time}</p>
-                          <p className="text-muted text-[11px] mt-1">{m.durationMinutes} {t('unit.min')}</p>
-                        </div>
-                        <div className="w-px self-stretch bg-[color:var(--border)]" />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate">{m.title}</p>
-                          <p className="text-muted text-sm truncate">
-                            {m.attendeeName}
-                            {m.hostName ? ` · ${t('meeting.with', { name: m.hostName })}` : ''}
-                            {m.meetingFormat ? ` · ${m.meetingFormat === 'online' ? t('book.online') : t('book.inPerson')}` : ''}
-                          </p>
-                        </div>
-                        <StatusPill status={m.status} />
-                      </Card>
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-
-      {/* Month view */}
-      {view === 'month' && !isLoading && !isError && (
-        <MonthCalendar meetings={meetings} onSelect={setSelected} />
-      )}
 
       {selected && (
         <MeetingDetail meeting={selected} role={user?.role} currentUserId={user?.id} onClose={() => setSelected(null)} />

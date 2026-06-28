@@ -135,6 +135,7 @@ const EN = {
 
   // Requests
   'requests.title': 'Requests',
+  'requests.eyebrow': 'Approvals',
   'requests.confirmReject': 'Reject this request? The requester will be declined.',
   'requests.approvedNotice': 'Request approved — moved to the schedule.',
   'requests.rejectedNotice': 'Request rejected.',
@@ -147,6 +148,7 @@ const EN = {
 
   // Schedule
   'schedule.title': 'Schedule',
+  'schedule.eyebrow': 'Your calendar',
   'schedule.subtitle': 'Your agenda, grouped by day.',
   'schedule.viewAgenda': 'Agenda',
   'schedule.viewMonth': 'Month',
@@ -349,6 +351,7 @@ const AR: Record<StringKey, string> = {
 
   // Requests
   'requests.title': 'الطلبات',
+  'requests.eyebrow': 'الموافقات',
   'requests.confirmReject': 'رفض هذا الطلب؟ سيُرفض مُقدّم الطلب.',
   'requests.approvedNotice': 'تمت الموافقة على الطلب — نُقل إلى الجدول.',
   'requests.rejectedNotice': 'تم رفض الطلب.',
@@ -361,6 +364,7 @@ const AR: Record<StringKey, string> = {
 
   // Schedule
   'schedule.title': 'الجدول',
+  'schedule.eyebrow': 'تقويمك',
   'schedule.subtitle': 'جدول أعمالك، مُرتَّبًا حسب اليوم.',
   'schedule.viewAgenda': 'قائمة',
   'schedule.viewMonth': 'شهر',

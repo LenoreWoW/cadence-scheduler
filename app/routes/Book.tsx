@@ -6,6 +6,9 @@ import { useI18n } from '../lib/i18n';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
+import {
+  UsersIcon, CalendarIcon, ClockIcon, VideoIcon, BuildingIcon, MapPinIcon, CheckCircleIcon,
+} from '../ui/icons';
 
 // Local YYYY-MM-DD (avoids the UTC shift you'd get from toISOString()).
 const todayStr = () => {
@@ -115,8 +118,9 @@ export const Book: React.FC = () => {
 
   // ---- Header strip (shared across states) ----
   const header = (
-    <section className="relative gba-aurora text-white overflow-hidden">
-      <div className="mx-auto max-w-6xl px-5 py-14 md:py-20">
+    <section className="relative gba-aurora noise text-white overflow-hidden">
+      <div className="absolute inset-0 gba-grid opacity-[0.12]" aria-hidden="true" />
+      <div className="relative mx-auto max-w-6xl px-5 py-14 md:py-20">
         <motion.span
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -149,13 +153,15 @@ export const Book: React.FC = () => {
     return (
       <div>
         {header}
-        <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10">
-          <Card className="animate-pulse">
-            <div className="h-4 w-32 rounded bg-[color:var(--border)]" />
-            <div className="mt-4 h-10 rounded-xl surface-2" />
-            <div className="mt-3 h-10 rounded-xl surface-2" />
-            <div className="mt-3 h-24 rounded-xl surface-2" />
-          </Card>
+        <div className="relative gba-mesh">
+          <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
+            <Card className="animate-pulse max-w-2xl mx-auto">
+              <div className="h-4 w-32 rounded bg-[color:var(--border)]" />
+              <div className="mt-4 h-10 rounded-xl surface-2" />
+              <div className="mt-3 h-10 rounded-xl surface-2" />
+              <div className="mt-3 h-24 rounded-xl surface-2" />
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -166,11 +172,16 @@ export const Book: React.FC = () => {
     return (
       <div>
         {header}
-        <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10">
-          <Card className="py-14 text-center">
-            <p className="font-display text-lg font-semibold">{t('book.errLoadHosts')}</p>
-            <p className="mt-2 text-sm text-muted">{t('common.connErr')}</p>
-          </Card>
+        <div className="relative gba-mesh">
+          <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
+            <Card role="alert" className="py-14 text-center max-w-xl mx-auto">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl status-bad">
+                <UsersIcon size={26} />
+              </div>
+              <p className="font-display text-lg font-semibold mt-5">{t('book.errLoadHosts')}</p>
+              <p className="mt-2 text-sm text-muted">{t('common.connErr')}</p>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -181,13 +192,18 @@ export const Book: React.FC = () => {
     return (
       <div>
         {header}
-        <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10">
-          <Card className="text-center py-14">
-            <p className="font-display text-lg font-semibold">{t('book.noHostsTitle')}</p>
-            <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
-              {t('book.noHostsBody')}
-            </p>
-          </Card>
+        <div className="relative gba-mesh">
+          <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
+            <Card className="text-center py-14 max-w-xl mx-auto">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-al-adaam/10 text-al-adaam">
+                <UsersIcon size={26} />
+              </div>
+              <p className="font-display text-lg font-semibold mt-5">{t('book.noHostsTitle')}</p>
+              <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
+                {t('book.noHostsBody')}
+              </p>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -198,21 +214,31 @@ export const Book: React.FC = () => {
     return (
       <div>
         {header}
-        <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <Card role="status" className="text-center py-14 max-w-xl mx-auto">
-              <div className="mx-auto w-12 h-12 rounded-full grid place-items-center status-ok text-2xl">
-                ✓
-              </div>
-              <h2 className="font-display text-2xl font-semibold mt-5">{t('book.sentTitle')}</h2>
-              <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
-                {t('book.sentBody')}
-              </p>
-              <div className="mt-7 flex justify-center">
-                <Button onClick={reset}>{t('book.bookAnother')}</Button>
-              </div>
-            </Card>
-          </motion.div>
+        <div className="relative gba-mesh">
+          <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+              <Card role="status" className="relative overflow-hidden text-center py-16 max-w-xl mx-auto">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-44 gba-glow" aria-hidden="true" />
+                <div className="relative">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 14 }}
+                    className="mx-auto grid h-16 w-16 place-items-center rounded-full status-ok"
+                  >
+                    <CheckCircleIcon size={34} />
+                  </motion.div>
+                  <h2 className="font-display text-2xl font-semibold mt-5">{t('book.sentTitle')}</h2>
+                  <p className="text-muted text-sm mt-2 max-w-sm mx-auto">
+                    {t('book.sentBody')}
+                  </p>
+                  <div className="mt-7 flex justify-center">
+                    <Button onClick={reset}>{t('book.bookAnother')}</Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
         </div>
       </div>
     );
@@ -222,12 +248,20 @@ export const Book: React.FC = () => {
   return (
     <div>
       {header}
-      <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
-        <form onSubmit={submit}>
-          <Card className="max-w-2xl mx-auto">
-            {/* Host */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">{t('book.host')}</label>
+      <div className="relative gba-mesh">
+        <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
+          <motion.form
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            onSubmit={submit}
+          >
+            <Card className="max-w-2xl mx-auto">
+              {/* Host */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                  <UsersIcon size={15} className="text-al-adaam" />{t('book.host')}
+                </label>
               <Select
                 value={hostId}
                 onChange={onPickHost}
@@ -260,7 +294,9 @@ export const Book: React.FC = () => {
 
             {/* Date */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">{t('book.date')}</label>
+              <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                <CalendarIcon size={15} className="text-al-adaam" />{t('book.date')}
+              </label>
               <input
                 type="date"
                 className={FIELD}
@@ -275,7 +311,9 @@ export const Book: React.FC = () => {
 
             {/* Time */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">{t('book.time')}</label>
+              <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                <ClockIcon size={15} className="text-al-adaam" />{t('book.time')}
+              </label>
               {!hostId ? (
                 <p className="text-muted text-sm">{t('book.selectHostForTimes')}</p>
               ) : slots.length === 0 ? (
@@ -323,19 +361,23 @@ export const Book: React.FC = () => {
 
             {/* Format */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">{t('book.format')}</label>
+              <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                <VideoIcon size={15} className="text-al-adaam" />{t('book.format')}
+              </label>
               <div className="inline-flex rounded-xl surface-2 p-1">
                 {(['in-person', 'online'] as const).map((f) => {
                   const active = format === f;
+                  const FIcon = f === 'in-person' ? BuildingIcon : VideoIcon;
                   return (
                     <button
                       key={f}
                       type="button"
                       onClick={() => setFormat(f)}
-                      className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ring-focus ${
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ring-focus ${
                         active ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'
                       }`}
                     >
+                      <FIcon size={15} />
                       {f === 'in-person' ? t('book.inPerson') : t('book.online')}
                     </button>
                   );
@@ -345,19 +387,23 @@ export const Book: React.FC = () => {
 
             {/* Location type (internal / external) */}
             <div className="mt-5">
-              <label className="block text-sm font-semibold mb-2">{t('book.locationType')}</label>
+              <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                <MapPinIcon size={15} className="text-al-adaam" />{t('book.locationType')}
+              </label>
               <div className="inline-flex rounded-xl surface-2 p-1">
                 {(['internal', 'external'] as const).map((loc) => {
                   const active = locality === loc;
+                  const LIcon = loc === 'internal' ? BuildingIcon : MapPinIcon;
                   return (
                     <button
                       key={loc}
                       type="button"
                       onClick={() => setLocality(loc)}
-                      className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ring-focus ${
+                      className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ring-focus ${
                         active ? 'bg-al-adaam text-white shadow-sm' : 'text-[color:var(--muted)]'
                       }`}
                     >
+                      <LIcon size={15} />
                       {loc === 'internal' ? t('book.internal') : t('book.external')}
                     </button>
                   );
@@ -404,8 +450,9 @@ export const Book: React.FC = () => {
                 {submitting ? t('book.sending') : t('book.sendRequest')}
               </Button>
             </div>
-          </Card>
-        </form>
+            </Card>
+          </motion.form>
+        </div>
       </div>
     </div>
   );

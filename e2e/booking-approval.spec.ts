@@ -7,10 +7,12 @@ test('guest requests a meeting and an admin approves it', async ({ page }) => {
 
   // 1) Guest submits a request (on behalf of a named attendee → guaranteed contact details).
   await login(page, 'guest');
-  await page.getByRole('link', { name: 'Book' }).click();
+  await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Book', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Book time with the team.' })).toBeVisible();
 
-  await page.locator('select').first().selectOption({ index: 1 }); // first real host
+  // Themed Select (Headless UI Listbox) — open it and pick the first host.
+  await page.getByRole('button', { name: 'Host' }).click();
+  await page.getByRole('option').first().click();
   await page.getByText('Booking for someone else?').click();
   await page.getByLabel('Attendee name').fill('Test Attendee');
   await page.getByLabel('Attendee email').fill('attendee@example.com');
