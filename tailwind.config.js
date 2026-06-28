@@ -24,13 +24,18 @@ export default {
         'sunrise': '#fdf39d',
         'salmon': '#dd7877',
         'dark-purple': '#511C3C',
+        'green': '#5A895A',
+        'purple': '#8067A4',
+        'yellow-accent': '#E9C56B',
       },
       fontFamily: {
         display: ['Outfit', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
         arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
+        serif: ['Outfit', 'sans-serif'],
       },
+      borderRadius: { 'xl2': '1rem' },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-out both',
         'slide-up': 'slideInUp 0.3s ease-out both',

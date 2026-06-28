@@ -109,9 +109,9 @@ export const AcceptInvitePage: React.FC = () => {
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-[#8A1538] rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-[#8A1538]/20">
-              R
+              C
             </div>
-            <span className="font-display font-bold tracking-tight text-lg">REGENT</span>
+            <span className="font-display font-bold tracking-tight text-lg">Cadence</span>
           </div>
           <button
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
