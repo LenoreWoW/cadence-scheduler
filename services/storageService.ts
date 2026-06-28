@@ -1,5 +1,5 @@
 
-import { Meeting, LogEntry, User, Team, UserStats } from '../types';
+import { Meeting, LogEntry, User, Team } from '../types';
 import { INITIAL_MEETINGS, INITIAL_USERS, INITIAL_TEAMS } from '../constants';
 
 const KEYS = {
@@ -7,28 +7,10 @@ const KEYS = {
   MEETINGS: 'adaam_meetings_v3',
   LOGS: 'adaam_logs_v3',
   USERS: 'adaam_users_v3',
-  TEAMS: 'adaam_teams_v3',
-  STATS: 'adaam_stats_v1'
+  TEAMS: 'adaam_teams_v3'
 };
 
 const CURRENT_VERSION = '1.0.3'; // Increment this to force reset on deployment - for testers
-
-const DEFAULT_STATS: UserStats = {
-  totalBookings: 0,
-  totalCancellations: 0,
-  meetingsAttended: 0,
-  lastLogin: '',
-  loginStreak: 0,
-  longestStreak: 0,
-  unlockedAchievements: [],
-  totalTimeSpent: 0,
-  firstLoginDate: new Date().toISOString(),
-  totalXP: 0,
-  level: 1,
-  meetingPartners: [],
-  weeklyMeetings: 0,
-  monthlyMeetings: 0
-};
 
 export const storageService = {
   init: () => {
@@ -66,9 +48,6 @@ export const storageService = {
     }
     if (!localStorage.getItem(KEYS.TEAMS)) {
       localStorage.setItem(KEYS.TEAMS, JSON.stringify(INITIAL_TEAMS));
-    }
-    if (!localStorage.getItem(KEYS.STATS)) {
-       localStorage.setItem(KEYS.STATS, JSON.stringify({}));
     }
   },
 
@@ -125,18 +104,6 @@ export const storageService = {
     const updatedLogs = [newLog, ...logs].slice(0, 100);
     localStorage.setItem(KEYS.LOGS, JSON.stringify(updatedLogs));
     return newLog;
-  },
-
-  // Stats
-  getUserStats: (userId: string): UserStats => {
-     const allStats = JSON.parse(localStorage.getItem(KEYS.STATS) || '{}');
-     return allStats[userId] || { ...DEFAULT_STATS };
-  },
-
-  saveUserStats: (userId: string, stats: UserStats) => {
-     const allStats = JSON.parse(localStorage.getItem(KEYS.STATS) || '{}');
-     allStats[userId] = stats;
-     localStorage.setItem(KEYS.STATS, JSON.stringify(allStats));
   },
 
   // Full reset for testers

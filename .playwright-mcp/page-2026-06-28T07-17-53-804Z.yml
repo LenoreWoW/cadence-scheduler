@@ -1,0 +1,2257 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - navigation [ref=e5]:
+        - link "MotionSites" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "MotionSites" [ref=e7]
+        - generic [ref=e8]:
+          - link "Sections New" [ref=e9] [cursor=pointer]:
+            - /url: /sections
+            - text: Sections
+            - generic [ref=e11]: New
+          - link "Backgrounds New" [ref=e12] [cursor=pointer]:
+            - /url: /backgrounds
+            - text: Backgrounds
+            - generic [ref=e14]: New
+          - link "Contact Us" [ref=e15] [cursor=pointer]:
+            - /url: /public-contact
+          - link "Pricing" [ref=e16] [cursor=pointer]:
+            - /url: /pricing
+          - link "Go Unlimited" [ref=e17] [cursor=pointer]:
+            - /url: /unlimited
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - link "Powered by Design Rocket" [ref=e20] [cursor=pointer]:
+            - /url: https://designrocket.io/
+            - generic [ref=e21]: Powered by
+            - img "Design Rocket" [ref=e22]
+          - heading "Unlock your AI Design Superpowers" [level=1] [ref=e23]:
+            - generic [ref=e24]:
+              - text: Unlock
+              - emphasis [ref=e25]: your
+              - text: AI
+            - generic [ref=e26]:
+              - text: Design
+              - generic [ref=e27]:
+                - text: Superpowers
+                - generic: Superpowers
+          - paragraph [ref=e28]: Build beautiful landing pages in minutes with our ready-to-use prompts. Just copy, paste, and launch.
+          - link "Go Unlimited →" [ref=e29] [cursor=pointer]:
+            - /url: /unlimited
+        - generic [ref=e30]:
+          - button "Pricing" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: Pricing
+            - img [ref=e34]
+          - generic [ref=e36]:
+            - button "Type" [ref=e37] [cursor=pointer]:
+              - generic [ref=e38]: Type
+              - img [ref=e39]
+            - button "Mixed" [ref=e41] [cursor=pointer]:
+              - generic [ref=e42]: Mixed
+              - img [ref=e43]
+        - generic [ref=e45]:
+          - generic [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]:
+              - img "Interactive Discovery" [ref=e48]
+              - img "Interactive Discovery" [ref=e49]
+            - generic [ref=e50]:
+              - generic [ref=e51]:
+                - heading "Interactive Discovery" [level=3] [ref=e52]
+                - text: Hero
+              - button "Copy prompt" [ref=e54]:
+                - img [ref=e55]
+                - text: Copy
+          - generic [ref=e58] [cursor=pointer]:
+            - generic [ref=e59]:
+              - img "Interactive Portfolio" [ref=e60]
+              - img "Interactive Portfolio" [ref=e61]
+            - generic [ref=e62]:
+              - generic [ref=e63]:
+                - heading "Interactive Portfolio" [level=3] [ref=e64]
+                - text: Hero
+              - button "Unlock prompt" [ref=e66]:
+                - img [ref=e67]
+                - text: Premium
+          - link "Design Rocket Learn to design beautiful Websites using AI tools. Master AI-powered design Start Learning for Free" [ref=e70] [cursor=pointer]:
+            - /url: https://designrocket.io/?utm_source=motionsites&utm_medium=site&utm_campaign=promo
+            - img "Design Rocket" [ref=e71]
+            - generic [ref=e72]:
+              - heading "Learn to design beautiful Websites using AI tools." [level=3] [ref=e73]
+              - paragraph [ref=e74]: Master AI-powered design
+              - generic [ref=e75]: Start Learning for Free
+          - generic [ref=e76] [cursor=pointer]:
+            - generic [ref=e77]:
+              - img "Dreamcore Landing" [ref=e78]
+              - img "Dreamcore Landing" [ref=e79]
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - heading "Dreamcore Landing" [level=3] [ref=e82]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e84]:
+                - img [ref=e85]
+                - text: Premium
+          - generic [ref=e88] [cursor=pointer]:
+            - generic [ref=e89]:
+              - img "Health Portal" [ref=e90]
+              - img "Health Portal" [ref=e91]
+            - generic [ref=e92]:
+              - generic [ref=e93]:
+                - heading "Health Portal" [level=3] [ref=e94]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e96]:
+                - img [ref=e97]
+                - text: Copy
+          - generic [ref=e100] [cursor=pointer]:
+            - generic [ref=e101]:
+              - img "Bold Studio" [ref=e102]
+              - img "Bold Studio" [ref=e103]
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - heading "Bold Studio" [level=3] [ref=e106]
+                - text: Hero
+              - button "Copy prompt" [ref=e108]:
+                - img [ref=e109]
+                - text: Copy
+          - generic [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img "3D Collectible Hero" [ref=e114]
+              - img "3D Collectible Hero" [ref=e115]
+            - generic [ref=e116]:
+              - generic [ref=e117]:
+                - heading "3D Collectible Hero" [level=3] [ref=e118]
+                - text: 3D Website
+              - button "Copy prompt" [ref=e120]:
+                - img [ref=e121]
+                - text: Copy
+          - generic [ref=e124] [cursor=pointer]:
+            - generic [ref=e125]:
+              - img "Prisma Creative Studio" [ref=e126]
+              - img "Prisma Creative Studio" [ref=e127]
+            - generic [ref=e128]:
+              - generic [ref=e129]:
+                - heading "Prisma Creative Studio" [level=3] [ref=e130]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e132]:
+                - img [ref=e133]
+                - text: Copy
+          - generic [ref=e136] [cursor=pointer]:
+            - generic [ref=e137]:
+              - img "Luxury Hero" [ref=e138]
+              - img "Luxury Hero" [ref=e139]
+            - generic [ref=e140]:
+              - generic [ref=e141]:
+                - heading "Luxury Hero" [level=3] [ref=e142]
+                - text: Hero
+              - button "Unlock prompt" [ref=e144]:
+                - img [ref=e145]
+                - text: Premium
+          - generic [ref=e148] [cursor=pointer]:
+            - generic [ref=e149]:
+              - img "3D Portfolio" [ref=e150]
+              - img "3D Portfolio" [ref=e151]
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - heading "3D Portfolio" [level=3] [ref=e154]
+                - text: Portfolio
+              - generic [ref=e155]:
+                - link "Open in Bolt" [ref=e156]:
+                  - /url: https://bolt.new/~/sb1-676j2jmy
+                  - img "Bolt" [ref=e157]
+                - button "Copy prompt" [ref=e158]:
+                  - img [ref=e159]
+                  - text: Copy
+          - generic [ref=e162] [cursor=pointer]:
+            - generic [ref=e163]:
+              - img "Network Hero" [ref=e164]
+              - img "Network Hero" [ref=e165]
+            - generic [ref=e166]:
+              - generic [ref=e167]:
+                - heading "Network Hero" [level=3] [ref=e168]
+                - text: Hero
+              - button "Unlock prompt" [ref=e170]:
+                - img [ref=e171]
+                - text: Premium
+          - generic [ref=e174] [cursor=pointer]:
+            - generic [ref=e175]:
+              - img "Art Landing" [ref=e176]
+              - img "Art Landing" [ref=e177]
+            - generic [ref=e178]:
+              - generic [ref=e179]:
+                - heading "Art Landing" [level=3] [ref=e180]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e182]:
+                - img [ref=e183]
+                - text: Premium
+          - generic [ref=e186] [cursor=pointer]:
+            - generic [ref=e187]:
+              - img "Investment Gate" [ref=e188]
+              - img "Investment Gate" [ref=e189]
+            - generic [ref=e190]:
+              - generic [ref=e191]:
+                - heading "Investment Gate" [level=3] [ref=e192]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e194]:
+                - img [ref=e195]
+                - text: Premium
+          - link "MotionSites Backgrounds Animated backgrounds designed to convert, impress, and amaze. Explore Videos" [ref=e198] [cursor=pointer]:
+            - /url: /backgrounds
+            - generic [ref=e199]:
+              - img "MotionSites" [ref=e200]
+              - generic [ref=e201]: Backgrounds
+            - generic [ref=e202]:
+              - heading "Animated backgrounds designed to convert, impress, and amaze." [level=3] [ref=e203]
+              - generic [ref=e204]: Explore Videos
+          - generic [ref=e205] [cursor=pointer]:
+            - generic [ref=e206]:
+              - img "Velorah" [ref=e207]
+              - img "Velorah" [ref=e208]
+            - generic [ref=e209]:
+              - generic [ref=e210]:
+                - heading "Velorah" [level=3] [ref=e211]
+                - text: Agency
+              - button "Copy prompt" [ref=e213]:
+                - img [ref=e214]
+                - text: Copy
+          - generic [ref=e217] [cursor=pointer]:
+            - generic [ref=e218]:
+              - img "Golden Portal" [ref=e219]
+              - img "Golden Portal" [ref=e220]
+            - generic [ref=e221]:
+              - generic [ref=e222]:
+                - heading "Golden Portal" [level=3] [ref=e223]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e225]:
+                - img [ref=e226]
+                - text: Premium
+          - generic [ref=e229] [cursor=pointer]:
+            - generic [ref=e230]:
+              - img "Web3 EOS Hero" [ref=e231]
+              - img "Web3 EOS Hero" [ref=e232]
+            - generic [ref=e233]:
+              - generic [ref=e234]:
+                - heading "Web3 EOS Hero" [level=3] [ref=e235]
+                - text: Web3
+              - button "Unlock prompt" [ref=e237]:
+                - img [ref=e238]
+                - text: Premium
+          - generic [ref=e241] [cursor=pointer]:
+            - generic [ref=e242]:
+              - img "Pulse 3D" [ref=e243]
+              - img "Pulse 3D" [ref=e244]
+            - generic [ref=e245]:
+              - generic [ref=e246]:
+                - heading "Pulse 3D" [level=3] [ref=e247]
+                - text: 3D Website
+              - button "Unlock prompt" [ref=e249]:
+                - img [ref=e250]
+                - text: Premium
+          - generic [ref=e253] [cursor=pointer]:
+            - generic [ref=e254]:
+              - img "Aetheris Voyage" [ref=e255]
+              - img "Aetheris Voyage" [ref=e256]
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - heading "Aetheris Voyage" [level=3] [ref=e259]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e261]:
+                - img [ref=e262]
+                - text: Copy
+          - generic [ref=e265] [cursor=pointer]:
+            - generic [ref=e266]:
+              - img "Obsidian Hero" [ref=e267]
+              - img "Obsidian Hero" [ref=e268]
+            - generic [ref=e269]:
+              - generic [ref=e270]:
+                - heading "Obsidian Hero" [level=3] [ref=e271]
+                - text: Hero
+              - button "Unlock prompt" [ref=e273]:
+                - img [ref=e274]
+                - text: Premium
+          - generic [ref=e277] [cursor=pointer]:
+            - generic [ref=e278]:
+              - img "CoderCrest" [ref=e279]
+              - img "CoderCrest" [ref=e280]
+            - generic [ref=e281]:
+              - generic [ref=e282]:
+                - heading "CoderCrest" [level=3] [ref=e283]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e285]:
+                - img [ref=e286]
+                - text: Premium
+          - generic [ref=e289] [cursor=pointer]:
+            - generic [ref=e290]:
+              - img "Future-State" [ref=e291]
+              - img "Future-State" [ref=e292]
+            - generic [ref=e293]:
+              - generic [ref=e294]:
+                - heading "Future-State" [level=3] [ref=e295]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e297]:
+                - img [ref=e298]
+                - text: Premium
+          - generic [ref=e301] [cursor=pointer]:
+            - generic [ref=e302]:
+              - img "VEX Ventures" [ref=e303]
+              - img "VEX Ventures" [ref=e304]
+            - generic [ref=e305]:
+              - generic [ref=e306]:
+                - heading "VEX Ventures" [level=3] [ref=e307]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e309]:
+                - img [ref=e310]
+                - text: Copy
+          - generic [ref=e313] [cursor=pointer]:
+            - generic [ref=e314]:
+              - img "Apex Pulse" [ref=e315]
+              - img "Apex Pulse" [ref=e316]
+            - generic [ref=e317]:
+              - generic [ref=e318]:
+                - heading "Apex Pulse" [level=3] [ref=e319]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e321]:
+                - img [ref=e322]
+                - text: Premium
+          - generic [ref=e325] [cursor=pointer]:
+            - generic [ref=e326]:
+              - img "SkyElite Private Jets" [ref=e327]
+              - img "SkyElite Private Jets" [ref=e328]
+            - generic [ref=e329]:
+              - generic [ref=e330]:
+                - heading "SkyElite Private Jets" [level=3] [ref=e331]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e333]:
+                - img [ref=e334]
+                - text: Copy
+          - generic [ref=e337] [cursor=pointer]:
+            - generic [ref=e338]:
+              - img "Immersive Ocean" [ref=e339]
+              - img "Immersive Ocean" [ref=e340]
+            - generic [ref=e341]:
+              - generic [ref=e342]:
+                - heading "Immersive Ocean" [level=3] [ref=e343]
+                - text: Hero
+              - button "Copy prompt" [ref=e345]:
+                - img [ref=e346]
+                - text: Copy
+          - generic [ref=e349] [cursor=pointer]:
+            - generic [ref=e350]:
+              - img "Urban Jungle" [ref=e351]
+              - img "Urban Jungle" [ref=e352]
+            - generic [ref=e353]:
+              - generic [ref=e354]:
+                - heading "Urban Jungle" [level=3] [ref=e355]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e357]:
+                - img [ref=e358]
+                - text: Premium
+          - generic [ref=e361] [cursor=pointer]:
+            - generic [ref=e362]:
+              - img "Neon Logic" [ref=e363]
+              - img "Neon Logic" [ref=e364]
+            - generic [ref=e365]:
+              - generic [ref=e366]:
+                - heading "Neon Logic" [level=3] [ref=e367]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e369]:
+                - img [ref=e370]
+                - text: Copy
+          - generic [ref=e373] [cursor=pointer]:
+            - generic [ref=e374]:
+              - img "Reveal Hero" [ref=e375]
+              - img "Reveal Hero" [ref=e376]
+            - generic [ref=e377]:
+              - generic [ref=e378]:
+                - heading "Reveal Hero" [level=3] [ref=e379]
+                - text: Hero
+              - button "Unlock prompt" [ref=e381]:
+                - img [ref=e382]
+                - text: Premium
+          - generic [ref=e385] [cursor=pointer]:
+            - generic [ref=e386]:
+              - img "Unwind Hero" [ref=e387]
+              - img "Unwind Hero" [ref=e388]
+            - generic [ref=e389]:
+              - generic [ref=e390]:
+                - heading "Unwind Hero" [level=3] [ref=e391]
+                - text: Hero
+              - button "Unlock prompt" [ref=e393]:
+                - img [ref=e394]
+                - text: Premium
+          - generic [ref=e397] [cursor=pointer]:
+            - generic [ref=e398]:
+              - img "Modern Agency" [ref=e399]
+              - img "Modern Agency" [ref=e400]
+            - generic [ref=e401]:
+              - generic [ref=e402]:
+                - heading "Modern Agency" [level=3] [ref=e403]
+                - text: Agency
+              - button "Copy prompt" [ref=e405]:
+                - img [ref=e406]
+                - text: Copy
+          - generic [ref=e409] [cursor=pointer]:
+            - generic [ref=e410]:
+              - img "Glitch Pulse" [ref=e411]
+              - img "Glitch Pulse" [ref=e412]
+            - generic [ref=e413]:
+              - generic [ref=e414]:
+                - heading "Glitch Pulse" [level=3] [ref=e415]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e417]:
+                - img [ref=e418]
+                - text: Premium
+          - generic [ref=e421] [cursor=pointer]:
+            - generic [ref=e422]:
+              - img "Liquid Glass Agency" [ref=e423]
+              - img "Liquid Glass Agency" [ref=e424]
+            - generic [ref=e425]:
+              - generic [ref=e426]:
+                - heading "Liquid Glass Agency" [level=3] [ref=e427]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e429]:
+                - img [ref=e430]
+                - text: Premium
+          - generic [ref=e433] [cursor=pointer]:
+            - generic [ref=e434]:
+              - img "Impact Ventures" [ref=e435]
+              - img "Impact Ventures" [ref=e436]
+            - generic [ref=e437]:
+              - generic [ref=e438]:
+                - heading "Impact Ventures" [level=3] [ref=e439]
+                - text: Hero
+              - button "Copy prompt" [ref=e441]:
+                - img [ref=e442]
+                - text: Copy
+          - generic [ref=e445] [cursor=pointer]:
+            - generic [ref=e446]:
+              - img "Luxury Ecommerce Design" [ref=e447]
+              - img "Luxury Ecommerce Design" [ref=e448]
+            - generic [ref=e449]:
+              - generic [ref=e450]:
+                - heading "Luxury Ecommerce Design" [level=3] [ref=e451]
+                - text: Ecommerce
+              - button "Unlock prompt" [ref=e453]:
+                - img [ref=e454]
+                - text: Premium
+          - generic [ref=e457] [cursor=pointer]:
+            - generic [ref=e458]:
+              - img "Clarity Core" [ref=e459]
+              - img "Clarity Core" [ref=e460]
+            - generic [ref=e461]:
+              - generic [ref=e462]:
+                - heading "Clarity Core" [level=3] [ref=e463]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e465]:
+                - img [ref=e466]
+                - text: Premium
+          - generic [ref=e469] [cursor=pointer]:
+            - generic [ref=e470]:
+              - img "Grow AI Talent Platform" [ref=e471]
+              - img "Grow AI Talent Platform" [ref=e472]
+            - generic [ref=e473]:
+              - generic [ref=e474]:
+                - heading "Grow AI Talent Platform" [level=3] [ref=e475]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e477]:
+                - img [ref=e478]
+                - text: Premium
+          - generic [ref=e481] [cursor=pointer]:
+            - generic [ref=e482]:
+              - img "Organic Odyssey" [ref=e483]
+              - img "Organic Odyssey" [ref=e484]
+            - generic [ref=e485]:
+              - generic [ref=e486]:
+                - heading "Organic Odyssey" [level=3] [ref=e487]
+                - text: Hero
+              - button "Copy prompt" [ref=e489]:
+                - img [ref=e490]
+                - text: Copy
+          - generic [ref=e493] [cursor=pointer]:
+            - generic [ref=e494]:
+              - img "Aethera Studio" [ref=e495]
+              - img "Aethera Studio" [ref=e496]
+            - generic [ref=e497]:
+              - generic [ref=e498]:
+                - heading "Aethera Studio" [level=3] [ref=e499]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e501]:
+                - img [ref=e502]
+                - text: Copy
+          - generic [ref=e505] [cursor=pointer]:
+            - generic [ref=e506]:
+              - img "Vertex Sci" [ref=e507]
+              - img "Vertex Sci" [ref=e508]
+            - generic [ref=e509]:
+              - generic [ref=e510]:
+                - heading "Vertex Sci" [level=3] [ref=e511]
+                - text: Hero
+              - button "Unlock prompt" [ref=e513]:
+                - img [ref=e514]
+                - text: Premium
+          - generic [ref=e517] [cursor=pointer]:
+            - generic [ref=e518]:
+              - img "Glassmorphism Agency Hero" [ref=e519]
+              - img "Glassmorphism Agency Hero" [ref=e520]
+            - generic [ref=e521]:
+              - generic [ref=e522]:
+                - heading "Glassmorphism Agency Hero" [level=3] [ref=e523]
+                - text: Agency
+              - button "Unlock prompt" [ref=e525]:
+                - img [ref=e526]
+                - text: Premium
+          - generic [ref=e529] [cursor=pointer]:
+            - generic [ref=e530]:
+              - img "Neural Interface" [ref=e531]
+              - img "Neural Interface" [ref=e532]
+            - generic [ref=e533]:
+              - generic [ref=e534]:
+                - heading "Neural Interface" [level=3] [ref=e535]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e537]:
+                - img [ref=e538]
+                - text: Premium
+          - generic [ref=e541] [cursor=pointer]:
+            - generic [ref=e542]:
+              - img "Asme" [ref=e543]
+              - img "Asme" [ref=e544]
+            - generic [ref=e545]:
+              - generic [ref=e546]:
+                - heading "Asme" [level=3] [ref=e547]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e549]:
+                - img [ref=e550]
+                - text: Copy
+          - generic [ref=e553] [cursor=pointer]:
+            - generic [ref=e554]:
+              - img "3D Story" [ref=e555]
+              - img "3D Story" [ref=e556]
+            - generic [ref=e557]:
+              - generic [ref=e558]:
+                - heading "3D Story" [level=3] [ref=e559]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e561]:
+                - img [ref=e562]
+                - text: Copy
+          - generic [ref=e565] [cursor=pointer]:
+            - generic [ref=e566]:
+              - img "Logoisum Video Agency Hero" [ref=e567]
+              - img "Logoisum Video Agency Hero" [ref=e568]
+            - generic [ref=e569]:
+              - generic [ref=e570]:
+                - heading "Logoisum Video Agency Hero" [level=3] [ref=e571]
+                - text: Agency
+              - button "Unlock prompt" [ref=e573]:
+                - img [ref=e574]
+                - text: Premium
+          - generic [ref=e577] [cursor=pointer]:
+            - generic [ref=e578]:
+              - img "Wellness Hero" [ref=e579]
+              - img "Wellness Hero" [ref=e580]
+            - generic [ref=e581]:
+              - generic [ref=e582]:
+                - heading "Wellness Hero" [level=3] [ref=e583]
+                - text: Hero
+              - button "Copy prompt" [ref=e585]:
+                - img [ref=e586]
+                - text: Copy
+          - generic [ref=e589] [cursor=pointer]:
+            - generic [ref=e590]:
+              - img "Innovation" [ref=e591]
+              - img "Innovation" [ref=e592]
+            - generic [ref=e593]:
+              - generic [ref=e594]:
+                - heading "Innovation" [level=3] [ref=e595]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e597]:
+                - img [ref=e598]
+                - text: Copy
+          - generic [ref=e601] [cursor=pointer]:
+            - generic [ref=e602]:
+              - img "Cosmic" [ref=e603]
+              - img "Cosmic" [ref=e604]
+            - generic [ref=e605]:
+              - generic [ref=e606]:
+                - heading "Cosmic" [level=3] [ref=e607]
+                - text: Hero
+              - button "Unlock prompt" [ref=e609]:
+                - img [ref=e610]
+                - text: Premium
+          - generic [ref=e613] [cursor=pointer]:
+            - generic [ref=e614]:
+              - img "AI Automation Hero" [ref=e615]
+              - img "AI Automation Hero" [ref=e616]
+            - generic [ref=e617]:
+              - generic [ref=e618]:
+                - heading "AI Automation Hero" [level=3] [ref=e619]
+                - text: AI / SaaS
+              - button "Unlock prompt" [ref=e621]:
+                - img [ref=e622]
+                - text: Premium
+          - generic [ref=e625] [cursor=pointer]:
+            - generic [ref=e626]:
+              - img "Bloom" [ref=e627]
+              - img "Bloom" [ref=e628]
+            - generic [ref=e629]:
+              - generic [ref=e630]:
+                - heading "Bloom" [level=3] [ref=e631]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e633]:
+                - img [ref=e634]
+                - text: Premium
+          - generic [ref=e637] [cursor=pointer]:
+            - generic [ref=e638]:
+              - img "Orbis NFT" [ref=e639]
+              - img "Orbis NFT" [ref=e640]
+            - generic [ref=e641]:
+              - generic [ref=e642]:
+                - heading "Orbis NFT" [level=3] [ref=e643]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e645]:
+                - img [ref=e646]
+                - text: Copy
+          - generic [ref=e649] [cursor=pointer]:
+            - generic [ref=e650]:
+              - img "SaaS Value" [ref=e651]
+              - img "SaaS Value" [ref=e652]
+            - generic [ref=e653]:
+              - generic [ref=e654]:
+                - heading "SaaS Value" [level=3] [ref=e655]
+                - text: SaaS
+              - button "Copy prompt" [ref=e657]:
+                - img [ref=e658]
+                - text: Copy
+          - generic [ref=e661] [cursor=pointer]:
+            - generic [ref=e662]:
+              - img "Synapse Dark Hero" [ref=e663]
+              - img "Synapse Dark Hero" [ref=e664]
+            - generic [ref=e665]:
+              - generic [ref=e666]:
+                - heading "Synapse Dark Hero" [level=3] [ref=e667]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e669]:
+                - img [ref=e670]
+                - text: Premium
+          - generic [ref=e673] [cursor=pointer]:
+            - generic [ref=e674]:
+              - img "Luxury Focus" [ref=e675]
+              - img "Luxury Focus" [ref=e676]
+            - generic [ref=e677]:
+              - generic [ref=e678]:
+                - heading "Luxury Focus" [level=3] [ref=e679]
+                - text: E-commerce
+              - button "Unlock prompt" [ref=e681]:
+                - img [ref=e682]
+                - text: Premium
+          - generic [ref=e685] [cursor=pointer]:
+            - generic [ref=e686]:
+              - img "Portfolio Cosmic" [ref=e687]
+              - img "Portfolio Cosmic" [ref=e688]
+            - generic [ref=e689]:
+              - generic [ref=e690]:
+                - heading "Portfolio Cosmic" [level=3] [ref=e691]
+                - text: Portfolio
+              - button "Copy prompt" [ref=e693]:
+                - img [ref=e694]
+                - text: Copy
+          - generic [ref=e697] [cursor=pointer]:
+            - generic [ref=e698]:
+              - img "Cyberpunk Reveal" [ref=e699]
+              - img "Cyberpunk Reveal" [ref=e700]
+            - generic [ref=e701]:
+              - generic [ref=e702]:
+                - heading "Cyberpunk Reveal" [level=3] [ref=e703]
+                - text: Hero
+              - button "Unlock prompt" [ref=e705]:
+                - img [ref=e706]
+                - text: Premium
+          - generic [ref=e709] [cursor=pointer]:
+            - generic [ref=e710]:
+              - img "HR SaaS Hero" [ref=e711]
+              - img "HR SaaS Hero" [ref=e712]
+            - generic [ref=e713]:
+              - generic [ref=e714]:
+                - heading "HR SaaS Hero" [level=3] [ref=e715]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e717]:
+                - img [ref=e718]
+                - text: Premium
+          - generic [ref=e721] [cursor=pointer]:
+            - generic [ref=e722]:
+              - img "Synthesis" [ref=e723]
+              - img "Synthesis" [ref=e724]
+            - generic [ref=e725]:
+              - generic [ref=e726]:
+                - heading "Synthesis" [level=3] [ref=e727]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e729]:
+                - img [ref=e730]
+                - text: Premium
+          - generic [ref=e733] [cursor=pointer]:
+            - generic [ref=e734]:
+              - img "Securify Data Security" [ref=e735]
+              - img "Securify Data Security" [ref=e736]
+            - generic [ref=e737]:
+              - generic [ref=e738]:
+                - heading "Securify Data Security" [level=3] [ref=e739]
+                - text: SaaS
+              - button "Copy prompt" [ref=e741]:
+                - img [ref=e742]
+                - text: Copy
+          - generic [ref=e745] [cursor=pointer]:
+            - generic [ref=e746]:
+              - img "Conversion" [ref=e747]
+              - img "Conversion" [ref=e748]
+            - generic [ref=e749]:
+              - generic [ref=e750]:
+                - heading "Conversion" [level=3] [ref=e751]
+                - text: Hero
+              - button "Unlock prompt" [ref=e753]:
+                - img [ref=e754]
+                - text: Premium
+          - generic [ref=e757] [cursor=pointer]:
+            - generic [ref=e758]:
+              - img "New Era Bold Hero" [ref=e759]
+              - img "New Era Bold Hero" [ref=e760]
+            - generic [ref=e761]:
+              - generic [ref=e762]:
+                - heading "New Era Bold Hero" [level=3] [ref=e763]
+                - text: Creative
+              - button "Unlock prompt" [ref=e765]:
+                - img [ref=e766]
+                - text: Premium
+          - generic [ref=e769] [cursor=pointer]:
+            - generic [ref=e770]:
+              - img "Luminara" [ref=e771]
+              - img "Luminara" [ref=e772]
+            - generic [ref=e773]:
+              - generic [ref=e774]:
+                - heading "Luminara" [level=3] [ref=e775]
+                - text: Hero
+              - button "Unlock prompt" [ref=e777]:
+                - img [ref=e778]
+                - text: Premium
+          - generic [ref=e781] [cursor=pointer]:
+            - generic [ref=e782]:
+              - img "Portal" [ref=e783]
+              - img "Portal" [ref=e784]
+            - generic [ref=e785]:
+              - generic [ref=e786]:
+                - heading "Portal" [level=3] [ref=e787]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e789]:
+                - img [ref=e790]
+                - text: Copy
+          - generic [ref=e793] [cursor=pointer]:
+            - generic [ref=e794]:
+              - img "Buzzentic Agency" [ref=e795]
+              - img "Buzzentic Agency" [ref=e796]
+            - generic [ref=e797]:
+              - generic [ref=e798]:
+                - heading "Buzzentic Agency" [level=3] [ref=e799]
+                - text: Agency
+              - button "Unlock prompt" [ref=e801]:
+                - img [ref=e802]
+                - text: Premium
+          - generic [ref=e805] [cursor=pointer]:
+            - generic [ref=e806]:
+              - img "Digital Experiences" [ref=e807]
+              - img "Digital Experiences" [ref=e808]
+            - generic [ref=e809]:
+              - generic [ref=e810]:
+                - heading "Digital Experiences" [level=3] [ref=e811]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e813]:
+                - img [ref=e814]
+                - text: Copy
+          - generic [ref=e817] [cursor=pointer]:
+            - generic [ref=e818]:
+              - img "Mindloop Landing" [ref=e819]
+              - img "Mindloop Landing" [ref=e820]
+            - generic [ref=e821]:
+              - generic [ref=e822]:
+                - heading "Mindloop Landing" [level=3] [ref=e823]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e825]:
+                - img [ref=e826]
+                - text: Copy
+          - generic [ref=e829] [cursor=pointer]:
+            - generic [ref=e830]:
+              - img "Gateway Portal" [ref=e831]
+              - img "Gateway Portal" [ref=e832]
+            - generic [ref=e833]:
+              - generic [ref=e834]:
+                - heading "Gateway Portal" [level=3] [ref=e835]
+                - text: Landing page
+              - button "Unlock prompt" [ref=e837]:
+                - img [ref=e838]
+                - text: Premium
+          - generic [ref=e841] [cursor=pointer]:
+            - img "Loader Animation" [ref=e844]
+            - generic [ref=e845]:
+              - generic [ref=e846]:
+                - heading "Loader Animation" [level=3] [ref=e847]
+                - text: Animation
+              - button "Unlock prompt" [ref=e849]:
+                - img [ref=e850]
+                - text: Premium
+          - generic [ref=e853] [cursor=pointer]:
+            - generic [ref=e854]:
+              - img "Audio Showcase" [ref=e855]
+              - img "Audio Showcase" [ref=e856]
+            - generic [ref=e857]:
+              - generic [ref=e858]:
+                - heading "Audio Showcase" [level=3] [ref=e859]
+                - text: Hero
+              - button "Copy prompt" [ref=e861]:
+                - img [ref=e862]
+                - text: Copy
+          - generic [ref=e865] [cursor=pointer]:
+            - generic [ref=e866]:
+              - img "EMBER.dsgn" [ref=e867]
+              - img "EMBER.dsgn" [ref=e868]
+            - generic [ref=e869]:
+              - generic [ref=e870]:
+                - heading "EMBER.dsgn" [level=3] [ref=e871]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e873]:
+                - img [ref=e874]
+                - text: Premium
+          - generic [ref=e877] [cursor=pointer]:
+            - generic [ref=e878]:
+              - img "Eco Intelligence" [ref=e879]
+              - img "Eco Intelligence" [ref=e880]
+            - generic [ref=e881]:
+              - generic [ref=e882]:
+                - heading "Eco Intelligence" [level=3] [ref=e883]
+                - text: Hero
+              - button "Unlock prompt" [ref=e885]:
+                - img [ref=e886]
+                - text: Premium
+          - generic [ref=e889] [cursor=pointer]:
+            - generic [ref=e890]:
+              - img "ClearInvoice SaaS Hero" [ref=e891]
+              - img "ClearInvoice SaaS Hero" [ref=e892]
+            - generic [ref=e893]:
+              - generic [ref=e894]:
+                - heading "ClearInvoice SaaS Hero" [level=3] [ref=e895]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e897]:
+                - img [ref=e898]
+                - text: Premium
+          - generic [ref=e901] [cursor=pointer]:
+            - generic [ref=e902]:
+              - img "Yoga Coach" [ref=e903]
+              - img "Yoga Coach" [ref=e904]
+            - generic [ref=e905]:
+              - generic [ref=e906]:
+                - heading "Yoga Coach" [level=3] [ref=e907]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e909]:
+                - img [ref=e910]
+                - text: Premium
+          - generic [ref=e913] [cursor=pointer]:
+            - generic [ref=e914]:
+              - img "RIVR" [ref=e915]
+              - img "RIVR" [ref=e916]
+            - generic [ref=e917]:
+              - generic [ref=e918]:
+                - heading "RIVR" [level=3] [ref=e919]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e921]:
+                - img [ref=e922]
+                - text: Copy
+          - generic [ref=e925] [cursor=pointer]:
+            - generic [ref=e926]:
+              - img "Luxury Real Estate" [ref=e927]
+              - img "Luxury Real Estate" [ref=e928]
+            - generic [ref=e929]:
+              - generic [ref=e930]:
+                - heading "Luxury Real Estate" [level=3] [ref=e931]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e933]:
+                - img [ref=e934]
+                - text: Premium
+          - generic [ref=e937] [cursor=pointer]:
+            - generic [ref=e938]:
+              - img "WISA Space" [ref=e939]
+              - img "WISA Space" [ref=e940]
+            - generic [ref=e941]:
+              - generic [ref=e942]:
+                - heading "WISA Space" [level=3] [ref=e943]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e945]:
+                - img [ref=e946]
+                - text: Premium
+          - generic [ref=e949] [cursor=pointer]:
+            - generic [ref=e950]:
+              - img "AI Designer Portfolio" [ref=e951]
+              - img "AI Designer Portfolio" [ref=e952]
+            - generic [ref=e953]:
+              - generic [ref=e954]:
+                - heading "AI Designer Portfolio" [level=3] [ref=e955]
+                - text: Landing Page
+              - generic [ref=e956]:
+                - link "Open in Bolt" [ref=e957]:
+                  - /url: https://bolt.new/~/sb1-oszmzx67
+                  - img "Bolt" [ref=e958]
+                - button "Copy prompt" [ref=e959]:
+                  - img [ref=e960]
+                  - text: Copy
+          - generic [ref=e963] [cursor=pointer]:
+            - generic [ref=e964]:
+              - img "Mythic Naturecore" [ref=e965]
+              - img "Mythic Naturecore" [ref=e966]
+            - generic [ref=e967]:
+              - generic [ref=e968]:
+                - heading "Mythic Naturecore" [level=3] [ref=e969]
+                - text: landing page
+              - button "Unlock prompt" [ref=e971]:
+                - img [ref=e972]
+                - text: Premium
+          - generic [ref=e975] [cursor=pointer]:
+            - generic [ref=e976]:
+              - img "Targo Logistics Hero" [ref=e977]
+              - img "Targo Logistics Hero" [ref=e978]
+            - generic [ref=e979]:
+              - generic [ref=e980]:
+                - heading "Targo Logistics Hero" [level=3] [ref=e981]
+                - text: Automotive
+              - button "Unlock prompt" [ref=e983]:
+                - img [ref=e984]
+                - text: Premium
+          - generic [ref=e987] [cursor=pointer]:
+            - generic [ref=e988]:
+              - img "Cinematic Brand" [ref=e989]
+              - img "Cinematic Brand" [ref=e990]
+            - generic [ref=e991]:
+              - generic [ref=e992]:
+                - heading "Cinematic Brand" [level=3] [ref=e993]
+                - text: Hero
+              - button "Unlock prompt" [ref=e995]:
+                - img [ref=e996]
+                - text: Premium
+          - generic [ref=e999] [cursor=pointer]:
+            - generic [ref=e1000]:
+              - img "CodeNest Coding Platform" [ref=e1001]
+              - img "CodeNest Coding Platform" [ref=e1002]
+            - generic [ref=e1003]:
+              - generic [ref=e1004]:
+                - heading "CodeNest Coding Platform" [level=3] [ref=e1005]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e1007]:
+                - img [ref=e1008]
+                - text: Copy
+          - generic [ref=e1011] [cursor=pointer]:
+            - generic [ref=e1012]:
+              - img "Acreage Farming" [ref=e1013]
+              - img "Acreage Farming" [ref=e1014]
+            - generic [ref=e1015]:
+              - generic [ref=e1016]:
+                - heading "Acreage Farming" [level=3] [ref=e1017]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1019]:
+                - img [ref=e1020]
+                - text: Premium
+          - generic [ref=e1023] [cursor=pointer]:
+            - generic [ref=e1024]:
+              - img "Power AI" [ref=e1025]
+              - img "Power AI" [ref=e1026]
+            - generic [ref=e1027]:
+              - generic [ref=e1028]:
+                - heading "Power AI" [level=3] [ref=e1029]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1031]:
+                - img [ref=e1032]
+                - text: Copy
+          - generic [ref=e1035] [cursor=pointer]:
+            - generic [ref=e1036]:
+              - img "Layered Depth" [ref=e1037]
+              - img "Layered Depth" [ref=e1038]
+            - generic [ref=e1039]:
+              - generic [ref=e1040]:
+                - heading "Layered Depth" [level=3] [ref=e1041]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1043]:
+                - img [ref=e1044]
+                - text: Premium
+          - generic [ref=e1047] [cursor=pointer]:
+            - generic [ref=e1048]:
+              - img "Impressive Hero" [ref=e1049]
+              - img "Impressive Hero" [ref=e1050]
+            - generic [ref=e1051]:
+              - generic [ref=e1052]:
+                - heading "Impressive Hero" [level=3] [ref=e1053]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1055]:
+                - img [ref=e1056]
+                - text: Premium
+          - generic [ref=e1059] [cursor=pointer]:
+            - generic [ref=e1060]:
+              - img "IntelligentX" [ref=e1061]
+              - img "IntelligentX" [ref=e1062]
+            - generic [ref=e1063]:
+              - generic [ref=e1064]:
+                - heading "IntelligentX" [level=3] [ref=e1065]
+                - text: Hero
+              - button "Copy prompt" [ref=e1067]:
+                - img [ref=e1068]
+                - text: Copy
+          - generic [ref=e1071] [cursor=pointer]:
+            - generic [ref=e1072]:
+              - img "Bloom AI" [ref=e1073]
+              - img "Bloom AI" [ref=e1074]
+            - generic [ref=e1075]:
+              - generic [ref=e1076]:
+                - heading "Bloom AI" [level=3] [ref=e1077]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1079]:
+                - img [ref=e1080]
+                - text: Copy
+          - generic [ref=e1083] [cursor=pointer]:
+            - generic [ref=e1084]:
+              - img "Retro-Futurist" [ref=e1085]
+              - img "Retro-Futurist" [ref=e1086]
+            - generic [ref=e1087]:
+              - generic [ref=e1088]:
+                - heading "Retro-Futurist" [level=3] [ref=e1089]
+                - text: Hero
+              - button "Copy prompt" [ref=e1091]:
+                - img [ref=e1092]
+                - text: Copy
+          - generic [ref=e1095] [cursor=pointer]:
+            - generic [ref=e1096]:
+              - img "FlowMate" [ref=e1097]
+              - img "FlowMate" [ref=e1098]
+            - generic [ref=e1099]:
+              - generic [ref=e1100]:
+                - heading "FlowMate" [level=3] [ref=e1101]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1103]:
+                - img [ref=e1104]
+                - text: Premium
+          - generic [ref=e1107] [cursor=pointer]:
+            - generic [ref=e1108]:
+              - img "Cursor Follow" [ref=e1109]
+              - img "Cursor Follow" [ref=e1110]
+            - generic [ref=e1111]:
+              - generic [ref=e1112]:
+                - heading "Cursor Follow" [level=3] [ref=e1113]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1115]:
+                - img [ref=e1116]
+                - text: Premium
+          - generic [ref=e1119] [cursor=pointer]:
+            - generic [ref=e1120]:
+              - img "Luminex" [ref=e1121]
+              - img "Luminex" [ref=e1122]
+            - generic [ref=e1123]:
+              - generic [ref=e1124]:
+                - heading "Luminex" [level=3] [ref=e1125]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1127]:
+                - img [ref=e1128]
+                - text: Copy
+          - generic [ref=e1131] [cursor=pointer]:
+            - generic [ref=e1132]:
+              - img "Luxury Botanical" [ref=e1133]
+              - img "Luxury Botanical" [ref=e1134]
+            - generic [ref=e1135]:
+              - generic [ref=e1136]:
+                - heading "Luxury Botanical" [level=3] [ref=e1137]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1139]:
+                - img [ref=e1140]
+                - text: Premium
+          - generic [ref=e1143] [cursor=pointer]:
+            - generic [ref=e1144]:
+              - img "Nike Premium Landing" [ref=e1145]
+              - img "Nike Premium Landing" [ref=e1146]
+            - generic [ref=e1147]:
+              - generic [ref=e1148]:
+                - heading "Nike Premium Landing" [level=3] [ref=e1149]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1151]:
+                - img [ref=e1152]
+                - text: Premium
+          - generic [ref=e1155] [cursor=pointer]:
+            - generic [ref=e1156]:
+              - img "Growth Marketing SaaS" [ref=e1157]
+              - img "Growth Marketing SaaS" [ref=e1158]
+            - generic [ref=e1159]:
+              - generic [ref=e1160]:
+                - heading "Growth Marketing SaaS" [level=3] [ref=e1161]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1163]:
+                - img [ref=e1164]
+                - text: Premium
+          - generic [ref=e1167] [cursor=pointer]:
+            - generic [ref=e1168]:
+              - img "Sentinel AI" [ref=e1169]
+              - img "Sentinel AI" [ref=e1170]
+            - generic [ref=e1171]:
+              - generic [ref=e1172]:
+                - heading "Sentinel AI" [level=3] [ref=e1173]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1175]:
+                - img [ref=e1176]
+                - text: Copy
+          - generic [ref=e1179] [cursor=pointer]:
+            - generic [ref=e1180]:
+              - img "Build With Us" [ref=e1181]
+              - img "Build With Us" [ref=e1182]
+            - generic [ref=e1183]:
+              - generic [ref=e1184]:
+                - heading "Build With Us" [level=3] [ref=e1185]
+                - text: Contact us
+              - button "Copy prompt" [ref=e1187]:
+                - img [ref=e1188]
+                - text: Copy
+          - generic [ref=e1191] [cursor=pointer]:
+            - generic [ref=e1192]:
+              - img "Solar Energy Hero" [ref=e1193]
+              - img "Solar Energy Hero" [ref=e1194]
+            - generic [ref=e1195]:
+              - generic [ref=e1196]:
+                - heading "Solar Energy Hero" [level=3] [ref=e1197]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1199]:
+                - img [ref=e1200]
+                - text: Premium
+          - generic [ref=e1203] [cursor=pointer]:
+            - generic [ref=e1204]:
+              - img "Contact Cybernetic" [ref=e1205]
+              - img "Contact Cybernetic" [ref=e1206]
+            - generic [ref=e1207]:
+              - generic [ref=e1208]:
+                - heading "Contact Cybernetic" [level=3] [ref=e1209]
+                - text: Hero
+              - button "Copy prompt" [ref=e1211]:
+                - img [ref=e1212]
+                - text: Copy
+          - generic [ref=e1215] [cursor=pointer]:
+            - generic [ref=e1216]:
+              - img "Slam Dunk" [ref=e1217]
+              - img "Slam Dunk" [ref=e1218]
+            - generic [ref=e1219]:
+              - generic [ref=e1220]:
+                - heading "Slam Dunk" [level=3] [ref=e1221]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1223]:
+                - img [ref=e1224]
+                - text: Premium
+          - generic [ref=e1227] [cursor=pointer]:
+            - generic [ref=e1228]:
+              - img "AeroCore" [ref=e1229]
+              - img "AeroCore" [ref=e1230]
+            - generic [ref=e1231]:
+              - generic [ref=e1232]:
+                - heading "AeroCore" [level=3] [ref=e1233]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1235]:
+                - img [ref=e1236]
+                - text: Premium
+          - generic [ref=e1239] [cursor=pointer]:
+            - generic [ref=e1240]:
+              - img "DesignPro Academy" [ref=e1241]
+              - img "DesignPro Academy" [ref=e1242]
+            - generic [ref=e1243]:
+              - generic [ref=e1244]:
+                - heading "DesignPro Academy" [level=3] [ref=e1245]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1247]:
+                - img [ref=e1248]
+                - text: Copy
+          - generic [ref=e1251] [cursor=pointer]:
+            - generic [ref=e1252]:
+              - img "Scroll Landing Page" [ref=e1253]
+              - img "Scroll Landing Page" [ref=e1254]
+            - generic [ref=e1255]:
+              - generic [ref=e1256]:
+                - heading "Scroll Landing Page" [level=3] [ref=e1257]
+                - text: Interactive
+              - button "Unlock prompt" [ref=e1259]:
+                - img [ref=e1260]
+                - text: Premium
+          - generic [ref=e1263] [cursor=pointer]:
+            - generic [ref=e1264]:
+              - img "Crypto Wealth" [ref=e1265]
+              - img "Crypto Wealth" [ref=e1266]
+            - generic [ref=e1267]:
+              - generic [ref=e1268]:
+                - heading "Crypto Wealth" [level=3] [ref=e1269]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1271]:
+                - img [ref=e1272]
+                - text: Premium
+          - generic [ref=e1275] [cursor=pointer]:
+            - generic [ref=e1276]:
+              - img "Shamoni" [ref=e1277]
+              - img "Shamoni" [ref=e1278]
+            - generic [ref=e1279]:
+              - generic [ref=e1280]:
+                - heading "Shamoni" [level=3] [ref=e1281]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1283]:
+                - img [ref=e1284]
+                - text: Premium
+          - generic [ref=e1287] [cursor=pointer]:
+            - generic [ref=e1288]:
+              - img "Nexora Automation" [ref=e1289]
+              - img "Nexora Automation" [ref=e1290]
+            - generic [ref=e1291]:
+              - generic [ref=e1292]:
+                - heading "Nexora Automation" [level=3] [ref=e1293]
+                - text: SaaS
+              - button "Copy prompt" [ref=e1295]:
+                - img [ref=e1296]
+                - text: Copy
+          - generic [ref=e1299] [cursor=pointer]:
+            - generic [ref=e1300]:
+              - img "FinFlow" [ref=e1301]
+              - img "FinFlow" [ref=e1302]
+            - generic [ref=e1303]:
+              - generic [ref=e1304]:
+                - heading "FinFlow" [level=3] [ref=e1305]
+                - text: Fintech
+              - button "Unlock prompt" [ref=e1307]:
+                - img [ref=e1308]
+                - text: Premium
+          - generic [ref=e1311] [cursor=pointer]:
+            - generic [ref=e1312]:
+              - img "Bio-Digital" [ref=e1313]
+              - img "Bio-Digital" [ref=e1314]
+            - generic [ref=e1315]:
+              - generic [ref=e1316]:
+                - heading "Bio-Digital" [level=3] [ref=e1317]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1319]:
+                - img [ref=e1320]
+                - text: Premium
+          - generic [ref=e1323] [cursor=pointer]:
+            - generic [ref=e1324]:
+              - img "Transform Data" [ref=e1325]
+              - img "Transform Data" [ref=e1326]
+            - generic [ref=e1327]:
+              - generic [ref=e1328]:
+                - heading "Transform Data" [level=3] [ref=e1329]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1331]:
+                - img [ref=e1332]
+                - text: Copy
+          - generic [ref=e1335] [cursor=pointer]:
+            - generic [ref=e1336]:
+              - img "Velorix IIC" [ref=e1337]
+              - img "Velorix IIC" [ref=e1338]
+            - generic [ref=e1339]:
+              - generic [ref=e1340]:
+                - heading "Velorix IIC" [level=3] [ref=e1341]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1343]:
+                - img [ref=e1344]
+                - text: Premium
+          - generic [ref=e1347] [cursor=pointer]:
+            - generic [ref=e1348]:
+              - img "NexaCore" [ref=e1349]
+              - img "NexaCore" [ref=e1350]
+            - generic [ref=e1351]:
+              - generic [ref=e1352]:
+                - heading "NexaCore" [level=3] [ref=e1353]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1355]:
+                - img [ref=e1356]
+                - text: Premium
+          - generic [ref=e1359] [cursor=pointer]:
+            - generic [ref=e1360]:
+              - img "No-Code Waitlist" [ref=e1361]
+              - img "No-Code Waitlist" [ref=e1362]
+            - generic [ref=e1363]:
+              - generic [ref=e1364]:
+                - heading "No-Code Waitlist" [level=3] [ref=e1365]
+                - text: Waitlist
+              - button "Copy prompt" [ref=e1367]:
+                - img [ref=e1368]
+                - text: Copy
+          - generic [ref=e1371] [cursor=pointer]:
+            - img "USD Halo" [ref=e1374]
+            - generic [ref=e1375]:
+              - generic [ref=e1376]:
+                - heading "USD Halo" [level=3] [ref=e1377]
+                - text: Landing Page
+              - button "Copy prompt" [ref=e1379]:
+                - img [ref=e1380]
+                - text: Copy
+          - generic [ref=e1383] [cursor=pointer]:
+            - generic [ref=e1384]:
+              - img "Portal" [ref=e1385]
+              - img "Portal" [ref=e1386]
+            - generic [ref=e1387]:
+              - generic [ref=e1388]:
+                - heading "Portal" [level=3] [ref=e1389]
+                - text: Hero
+              - button "Copy prompt" [ref=e1391]:
+                - img [ref=e1392]
+                - text: Copy
+          - generic [ref=e1395] [cursor=pointer]:
+            - generic [ref=e1396]:
+              - img "Sync AI" [ref=e1397]
+              - img "Sync AI" [ref=e1398]
+            - generic [ref=e1399]:
+              - generic [ref=e1400]:
+                - heading "Sync AI" [level=3] [ref=e1401]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1403]:
+                - img [ref=e1404]
+                - text: Premium
+          - generic [ref=e1407] [cursor=pointer]:
+            - generic [ref=e1408]:
+              - img "Taskly" [ref=e1409]
+              - img "Taskly" [ref=e1410]
+            - generic [ref=e1411]:
+              - generic [ref=e1412]:
+                - heading "Taskly" [level=3] [ref=e1413]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1415]:
+                - img [ref=e1416]
+                - text: Copy
+          - generic [ref=e1419] [cursor=pointer]:
+            - generic [ref=e1420]:
+              - img "xPortfolio Hero" [ref=e1421]
+              - img "xPortfolio Hero" [ref=e1422]
+            - generic [ref=e1423]:
+              - generic [ref=e1424]:
+                - heading "xPortfolio Hero" [level=3] [ref=e1425]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1427]:
+                - img [ref=e1428]
+                - text: Premium
+          - generic [ref=e1431] [cursor=pointer]:
+            - generic [ref=e1432]:
+              - img "Stellar AI" [ref=e1433]
+              - img "Stellar AI" [ref=e1434]
+            - generic [ref=e1435]:
+              - generic [ref=e1436]:
+                - heading "Stellar AI" [level=3] [ref=e1437]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1439]:
+                - img [ref=e1440]
+                - text: Copy
+          - generic [ref=e1443] [cursor=pointer]:
+            - generic [ref=e1444]:
+              - img "VaultShield" [ref=e1445]
+              - img "VaultShield" [ref=e1446]
+            - generic [ref=e1447]:
+              - generic [ref=e1448]:
+                - heading "VaultShield" [level=3] [ref=e1449]
+                - text: Hero
+              - button "Copy prompt" [ref=e1451]:
+                - img [ref=e1452]
+                - text: Copy
+          - generic [ref=e1455] [cursor=pointer]:
+            - generic [ref=e1456]:
+              - img "AI Designer Agency" [ref=e1457]
+              - img "AI Designer Agency" [ref=e1458]
+            - generic [ref=e1459]:
+              - generic [ref=e1460]:
+                - heading "AI Designer Agency" [level=3] [ref=e1461]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1463]:
+                - img [ref=e1464]
+                - text: Premium
+          - generic [ref=e1467] [cursor=pointer]:
+            - generic [ref=e1468]:
+              - img "Datacore Booking" [ref=e1469]
+              - img "Datacore Booking" [ref=e1470]
+            - generic [ref=e1471]:
+              - generic [ref=e1472]:
+                - heading "Datacore Booking" [level=3] [ref=e1473]
+                - text: SaaS
+              - button "Copy prompt" [ref=e1475]:
+                - img [ref=e1476]
+                - text: Copy
+          - generic [ref=e1479] [cursor=pointer]:
+            - generic [ref=e1480]:
+              - img "NeoVision" [ref=e1481]
+              - img "NeoVision" [ref=e1482]
+            - generic [ref=e1483]:
+              - generic [ref=e1484]:
+                - heading "NeoVision" [level=3] [ref=e1485]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1487]:
+                - img [ref=e1488]
+                - text: Premium
+          - generic [ref=e1491] [cursor=pointer]:
+            - generic [ref=e1492]:
+              - img "Cinematic Landing Page" [ref=e1493]
+              - img "Cinematic Landing Page" [ref=e1494]
+            - generic [ref=e1495]:
+              - generic [ref=e1496]:
+                - heading "Cinematic Landing Page" [level=3] [ref=e1497]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1499]:
+                - img [ref=e1500]
+                - text: Premium
+          - generic [ref=e1503] [cursor=pointer]:
+            - generic [ref=e1504]:
+              - img "Convix Software" [ref=e1505]
+              - img "Convix Software" [ref=e1506]
+            - generic [ref=e1507]:
+              - generic [ref=e1508]:
+                - heading "Convix Software" [level=3] [ref=e1509]
+                - text: SaaS
+              - button "Copy prompt" [ref=e1511]:
+                - img [ref=e1512]
+                - text: Copy
+          - generic [ref=e1515] [cursor=pointer]:
+            - generic [ref=e1516]:
+              - img "AI Workflow Hero" [ref=e1517]
+              - img "AI Workflow Hero" [ref=e1518]
+            - generic [ref=e1519]:
+              - generic [ref=e1520]:
+                - heading "AI Workflow Hero" [level=3] [ref=e1521]
+                - text: Hero
+              - button "Copy prompt" [ref=e1523]:
+                - img [ref=e1524]
+                - text: Copy
+          - generic [ref=e1527] [cursor=pointer]:
+            - generic [ref=e1528]:
+              - img "Guardnet" [ref=e1529]
+              - img "Guardnet" [ref=e1530]
+            - generic [ref=e1531]:
+              - generic [ref=e1532]:
+                - heading "Guardnet" [level=3] [ref=e1533]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1535]:
+                - img [ref=e1536]
+                - text: Premium
+          - generic [ref=e1539] [cursor=pointer]:
+            - generic [ref=e1540]:
+              - img "AI Automation" [ref=e1541]
+              - img "AI Automation" [ref=e1542]
+            - generic [ref=e1543]:
+              - generic [ref=e1544]:
+                - heading "AI Automation" [level=3] [ref=e1545]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1547]:
+                - img [ref=e1548]
+                - text: Premium
+          - generic [ref=e1551] [cursor=pointer]:
+            - generic [ref=e1552]:
+              - img "Neuralyn" [ref=e1553]
+              - img "Neuralyn" [ref=e1554]
+            - generic [ref=e1555]:
+              - generic [ref=e1556]:
+                - heading "Neuralyn" [level=3] [ref=e1557]
+                - text: SaaS
+              - button "Copy prompt" [ref=e1559]:
+                - img [ref=e1560]
+                - text: Copy
+          - generic [ref=e1563] [cursor=pointer]:
+            - generic [ref=e1564]:
+              - img "Cybersecurity Hero v2" [ref=e1565]
+              - img "Cybersecurity Hero v2" [ref=e1566]
+            - generic [ref=e1567]:
+              - generic [ref=e1568]:
+                - heading "Cybersecurity Hero v2" [level=3] [ref=e1569]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1571]:
+                - img [ref=e1572]
+                - text: Premium
+          - generic [ref=e1575] [cursor=pointer]:
+            - generic [ref=e1576]:
+              - img "Automation Machines" [ref=e1577]
+              - img "Automation Machines" [ref=e1578]
+            - generic [ref=e1579]:
+              - generic [ref=e1580]:
+                - heading "Automation Machines" [level=3] [ref=e1581]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1583]:
+                - img [ref=e1584]
+                - text: Premium
+          - generic [ref=e1587] [cursor=pointer]:
+            - generic [ref=e1588]:
+              - img "Nimbus Grid" [ref=e1589]
+              - img "Nimbus Grid" [ref=e1590]
+            - generic [ref=e1591]:
+              - generic [ref=e1592]:
+                - heading "Nimbus Grid" [level=3] [ref=e1593]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1595]:
+                - img [ref=e1596]
+                - text: Premium
+          - generic [ref=e1599] [cursor=pointer]:
+            - generic [ref=e1600]:
+              - img "Digitwist AI Builder" [ref=e1601]
+              - img "Digitwist AI Builder" [ref=e1602]
+            - generic [ref=e1603]:
+              - generic [ref=e1604]:
+                - heading "Digitwist AI Builder" [level=3] [ref=e1605]
+                - text: SaaS
+              - button "Copy prompt" [ref=e1607]:
+                - img [ref=e1608]
+                - text: Copy
+          - generic [ref=e1611] [cursor=pointer]:
+            - generic [ref=e1612]:
+              - img "Book Hero" [ref=e1613]
+              - img "Book Hero" [ref=e1614]
+            - generic [ref=e1616]:
+              - heading "Book Hero" [level=3] [ref=e1617]
+              - text: Hero
+          - generic [ref=e1618] [cursor=pointer]:
+            - generic [ref=e1619]:
+              - img "Space Voyage" [ref=e1620]
+              - img "Space Voyage" [ref=e1621]
+            - generic [ref=e1622]:
+              - generic [ref=e1623]:
+                - heading "Space Voyage" [level=3] [ref=e1624]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1626]:
+                - img [ref=e1627]
+                - text: Premium
+          - generic [ref=e1630] [cursor=pointer]:
+            - generic [ref=e1631]:
+              - img "Neo Museum" [ref=e1632]
+              - img "Neo Museum" [ref=e1633]
+            - generic [ref=e1634]:
+              - generic [ref=e1635]:
+                - heading "Neo Museum" [level=3] [ref=e1636]
+                - text: Website
+              - button "Copy prompt" [ref=e1638]:
+                - img [ref=e1639]
+                - text: Copy
+          - generic [ref=e1642] [cursor=pointer]:
+            - generic [ref=e1643]:
+              - img "Dot" [ref=e1644]
+              - img "Dot" [ref=e1645]
+            - generic [ref=e1646]:
+              - generic [ref=e1647]:
+                - heading "Dot" [level=3] [ref=e1648]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1650]:
+                - img [ref=e1651]
+                - text: Copy
+          - generic [ref=e1654] [cursor=pointer]:
+            - generic [ref=e1655]:
+              - img "Minimal Workflow SaaS" [ref=e1656]
+              - img "Minimal Workflow SaaS" [ref=e1657]
+            - generic [ref=e1658]:
+              - generic [ref=e1659]:
+                - heading "Minimal Workflow SaaS" [level=3] [ref=e1660]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e1662]:
+                - img [ref=e1663]
+                - text: Premium
+          - generic [ref=e1666] [cursor=pointer]:
+            - generic [ref=e1667]:
+              - img "Focus AI" [ref=e1668]
+              - img "Focus AI" [ref=e1669]
+            - generic [ref=e1670]:
+              - generic [ref=e1671]:
+                - heading "Focus AI" [level=3] [ref=e1672]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1674]:
+                - img [ref=e1675]
+                - text: Premium
+          - generic [ref=e1678] [cursor=pointer]:
+            - generic [ref=e1679]:
+              - img "Futuristic Tech" [ref=e1680]
+              - img "Futuristic Tech" [ref=e1681]
+            - generic [ref=e1682]:
+              - generic [ref=e1683]:
+                - heading "Futuristic Tech" [level=3] [ref=e1684]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1686]:
+                - img [ref=e1687]
+                - text: Premium
+          - generic [ref=e1690] [cursor=pointer]:
+            - generic [ref=e1691]:
+              - img "Email Marketing" [ref=e1692]
+              - img "Email Marketing" [ref=e1693]
+            - generic [ref=e1694]:
+              - generic [ref=e1695]:
+                - heading "Email Marketing" [level=3] [ref=e1696]
+                - text: Email Marketing
+              - button "Copy prompt" [ref=e1698]:
+                - img [ref=e1699]
+                - text: Copy
+          - generic [ref=e1702] [cursor=pointer]:
+            - generic [ref=e1703]:
+              - img "Evergreen Finance" [ref=e1704]
+              - img "Evergreen Finance" [ref=e1705]
+            - generic [ref=e1706]:
+              - generic [ref=e1707]:
+                - heading "Evergreen Finance" [level=3] [ref=e1708]
+                - text: Fintech
+              - button "Unlock prompt" [ref=e1710]:
+                - img [ref=e1711]
+                - text: Premium
+          - generic [ref=e1714] [cursor=pointer]:
+            - generic [ref=e1715]:
+              - img "RIVR DeFi" [ref=e1716]
+              - img "RIVR DeFi" [ref=e1717]
+            - generic [ref=e1718]:
+              - generic [ref=e1719]:
+                - heading "RIVR DeFi" [level=3] [ref=e1720]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1722]:
+                - img [ref=e1723]
+                - text: Premium
+          - generic [ref=e1726] [cursor=pointer]:
+            - generic [ref=e1727]:
+              - img "Duolingo Styleguide" [ref=e1728]
+              - img "Duolingo Styleguide" [ref=e1729]
+            - generic [ref=e1730]:
+              - generic [ref=e1731]:
+                - heading "Duolingo Styleguide" [level=3] [ref=e1732]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1734]:
+                - img [ref=e1735]
+                - text: Copy
+          - generic [ref=e1738] [cursor=pointer]:
+            - generic [ref=e1739]:
+              - img "Stellar Launch" [ref=e1740]
+              - img "Stellar Launch" [ref=e1741]
+            - generic [ref=e1742]:
+              - generic [ref=e1743]:
+                - heading "Stellar Launch" [level=3] [ref=e1744]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1746]:
+                - img [ref=e1747]
+                - text: Premium
+          - generic [ref=e1750] [cursor=pointer]:
+            - generic [ref=e1751]:
+              - img "Yacht Club" [ref=e1752]
+              - img "Yacht Club" [ref=e1753]
+            - generic [ref=e1754]:
+              - generic [ref=e1755]:
+                - heading "Yacht Club" [level=3] [ref=e1756]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1758]:
+                - img [ref=e1759]
+                - text: Premium
+          - generic [ref=e1762] [cursor=pointer]:
+            - generic [ref=e1763]:
+              - img "FinancialFocus" [ref=e1764]
+              - img "FinancialFocus" [ref=e1765]
+            - generic [ref=e1766]:
+              - generic [ref=e1767]:
+                - heading "FinancialFocus" [level=3] [ref=e1768]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1770]:
+                - img [ref=e1771]
+                - text: Premium
+          - generic [ref=e1774] [cursor=pointer]:
+            - generic [ref=e1775]:
+              - img "E-commerce Website" [ref=e1776]
+              - img "E-commerce Website" [ref=e1777]
+            - generic [ref=e1778]:
+              - generic [ref=e1779]:
+                - heading "E-commerce Website" [level=3] [ref=e1780]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1782]:
+                - img [ref=e1783]
+                - text: Premium
+          - generic [ref=e1786] [cursor=pointer]:
+            - generic [ref=e1787]:
+              - img "Digital Epoch" [ref=e1788]
+              - img "Digital Epoch" [ref=e1789]
+            - generic [ref=e1790]:
+              - generic [ref=e1791]:
+                - heading "Digital Epoch" [level=3] [ref=e1792]
+                - text: Hero Section
+              - button "Copy prompt" [ref=e1794]:
+                - img [ref=e1795]
+                - text: Copy
+          - generic [ref=e1798] [cursor=pointer]:
+            - generic [ref=e1799]:
+              - img "Creative Studio" [ref=e1800]
+              - img "Creative Studio" [ref=e1801]
+            - generic [ref=e1802]:
+              - generic [ref=e1803]:
+                - heading "Creative Studio" [level=3] [ref=e1804]
+                - text: Agency
+              - button "Copy prompt" [ref=e1806]:
+                - img [ref=e1807]
+                - text: Copy
+          - generic [ref=e1810] [cursor=pointer]:
+            - generic [ref=e1811]:
+              - img "EcoVolta" [ref=e1812]
+              - img "EcoVolta" [ref=e1813]
+            - generic [ref=e1814]:
+              - generic [ref=e1815]:
+                - heading "EcoVolta" [level=3] [ref=e1816]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1818]:
+                - img [ref=e1819]
+                - text: Premium
+          - generic [ref=e1822] [cursor=pointer]:
+            - generic [ref=e1823]:
+              - img "Wanderful Hero" [ref=e1824]
+              - img "Wanderful Hero" [ref=e1825]
+            - generic [ref=e1826]:
+              - generic [ref=e1827]:
+                - heading "Wanderful Hero" [level=3] [ref=e1828]
+                - text: Travel
+              - button "Copy prompt" [ref=e1830]:
+                - img [ref=e1831]
+                - text: Copy
+          - generic [ref=e1834] [cursor=pointer]:
+            - generic [ref=e1835]:
+              - img "Orbit Engineers" [ref=e1836]
+              - img "Orbit Engineers" [ref=e1837]
+            - generic [ref=e1838]:
+              - generic [ref=e1839]:
+                - heading "Orbit Engineers" [level=3] [ref=e1840]
+                - text: Agency
+              - button "Unlock prompt" [ref=e1842]:
+                - img [ref=e1843]
+                - text: Premium
+          - generic [ref=e1846] [cursor=pointer]:
+            - generic [ref=e1847]:
+              - img "Pro AI Deck" [ref=e1848]
+              - img "Pro AI Deck" [ref=e1849]
+            - generic [ref=e1850]:
+              - generic [ref=e1851]:
+                - heading "Pro AI Deck" [level=3] [ref=e1852]
+                - text: Presentation
+              - button "Unlock prompt" [ref=e1854]:
+                - img [ref=e1855]
+                - text: Premium
+          - generic [ref=e1858] [cursor=pointer]:
+            - generic [ref=e1859]:
+              - img "Scenic Travel" [ref=e1860]
+              - img "Scenic Travel" [ref=e1861]
+            - generic [ref=e1862]:
+              - generic [ref=e1863]:
+                - heading "Scenic Travel" [level=3] [ref=e1864]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1866]:
+                - img [ref=e1867]
+                - text: Premium
+          - generic [ref=e1870] [cursor=pointer]:
+            - generic [ref=e1871]:
+              - img "Terra Geo Map" [ref=e1872]
+              - img "Terra Geo Map" [ref=e1873]
+            - generic [ref=e1874]:
+              - generic [ref=e1875]:
+                - heading "Terra Geo Map" [level=3] [ref=e1876]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e1878]:
+                - img [ref=e1879]
+                - text: Premium
+          - generic [ref=e1882] [cursor=pointer]:
+            - generic [ref=e1883]:
+              - img "Prosthetics Hero" [ref=e1884]
+              - img "Prosthetics Hero" [ref=e1885]
+            - generic [ref=e1886]:
+              - generic [ref=e1887]:
+                - heading "Prosthetics Hero" [level=3] [ref=e1888]
+                - text: Hero
+              - button "Copy prompt" [ref=e1890]:
+                - img [ref=e1891]
+                - text: Copy
+          - generic [ref=e1894] [cursor=pointer]:
+            - generic [ref=e1895]:
+              - img "Veloce Finance" [ref=e1896]
+              - img "Veloce Finance" [ref=e1897]
+            - generic [ref=e1898]:
+              - generic [ref=e1899]:
+                - heading "Veloce Finance" [level=3] [ref=e1900]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e1902]:
+                - img [ref=e1903]
+                - text: Premium
+          - generic [ref=e1906] [cursor=pointer]:
+            - generic [ref=e1907]:
+              - img "NovaDesk Signup" [ref=e1908]
+              - img "NovaDesk Signup" [ref=e1909]
+            - generic [ref=e1910]:
+              - generic [ref=e1911]:
+                - heading "NovaDesk Signup" [level=3] [ref=e1912]
+                - text: Signup
+              - button "Unlock prompt" [ref=e1914]:
+                - img [ref=e1915]
+                - text: Premium
+          - generic [ref=e1918] [cursor=pointer]:
+            - generic [ref=e1919]:
+              - img "ClubX Investors" [ref=e1920]
+              - img "ClubX Investors" [ref=e1921]
+            - generic [ref=e1922]:
+              - generic [ref=e1923]:
+                - heading "ClubX Investors" [level=3] [ref=e1924]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1926]:
+                - img [ref=e1927]
+                - text: Premium
+          - generic [ref=e1930] [cursor=pointer]:
+            - generic [ref=e1931]:
+              - img "SpeakUp Venture Hero" [ref=e1932]
+              - img "SpeakUp Venture Hero" [ref=e1933]
+            - generic [ref=e1934]:
+              - generic [ref=e1935]:
+                - heading "SpeakUp Venture Hero" [level=3] [ref=e1936]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1938]:
+                - img [ref=e1939]
+                - text: Premium
+          - generic [ref=e1942] [cursor=pointer]:
+            - generic [ref=e1943]:
+              - img "Railroad.ai" [ref=e1944]
+              - img "Railroad.ai" [ref=e1945]
+            - generic [ref=e1946]:
+              - generic [ref=e1947]:
+                - heading "Railroad.ai" [level=3] [ref=e1948]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e1950]:
+                - img [ref=e1951]
+                - text: Premium
+          - generic [ref=e1954] [cursor=pointer]:
+            - generic [ref=e1955]:
+              - img "Futuristic Cinematic" [ref=e1956]
+              - img "Futuristic Cinematic" [ref=e1957]
+            - generic [ref=e1958]:
+              - generic [ref=e1959]:
+                - heading "Futuristic Cinematic" [level=3] [ref=e1960]
+                - text: Hero
+              - button "Unlock prompt" [ref=e1962]:
+                - img [ref=e1963]
+                - text: Premium
+          - generic [ref=e1966] [cursor=pointer]:
+            - generic [ref=e1967]:
+              - img "Bold Portfolio Hero" [ref=e1968]
+              - img "Bold Portfolio Hero" [ref=e1969]
+            - generic [ref=e1970]:
+              - generic [ref=e1971]:
+                - heading "Bold Portfolio Hero" [level=3] [ref=e1972]
+                - text: Portfolio
+              - button "Unlock prompt" [ref=e1974]:
+                - img [ref=e1975]
+                - text: Premium
+          - generic [ref=e1978] [cursor=pointer]:
+            - generic [ref=e1979]:
+              - img "Email Landing Page" [ref=e1980]
+              - img "Email Landing Page" [ref=e1981]
+            - generic [ref=e1982]:
+              - generic [ref=e1983]:
+                - heading "Email Landing Page" [level=3] [ref=e1984]
+                - text: Landing page
+              - button "Copy prompt" [ref=e1986]:
+                - img [ref=e1987]
+                - text: Copy
+          - generic [ref=e1990] [cursor=pointer]:
+            - generic [ref=e1991]:
+              - img "Slate" [ref=e1992]
+              - img "Slate" [ref=e1993]
+            - generic [ref=e1994]:
+              - generic [ref=e1995]:
+                - heading "Slate" [level=3] [ref=e1996]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e1998]:
+                - img [ref=e1999]
+                - text: Premium
+          - generic [ref=e2002] [cursor=pointer]:
+            - generic [ref=e2003]:
+              - img "EcoVolta V2" [ref=e2004]
+              - img "EcoVolta V2" [ref=e2005]
+            - generic [ref=e2006]:
+              - generic [ref=e2007]:
+                - heading "EcoVolta V2" [level=3] [ref=e2008]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e2010]:
+                - img [ref=e2011]
+                - text: Premium
+          - generic [ref=e2014] [cursor=pointer]:
+            - generic [ref=e2015]:
+              - img "Learnly" [ref=e2016]
+              - img "Learnly" [ref=e2017]
+            - generic [ref=e2018]:
+              - generic [ref=e2019]:
+                - heading "Learnly" [level=3] [ref=e2020]
+                - text: Hero
+              - button "Unlock prompt" [ref=e2022]:
+                - img [ref=e2023]
+                - text: Premium
+          - generic [ref=e2026] [cursor=pointer]:
+            - generic [ref=e2027]:
+              - img "EVR Ventures" [ref=e2028]
+              - img "EVR Ventures" [ref=e2029]
+            - generic [ref=e2030]:
+              - generic [ref=e2031]:
+                - heading "EVR Ventures" [level=3] [ref=e2032]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e2034]:
+                - img [ref=e2035]
+                - text: Premium
+          - generic [ref=e2038] [cursor=pointer]:
+            - generic [ref=e2039]:
+              - img "Waitlist Hero" [ref=e2040]
+              - img "Waitlist Hero" [ref=e2041]
+            - generic [ref=e2042]:
+              - generic [ref=e2043]:
+                - heading "Waitlist Hero" [level=3] [ref=e2044]
+                - text: Hero
+              - button "Unlock prompt" [ref=e2046]:
+                - img [ref=e2047]
+                - text: Premium
+          - generic [ref=e2050] [cursor=pointer]:
+            - generic [ref=e2051]:
+              - img "AI Image Generator UI" [ref=e2052]
+              - img "AI Image Generator UI" [ref=e2053]
+            - generic [ref=e2054]:
+              - generic [ref=e2055]:
+                - heading "AI Image Generator UI" [level=3] [ref=e2056]
+                - text: AI
+              - button "Copy prompt" [ref=e2058]:
+                - img [ref=e2059]
+                - text: Copy
+          - generic [ref=e2062] [cursor=pointer]:
+            - generic [ref=e2063]:
+              - img "Aurora Onboard" [ref=e2064]
+              - img "Aurora Onboard" [ref=e2065]
+            - generic [ref=e2066]:
+              - generic [ref=e2067]:
+                - heading "Aurora Onboard" [level=3] [ref=e2068]
+                - text: Signup
+              - button "Copy prompt" [ref=e2070]:
+                - img [ref=e2071]
+                - text: Copy
+          - generic [ref=e2074] [cursor=pointer]:
+            - generic [ref=e2075]:
+              - img "AuraMail" [ref=e2076]
+              - img "AuraMail" [ref=e2077]
+            - generic [ref=e2078]:
+              - generic [ref=e2079]:
+                - heading "AuraMail" [level=3] [ref=e2080]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2082]:
+                - img [ref=e2083]
+                - text: Premium
+          - generic [ref=e2086] [cursor=pointer]:
+            - generic [ref=e2087]:
+              - img "Naturecore SaaS" [ref=e2088]
+              - img "Naturecore SaaS" [ref=e2089]
+            - generic [ref=e2090]:
+              - generic [ref=e2091]:
+                - heading "Naturecore SaaS" [level=3] [ref=e2092]
+                - text: Hero
+              - button "Unlock prompt" [ref=e2094]:
+                - img [ref=e2095]
+                - text: Premium
+          - generic [ref=e2098] [cursor=pointer]:
+            - generic [ref=e2099]:
+              - img "BookedUp" [ref=e2100]
+              - img "BookedUp" [ref=e2101]
+            - generic [ref=e2102]:
+              - generic [ref=e2103]:
+                - heading "BookedUp" [level=3] [ref=e2104]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2106]:
+                - img [ref=e2107]
+                - text: Premium
+          - generic [ref=e2110] [cursor=pointer]:
+            - generic [ref=e2111]:
+              - img "Creative Agency" [ref=e2112]
+              - img "Creative Agency" [ref=e2113]
+            - generic [ref=e2114]:
+              - generic [ref=e2115]:
+                - heading "Creative Agency" [level=3] [ref=e2116]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e2118]:
+                - img [ref=e2119]
+                - text: Premium
+          - generic [ref=e2122] [cursor=pointer]:
+            - generic [ref=e2123]:
+              - img "Zenith Realty" [ref=e2124]
+              - img "Zenith Realty" [ref=e2125]
+            - generic [ref=e2126]:
+              - generic [ref=e2127]:
+                - heading "Zenith Realty" [level=3] [ref=e2128]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e2130]:
+                - img [ref=e2131]
+                - text: Premium
+          - generic [ref=e2134] [cursor=pointer]:
+            - generic [ref=e2135]:
+              - img "VertexAI Hero" [ref=e2136]
+              - img "VertexAI Hero" [ref=e2137]
+            - generic [ref=e2138]:
+              - generic [ref=e2139]:
+                - heading "VertexAI Hero" [level=3] [ref=e2140]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e2142]:
+                - img [ref=e2143]
+                - text: Premium
+          - generic [ref=e2146] [cursor=pointer]:
+            - generic [ref=e2147]:
+              - img "Cybersecurity Hero" [ref=e2148]
+              - img "Cybersecurity Hero" [ref=e2149]
+            - generic [ref=e2150]:
+              - generic [ref=e2151]:
+                - heading "Cybersecurity Hero" [level=3] [ref=e2152]
+                - text: Hero
+              - button "Copy prompt" [ref=e2154]:
+                - img [ref=e2155]
+                - text: Copy
+          - generic [ref=e2158] [cursor=pointer]:
+            - generic [ref=e2159]:
+              - img "Prioritize" [ref=e2160]
+              - img "Prioritize" [ref=e2161]
+            - generic [ref=e2162]:
+              - generic [ref=e2163]:
+                - heading "Prioritize" [level=3] [ref=e2164]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e2166]:
+                - img [ref=e2167]
+                - text: Premium
+          - generic [ref=e2170] [cursor=pointer]:
+            - generic [ref=e2171]:
+              - img "Equilibrium" [ref=e2172]
+              - img "Equilibrium" [ref=e2173]
+            - generic [ref=e2174]:
+              - generic [ref=e2175]:
+                - heading "Equilibrium" [level=3] [ref=e2176]
+                - text: Hero
+              - button "Copy prompt" [ref=e2178]:
+                - img [ref=e2179]
+                - text: Copy
+          - generic [ref=e2182] [cursor=pointer]:
+            - generic [ref=e2183]:
+              - img "Vitara" [ref=e2184]
+              - img "Vitara" [ref=e2185]
+            - generic [ref=e2186]:
+              - generic [ref=e2187]:
+                - heading "Vitara" [level=3] [ref=e2188]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e2190]:
+                - img [ref=e2191]
+                - text: Premium
+          - generic [ref=e2194] [cursor=pointer]:
+            - generic [ref=e2195]:
+              - img "Nexto 404" [ref=e2196]
+              - img "Nexto 404" [ref=e2197]
+            - generic [ref=e2198]:
+              - generic [ref=e2199]:
+                - heading "Nexto 404" [level=3] [ref=e2200]
+                - text: "404"
+              - button "Copy prompt" [ref=e2202]:
+                - img [ref=e2203]
+                - text: Copy
+          - generic [ref=e2206] [cursor=pointer]:
+            - generic [ref=e2207]:
+              - img "Orbit Web3" [ref=e2208]
+              - img "Orbit Web3" [ref=e2209]
+            - generic [ref=e2210]:
+              - generic [ref=e2211]:
+                - heading "Orbit Web3" [level=3] [ref=e2212]
+                - text: Web3
+              - button "Unlock prompt" [ref=e2214]:
+                - img [ref=e2215]
+                - text: Premium
+          - generic [ref=e2218] [cursor=pointer]:
+            - generic [ref=e2219]:
+              - img "AKOR Security" [ref=e2220]
+              - img "AKOR Security" [ref=e2221]
+            - generic [ref=e2222]:
+              - generic [ref=e2223]:
+                - heading "AKOR Security" [level=3] [ref=e2224]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e2226]:
+                - img [ref=e2227]
+                - text: Premium
+          - generic [ref=e2230] [cursor=pointer]:
+            - generic [ref=e2231]:
+              - img "Bionova Biotech" [ref=e2232]
+              - img "Bionova Biotech" [ref=e2233]
+            - generic [ref=e2234]:
+              - generic [ref=e2235]:
+                - heading "Bionova Biotech" [level=3] [ref=e2236]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2238]:
+                - img [ref=e2239]
+                - text: Premium
+          - generic [ref=e2242] [cursor=pointer]:
+            - generic [ref=e2243]:
+              - img "Mindloop" [ref=e2244]
+              - img "Mindloop" [ref=e2245]
+            - generic [ref=e2246]:
+              - generic [ref=e2247]:
+                - heading "Mindloop" [level=3] [ref=e2248]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2250]:
+                - img [ref=e2251]
+                - text: Premium
+          - generic [ref=e2254] [cursor=pointer]:
+            - generic [ref=e2255]:
+              - img "Nexus IT Solutions" [ref=e2256]
+              - img "Nexus IT Solutions" [ref=e2257]
+            - generic [ref=e2258]:
+              - generic [ref=e2259]:
+                - heading "Nexus IT Solutions" [level=3] [ref=e2260]
+                - text: Hero Section
+              - button "Unlock prompt" [ref=e2262]:
+                - img [ref=e2263]
+                - text: Premium
+          - generic [ref=e2266] [cursor=pointer]:
+            - generic [ref=e2267]:
+              - img "NOVA Space Systems" [ref=e2268]
+              - img "NOVA Space Systems" [ref=e2269]
+            - generic [ref=e2270]:
+              - generic [ref=e2271]:
+                - heading "NOVA Space Systems" [level=3] [ref=e2272]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e2274]:
+                - img [ref=e2275]
+                - text: Premium
+          - generic [ref=e2278] [cursor=pointer]:
+            - generic [ref=e2279]:
+              - img "Nickel Payments" [ref=e2280]
+              - img "Nickel Payments" [ref=e2281]
+            - generic [ref=e2282]:
+              - generic [ref=e2283]:
+                - heading "Nickel Payments" [level=3] [ref=e2284]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2286]:
+                - img [ref=e2287]
+                - text: Premium
+          - generic [ref=e2290] [cursor=pointer]:
+            - generic [ref=e2291]:
+              - img "Framelix 3D Studios" [ref=e2292]
+              - img "Framelix 3D Studios" [ref=e2293]
+            - generic [ref=e2294]:
+              - generic [ref=e2295]:
+                - heading "Framelix 3D Studios" [level=3] [ref=e2296]
+                - text: Creative / 3D
+              - button "Unlock prompt" [ref=e2298]:
+                - img [ref=e2299]
+                - text: Premium
+          - generic [ref=e2302] [cursor=pointer]:
+            - generic [ref=e2303]:
+              - img "Dark Portfolio Hero" [ref=e2304]
+              - img "Dark Portfolio Hero" [ref=e2305]
+            - generic [ref=e2306]:
+              - generic [ref=e2307]:
+                - heading "Dark Portfolio Hero" [level=3] [ref=e2308]
+                - text: Portfolio
+              - button "Unlock prompt" [ref=e2310]:
+                - img [ref=e2311]
+                - text: Premium
+          - generic [ref=e2314] [cursor=pointer]:
+            - generic [ref=e2315]:
+              - img "Viktor Portfolio" [ref=e2316]
+              - img "Viktor Portfolio" [ref=e2317]
+            - generic [ref=e2318]:
+              - generic [ref=e2319]:
+                - heading "Viktor Portfolio" [level=3] [ref=e2320]
+                - text: Portfolio
+              - button "Unlock prompt" [ref=e2322]:
+                - img [ref=e2323]
+                - text: Premium
+          - generic [ref=e2326] [cursor=pointer]:
+            - generic [ref=e2327]:
+              - img "Investor Deck" [ref=e2328]
+              - img "Investor Deck" [ref=e2329]
+            - generic [ref=e2330]:
+              - generic [ref=e2331]:
+                - heading "Investor Deck" [level=3] [ref=e2332]
+                - text: Presentation
+              - button "Unlock prompt" [ref=e2334]:
+                - img [ref=e2335]
+                - text: Premium
+          - generic [ref=e2338] [cursor=pointer]:
+            - generic [ref=e2339]:
+              - img "Weblex Dark Hero" [ref=e2340]
+              - img "Weblex Dark Hero" [ref=e2341]
+            - generic [ref=e2342]:
+              - generic [ref=e2343]:
+                - heading "Weblex Dark Hero" [level=3] [ref=e2344]
+                - text: Landing Page
+              - button "Unlock prompt" [ref=e2346]:
+                - img [ref=e2347]
+                - text: Premium
+          - generic [ref=e2350] [cursor=pointer]:
+            - generic [ref=e2351]:
+              - img "New Era Automotive Hero" [ref=e2352]
+              - img "New Era Automotive Hero" [ref=e2353]
+            - generic [ref=e2354]:
+              - generic [ref=e2355]:
+                - heading "New Era Automotive Hero" [level=3] [ref=e2356]
+                - text: Automotive
+              - button "Unlock prompt" [ref=e2358]:
+                - img [ref=e2359]
+                - text: Premium
+          - generic [ref=e2362] [cursor=pointer]:
+            - img "Datacore SaaS Hero" [ref=e2365]
+            - generic [ref=e2366]:
+              - generic [ref=e2367]:
+                - heading "Datacore SaaS Hero" [level=3] [ref=e2368]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2370]:
+                - img [ref=e2371]
+                - text: Premium
+          - generic [ref=e2374] [cursor=pointer]:
+            - generic [ref=e2375]:
+              - img "Finlytic AI Agent" [ref=e2376]
+              - img "Finlytic AI Agent" [ref=e2377]
+            - generic [ref=e2378]:
+              - generic [ref=e2379]:
+                - heading "Finlytic AI Agent" [level=3] [ref=e2380]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2382]:
+                - img [ref=e2383]
+                - text: Premium
+          - generic [ref=e2386] [cursor=pointer]:
+            - generic [ref=e2387]:
+              - img "Taskora SaaS Hero" [ref=e2388]
+              - img "Taskora SaaS Hero" [ref=e2389]
+            - generic [ref=e2390]:
+              - generic [ref=e2391]:
+                - heading "Taskora SaaS Hero" [level=3] [ref=e2392]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2394]:
+                - img [ref=e2395]
+                - text: Premium
+          - generic [ref=e2398] [cursor=pointer]:
+            - generic [ref=e2399]:
+              - img "Wealth Video Hero" [ref=e2400]
+              - img "Wealth Video Hero" [ref=e2401]
+            - generic [ref=e2402]:
+              - generic [ref=e2403]:
+                - heading "Wealth Video Hero" [level=3] [ref=e2404]
+                - text: Fintech
+              - button "Unlock prompt" [ref=e2406]:
+                - img [ref=e2407]
+                - text: Premium
+          - generic [ref=e2410] [cursor=pointer]:
+            - generic [ref=e2411]:
+              - img "Apex SaaS" [ref=e2412]
+              - img "Apex SaaS" [ref=e2413]
+            - generic [ref=e2414]:
+              - generic [ref=e2415]:
+                - heading "Apex SaaS" [level=3] [ref=e2416]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2418]:
+                - img [ref=e2419]
+                - text: Premium
+          - generic [ref=e2422] [cursor=pointer]:
+            - generic [ref=e2423]:
+              - img "Planet Orbit" [ref=e2424]
+              - img "Planet Orbit" [ref=e2425]
+            - generic [ref=e2426]:
+              - generic [ref=e2427]:
+                - heading "Planet Orbit" [level=3] [ref=e2428]
+                - text: SaaS
+              - button "Unlock prompt" [ref=e2430]:
+                - img [ref=e2431]
+                - text: Premium
+        - generic [ref=e2434]:
+          - generic [ref=e2435]:
+            - img "MotionSites" [ref=e2436]
+            - heading "Develop Your AI Design Skills That Stand Out." [level=2] [ref=e2437]
+            - paragraph [ref=e2438]: "\"Give Me Just a Few Days And I'll Show You How To Create AI Design Websites That Most Agencies Charge $5,000 For\""
+            - link "Explore the Full Library" [ref=e2439] [cursor=pointer]:
+              - /url: https://designrocket.io/
+              - generic [ref=e2440]: Explore the Full Library
+          - img "Design Rocket preview"
+        - paragraph [ref=e2442]: Built with Design Rocket 🚀

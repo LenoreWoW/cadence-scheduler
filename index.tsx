@@ -20,7 +20,6 @@ import { MobileNav } from './components/MobileNav';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { LiveRegion } from './components/LiveRegion';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { AchievementPopup } from './components/AchievementPopup';
 import ThemeToggle from './components/ThemeToggle';
 import { tourService } from './services/tourService';
 import { PageTransition } from './components/PageTransition';
@@ -31,7 +30,7 @@ import { ManageBookingPage } from './components/ManageBookingPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { ForgotPasswordPage } from './components/ForgotPasswordPage';
 import { TeamBookingPage } from './components/TeamBookingPage';
-import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team, Achievement } from './types';
+import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team } from './types';
 import { BookingLinksManager } from './components/BookingLinksManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
@@ -39,11 +38,8 @@ import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { AcceptInvitePage } from './components/AcceptInvitePage';
 import { ConfirmInvitePage } from './components/ConfirmInvitePage';
 import { CookieBanner } from './components/CookieBanner';
-import { XpLevelBadge } from './components/XpLevelBadge';
-import { ChallengesCard } from './components/ChallengesCard';
 import { SystemHealthDashboard } from './components/SystemHealthDashboard';
 import { AuditLogViewer } from './components/AuditLogViewer';
-import { TeamCompetitionLeaderboard } from './components/TeamCompetitionLeaderboard';
 import { BookingCalendarView } from './components/BookingCalendarView';
 import { RoutingFormPublicPage } from './components/RoutingFormPublicPage';
 import { VerifyEmailPage } from './components/VerifyEmailPage';
@@ -54,7 +50,6 @@ import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeetin
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
 import { audioService } from './services/audioService';
-import { achievementService } from './services/achievementService';
 import { smartDefaults } from './services/smartDefaults';
 import { shortcutManager } from './services/keyboardShortcuts';
 import { translations } from './services/translations';
@@ -69,7 +64,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Views
-  const [currentView, setCurrentView] = useState<'dashboard' | 'scheduler' | 'logs' | 'my-meetings' | 'team-management' | 'booking-links' | 'booking-calendar' | 'analytics' | 'system-health' | 'audit-log' | 'team-competition'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'scheduler' | 'logs' | 'my-meetings' | 'team-management' | 'booking-links' | 'booking-calendar' | 'analytics' | 'system-health' | 'audit-log'>('dashboard');
   const [lang, setLang] = useState<Language>('en');
 
   // Scheduler State
@@ -105,9 +100,8 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   // Reschedule State
   const [rescheduleMeetingObj, setRescheduleMeetingObj] = useState<Meeting | null>(null);
 
-  // Notifications & Achievements State
+  // Notifications State
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
   
   // Accessibility State
   const [announcement, setAnnouncement] = useState('');
@@ -234,14 +228,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  const checkAchievements = (action: 'login' | 'booking' | 'visit_team') => {
-     if (!currentUser) return;
-     const unlocks = achievementService.trackAction(currentUser.id, action);
-     if (unlocks.length > 0) {
-        setNewAchievements(prev => [...prev, ...unlocks]);
-     }
-  }
-
   const loadHosts = () => {
     const allUsers = storageService.getUsers();
     const internalUsers = allUsers.filter(u => u.role !== 'guest');
@@ -292,12 +278,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     setLogs(prev => [storageService.addLog({ action: 'LOGIN', details: 'User logged in', performedBy: user.name, role: user.role }), ...prev]);
     addToast('success', `${t('welcome')} ${user.name}`);
     setCurrentView(user.role === 'guest' ? 'scheduler' : 'dashboard');
-    
-    // Check login achievements
-    setTimeout(() => {
-       const unlocks = achievementService.trackAction(user.id, 'login');
-       if (unlocks.length > 0) setNewAchievements(unlocks);
-    }, 1000);
 
     if (user.role !== 'guest' && !user.onboardingCompleted) {
        setShowOnboarding(true);
@@ -493,7 +473,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     });
 
     addToast('success', currentUser.role === 'guest' ? t('requestSent') : t('meetingScheduled'));
-    checkAchievements('booking');
   };
 
   const handleCancelMeeting = (id: string) => {
@@ -556,9 +535,8 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   };
 
   const handleSelectTeam = () => {
-    setSelectedHost(null); 
+    setSelectedHost(null);
     setCurrentView('scheduler');
-    checkAchievements('visit_team');
   };
 
   const handleMobileNavigate = (viewId: string) => {
@@ -581,7 +559,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     ...(currentUser?.role === 'admin' ? [{ id: 'analytics', label: 'View Analytics', icon: '📊', action: () => setCurrentView('analytics'), category: 'Admin' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'system-health', label: 'System Health', icon: '💚', action: () => setCurrentView('system-health'), category: 'Admin' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'audit-log', label: 'Audit Log', icon: '📜', action: () => setCurrentView('audit-log'), category: 'Admin' }] : []),
-    { id: 'team-competition', label: 'Team Competition', icon: '🏆', action: () => setCurrentView('team-competition'), category: 'Gamification' },
     { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: '⌨️', shortcut: '?', action: () => setIsShortcutsModalOpen(true), category: 'Help' },
     { id: 'logout', label: 'Sign Out', icon: '🚪', action: handleLogout, category: 'Account' },
     ...(currentUser?.role === 'admin' ? [{ id: 'teams', label: 'Team Management', icon: '👥', action: () => setCurrentView('team-management'), category: 'Admin' }] : []),
@@ -605,9 +582,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
         <LiveRegion message={announcement} />
         <EmailVerificationBanner currentUser={currentUser} lang={lang} />
         
-        {/* Global Achievement Toast */}
-        <AchievementPopup achievements={newAchievements} onClose={() => setNewAchievements([])} />
-
         {showOnboarding && (
            <OnboardingFlow onComplete={handleCompleteOnboarding} currentUser={currentUser} t={t} />
         )}
@@ -719,8 +693,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                    )}
                  </div>
 
-                <XpLevelBadge lang={lang} />
-
                 {(role === 'manager' || role === 'admin') && (
                   <div className="relative group cursor-pointer" data-tour="profile" onClick={() => setIsProfileModalOpen(true)}>
                      <img
@@ -823,11 +795,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                   addToast('info', 'Dashboard refreshed');
                 }}
             />
-            {currentUser.role !== 'guest' && (
-              <div className="mt-6 max-w-2xl mx-auto">
-                <ChallengesCard lang={lang} />
-              </div>
-            )}
             </PageTransition>
           ) : currentView === 'logs' ? (
             <PageTransition viewKey="logs"><div className="animate-slide-up"><LogsPanel logs={logs} t={t} /></div></PageTransition>
@@ -868,10 +835,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
           ) : currentView === 'audit-log' ? (
              <PageTransition viewKey="audit-log">
                <div className="animate-slide-up max-w-6xl mx-auto"><AuditLogViewer lang={lang} /></div>
-             </PageTransition>
-          ) : currentView === 'team-competition' ? (
-             <PageTransition viewKey="team-competition">
-               <div className="animate-slide-up max-w-4xl mx-auto"><TeamCompetitionLeaderboard lang={lang} /></div>
              </PageTransition>
           ) : currentView === 'my-meetings' ? (
             <PageTransition viewKey="appointments">
@@ -1048,7 +1011,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
              setLogs(prev => [storageService.addLog({ action: 'BOOK', details: `Quick Booked "${data.title}"`, performedBy: currentUser.name, role: currentUser.role }), ...prev]);
              smartDefaults.trackAction('book_slot', { hostId: data.hostId, duration: 30, time: data.slot.label });
              addToast('success', 'Quick booking confirmed!');
-             checkAchievements('booking');
              setIsQuickBookOpen(false);
           }}
           hosts={availableHosts}
