@@ -892,15 +892,17 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
             <div className="animate-slide-up space-y-8">
               {/* Host Selector */}
               {(!selectedHost || role === 'guest') && (
-                <HostSelector 
-                  hosts={availableHosts}
-                  teams={teams}
-                  selectedHost={selectedHost}
-                  onSelectHost={handleSelectHost}
-                  t={t}
-                  lang={lang}
-                  currentUser={currentUser}
-                />
+                <div data-tour="host-grid">
+                  <HostSelector
+                    hosts={availableHosts}
+                    teams={teams}
+                    selectedHost={selectedHost}
+                    onSelectHost={handleSelectHost}
+                    t={t}
+                    lang={lang}
+                    currentUser={currentUser}
+                  />
+                </div>
               )}
 
               {selectedHost && (
@@ -931,7 +933,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8">
                     {/* Calendar Column */}
                     <div className="lg:col-span-5 flex flex-col gap-8">
-                      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-2">
+                      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-2" data-tour="calendar">
                         <CalendarGrid 
                           currentDate={currentDate}
                           selectedDate={selectedDate}
@@ -947,7 +949,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
                     {/* Time Slots Column */}
                     <div className="lg:col-span-7 space-y-6">
-                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 min-h-[500px]">
+                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 min-h-[500px]" data-tour="time-slots">
                          <div className="flex items-center justify-between mb-6">
                             <div>
                                <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-dune">Available Times</h3>
@@ -957,7 +959,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                             </div>
                             
                             {/* Duration Selector */}
-                            <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+                            <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 shadow-sm" data-tour="duration">
                                {[15, 30, 45, 60].map(dur => (
                                  <button
                                    key={dur}
