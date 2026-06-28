@@ -49,7 +49,7 @@ export const TimeSlotList: React.FC<TimeSlotListProps> = ({
     if (groupSlots.length === 0) return null;
     return (
       <div className="mb-6 animate-fade-in">
-        <h4 className="text-xs font-bold uppercase tracking-widest text-dune mb-3 border-b border-gray-100 pb-2">{title}</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-widest text-dune mb-3 border-b border-gray-100 dark:border-gray-700 pb-2">{title}</h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {groupSlots.map((slot, idx) => {
              const isRecommended = slot.score && slot.score >= maxScore && slot.score > 50;
@@ -58,10 +58,10 @@ export const TimeSlotList: React.FC<TimeSlotListProps> = ({
              <button
                key={slot.label}
                onClick={() => onSelectSlot(slot)}
-                 className={`group relative px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-bold shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95
-                   ${isRecommended 
-                     ? 'border-al-adaam/50 bg-al-adaam/5 text-charcoal ring-1 ring-al-adaam ring-offset-1' 
-                     : 'border-dune/20 bg-white text-charcoal hover:border-al-adaam hover:bg-al-adaam hover:text-white'}
+                 className={`group relative px-4 py-3 rounded-xl border transition-all duration-200 text-sm font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95
+                   ${isRecommended
+                     ? 'border-al-adaam/50 bg-al-adaam/5 text-charcoal dark:text-white ring-1 ring-al-adaam ring-offset-1 dark:ring-offset-gray-900'
+                     : 'border-dune/20 dark:border-gray-700 bg-white dark:bg-gray-800 text-charcoal dark:text-white hover:border-al-adaam hover:bg-al-adaam hover:text-white'}
                  `}
                style={{ animationDelay: `${idx * 30}ms` }}
              >
@@ -82,7 +82,7 @@ export const TimeSlotList: React.FC<TimeSlotListProps> = ({
   return (
     <div className="w-full">
        {!hasAvailability ? (
-         <div className="w-full py-12 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200 flex flex-col items-center justify-center">
+         <div className="w-full py-12 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center">
             <svg className="w-10 h-10 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <p className="text-dune font-mono text-xs uppercase tracking-widest">{t('unavailable')}</p>
          </div>
