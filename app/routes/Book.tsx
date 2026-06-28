@@ -136,7 +136,7 @@ export const Book: React.FC = () => {
         {header}
         <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10">
           <Card className="animate-pulse">
-            <div className="h-4 w-32 rounded surface-2" />
+            <div className="h-4 w-32 rounded bg-[color:var(--border)]" />
             <div className="mt-4 h-10 rounded-xl surface-2" />
             <div className="mt-3 h-10 rounded-xl surface-2" />
             <div className="mt-3 h-24 rounded-xl surface-2" />
@@ -185,8 +185,8 @@ export const Book: React.FC = () => {
         {header}
         <div className="mx-auto max-w-6xl px-5 -mt-8 relative z-10 pb-12">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="text-center py-14 max-w-xl mx-auto">
-              <div className="mx-auto w-12 h-12 rounded-full grid place-items-center bg-palm/15 text-palm text-2xl">
+            <Card role="status" className="text-center py-14 max-w-xl mx-auto">
+              <div className="mx-auto w-12 h-12 rounded-full grid place-items-center status-ok text-2xl">
                 ✓
               </div>
               <h2 className="font-display text-2xl font-semibold mt-5">Request sent</h2>
@@ -340,7 +340,7 @@ export const Book: React.FC = () => {
               )}
             </div>
 
-            {error && <p className="text-salmon text-sm mt-5">{error}</p>}
+            {error && <p role="alert" className="text-bad text-sm mt-5">{error}</p>}
 
             <div className="mt-7 flex items-center justify-between gap-4">
               <p className="text-muted text-xs">

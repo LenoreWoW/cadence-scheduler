@@ -79,8 +79,8 @@ export const Schedule: React.FC = () => {
         <div className="space-y-3" aria-busy="true">
           {[0, 1, 2].map((i) => (
             <Card key={i} className="animate-pulse">
-              <div className="h-3 w-32 rounded bg-[color:var(--surface-2)]" />
-              <div className="mt-3 h-4 w-2/3 rounded bg-[color:var(--surface-2)]" />
+              <div className="h-3 w-32 rounded bg-[color:var(--border)]" />
+              <div className="mt-3 h-4 w-2/3 rounded bg-[color:var(--border)]" />
             </Card>
           ))}
         </div>
@@ -130,7 +130,7 @@ export const Schedule: React.FC = () => {
                         <p className="font-display text-lg font-semibold leading-none">{m.time}</p>
                         <p className="text-muted text-[11px] mt-1">{m.durationMinutes} min</p>
                       </div>
-                      <div className="w-px self-stretch bg-[color:var(--surface-2)]" />
+                      <div className="w-px self-stretch bg-[color:var(--border)]" />
                       <div className="min-w-0 flex-1">
                         <p className="font-medium truncate">{m.title}</p>
                         <p className="text-muted text-sm truncate">

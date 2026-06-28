@@ -56,7 +56,7 @@ export const Login: React.FC = () => {
               Continue to the portal
             </Button>
           )}
-          {err && <p className="text-salmon text-sm mt-4">{err}</p>}
+          {err && <p role="alert" className="text-bad text-sm mt-4">{err}</p>}
         </div>
       </div>
     </div>

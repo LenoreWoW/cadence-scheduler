@@ -13,12 +13,17 @@ export const Requests: React.FC = () => {
   // Track which card (and which action) is in-flight so we only disable that row.
   const [active, setActive] = useState<{ id: string; status: 'approved' | 'rejected' } | null>(null);
   const [actionErr, setActionErr] = useState('');
+  const [notice, setNotice] = useState('');
 
   const decide = async (id: string, status: 'approved' | 'rejected') => {
+    // Reject is consequential + effectively irreversible — confirm it (audit C3).
+    if (status === 'rejected' && !window.confirm('Reject this request? The requester will be declined.')) return;
     setActive({ id, status });
     setActionErr('');
+    setNotice('');
     try {
       await setStatus.mutateAsync({ id, status });
+      setNotice(status === 'approved' ? 'Request approved — moved to the schedule.' : 'Request rejected.');
     } catch (e: any) {
       setActionErr(e?.body?.error || e?.message || 'Could not update the request. Please try again.');
     } finally {
@@ -31,14 +36,17 @@ export const Requests: React.FC = () => {
       <header className="mb-6 flex items-center gap-3">
         <h1 className="font-display text-3xl font-semibold">Requests</h1>
         {!isLoading && pending.length > 0 && (
-          <span className="inline-flex items-center rounded-full bg-salmon/15 px-2.5 py-0.5 text-sm font-semibold text-salmon">
+          <span className="inline-flex items-center rounded-full status-warn px-2.5 py-0.5 text-sm font-semibold">
             {pending.length}
           </span>
         )}
       </header>
 
+      {notice && (
+        <div role="status" className="mb-4 rounded-xl status-ok px-4 py-3 text-sm font-medium">{notice}</div>
+      )}
       {actionErr && (
-        <div className="mb-4 rounded-xl border border-salmon/30 bg-salmon/10 px-4 py-3 text-sm text-salmon">{actionErr}</div>
+        <div role="alert" className="mb-4 rounded-xl status-bad px-4 py-3 text-sm">{actionErr}</div>
       )}
 
       {/* Load error */}
@@ -54,8 +62,8 @@ export const Requests: React.FC = () => {
         <div className="space-y-3" aria-busy="true">
           {[0, 1, 2].map((i) => (
             <Card key={i} className="animate-pulse">
-              <div className="h-4 w-1/3 rounded bg-[color:var(--surface-2)]" />
-              <div className="mt-3 h-3 w-1/2 rounded bg-[color:var(--surface-2)]" />
+              <div className="h-4 w-1/3 rounded bg-[color:var(--border)]" />
+              <div className="mt-3 h-3 w-1/2 rounded bg-[color:var(--border)]" />
             </Card>
           ))}
         </div>
@@ -105,13 +113,13 @@ export const Requests: React.FC = () => {
                     <Button
                       variant="secondary"
                       onClick={() => decide(m.id, 'rejected')}
-                      disabled={busy}
+                      disabled={setStatus.isPending}
                     >
                       {busy && active?.status === 'rejected' ? 'Rejecting…' : 'Reject'}
                     </Button>
                     <Button
                       onClick={() => decide(m.id, 'approved')}
-                      disabled={busy}
+                      disabled={setStatus.isPending}
                     >
                       {busy && active?.status === 'approved' ? 'Approving…' : 'Approve'}
                     </Button>

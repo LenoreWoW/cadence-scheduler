@@ -129,7 +129,7 @@ export const Profile: React.FC = () => {
           <Button variant="secondary" onClick={handleSignOut} disabled={signingOut}>
             {signingOut ? 'Signing out…' : 'Sign out'}
           </Button>
-          {signOutErr && <p className="text-salmon text-sm mt-3">{signOutErr}</p>}
+          {signOutErr && <p role="alert" className="text-bad text-sm mt-3">{signOutErr}</p>}
         </Card>
       </div>
     </div>
