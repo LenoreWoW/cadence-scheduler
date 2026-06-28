@@ -695,7 +695,7 @@ export const translations: Record<Language, TranslationKeys> = {
     confirmInviteDone: "تم تأكيد اجتماعك.",
     helpButtonLabel: "المساعدة والدليل",
     helpTitle: "كيف يعمل التطبيق",
-    helpIntro: "ريجنت تطبيق للجدولة. إليك الملخص السريع:",
+    helpIntro: "Cadence تطبيق للجدولة. إليك الملخص السريع:",
     helpRolesTitle: "الأدوار",
     helpRolesBody: "المدراء يديرون كل شيء؛ المدير يستضيف الاجتماعات ويوافق على الطلبات؛ المساعد يمكنه الجدولة نيابة عن المدير؛ العملاء (الضيوف) يطلبون الاجتماعات.",
     helpSchedulingTitle: "جدولة اجتماع",
