@@ -37,6 +37,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, lang, t, toggleLa
   const isLogin = authMode === 'login';
   const isRegister = authMode === 'register';
 
+  const quickLogin = async (uname: string) => {
+    setError('');
+    setUsername(uname);
+    setPassword('password');
+    setLoading(true);
+    try {
+      const user = await authService.login(uname, 'password');
+      onLogin(user);
+    } catch (err: any) {
+      setError(err?.body?.error || err?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const QUICK_ROLES: Array<{ labelKey: string; username: string }> = [
+    { labelKey: 'roleAdmin', username: 'admin' },
+    { labelKey: 'roleManager', username: 'manager' },
+    { labelKey: 'roleSubordinate', username: 'sub' },
+    { labelKey: 'roleGuest', username: 'user1' },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -224,26 +246,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, lang, t, toggleLa
                </div>
             </div>
             
-            {/* Demo credentials */}
+            {/* Quick login (demo) */}
             <div className="mt-12 pt-8 border-t border-gray-100">
-               <details className="group">
-                  <summary className="text-[10px] text-dune font-mono uppercase tracking-widest cursor-pointer list-none flex items-center gap-2 hover:text-charcoal transition-colors">
-                     <span>Demo Credentials</span>
-                     <svg className="w-3 h-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                  </summary>
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                     {['admin', 'manager', 'sub', 'user1'].map(u => (
-                       <button 
-                         key={u}
-                         onClick={() => { setUsername(u); setPassword('password'); }}
-                         className="text-left p-2 bg-gray-50 hover:bg-gray-100 rounded border border-gray-100 text-xs font-mono transition-colors"
-                       >
-                         <span className="block font-bold text-charcoal">{u}</span>
-                         <span className="text-[10px] text-gray-400">pass: password</span>
-                       </button>
-                     ))}
-                  </div>
-               </details>
+               <p className="text-[10px] text-dune font-mono uppercase tracking-widest mb-3">{t('quickLoginTitle')}</p>
+               <div className="grid grid-cols-2 gap-2">
+                  {QUICK_ROLES.map(r => (
+                    <button
+                      key={r.username}
+                      type="button"
+                      onClick={() => quickLogin(r.username)}
+                      disabled={loading}
+                      className="text-left p-3 bg-gray-50 hover:bg-al-adaam hover:text-white rounded-lg border border-gray-100 text-xs font-bold text-charcoal transition-colors disabled:opacity-50"
+                    >
+                      {t(r.labelKey)}
+                      <span className="block text-[10px] font-mono font-normal opacity-60 mt-0.5">@{r.username}</span>
+                    </button>
+                  ))}
+               </div>
+               <p className="text-[10px] text-gray-400 mt-3">{t('quickLoginNote')}</p>
             </div>
          </div>
       </div>
