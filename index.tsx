@@ -48,6 +48,7 @@ import { BookingCalendarView } from './components/BookingCalendarView';
 import { RoutingFormPublicPage } from './components/RoutingFormPublicPage';
 import { VerifyEmailPage } from './components/VerifyEmailPage';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
+import { HelpModal } from './components/HelpModal';
 import { setTokens } from './services/api';
 import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
 import { storageService } from './services/storageService';
@@ -93,6 +94,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isQuickBookOpen, setIsQuickBookOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false); 
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   
@@ -662,7 +664,17 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
               <div className="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-4 rtl:pr-4 rtl:pl-0">
                  {/* Theme Toggle */}
                  <ThemeToggle data-tour="theme-toggle" />
-                 
+                 {/* Help / How it works */}
+                 <button
+                   data-tour="help"
+                   onClick={() => setIsHelpOpen(true)}
+                   aria-label={t('helpButtonLabel')}
+                   title={t('helpButtonLabel')}
+                   className="p-2 rounded-full text-gray-400 hover:text-charcoal dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                 </button>
+
                  {/* Notifications */}
                  <div className="relative" ref={notificationRef} data-tour="notifications">
                    <button 
@@ -1009,6 +1021,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
         />
 
         <TourOverlay />
+        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} t={t} lang={lang} role={role} />
 
         <CookieBanner lang={lang} />
 
