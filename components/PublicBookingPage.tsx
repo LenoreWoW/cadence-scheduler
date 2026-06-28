@@ -78,6 +78,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
   
   // Booking flow state
   const [step, setStep] = useState<'date' | 'time' | 'details' | 'success'>('date');
+  const [showMore, setShowMore] = useState(false); // progressive disclosure for optional details
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<number>(30);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
@@ -719,6 +720,16 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                     />
                   </div>
 
+                  <button
+                    type="button"
+                    onClick={() => setShowMore(v => !v)}
+                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-al-adaam hover:underline"
+                  >
+                    <svg className={`w-4 h-4 transition-transform ${showMore ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    {showMore ? 'Fewer options' : 'More options'}
+                  </button>
+
+                  {showMore && (<>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
                       Meeting Title (Optional)
@@ -789,6 +800,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                       placeholder="Anything you'd like to discuss..."
                     />
                   </div>
+                  </>)}
                 </div>
 
                 <Button
