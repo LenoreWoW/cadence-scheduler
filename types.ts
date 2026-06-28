@@ -101,6 +101,8 @@ export interface Meeting {
   locality?: MeetingLocality; // internal (in-building, RED) vs external (different-building, BLACK)
   onBehalf?: boolean;         // tentative meeting scheduled on behalf of the host (boss)
   locationAddress?: string;   // physical address for in-person meetings (was read via `as any`)
+  hostName?: string;          // server-joined display name of the host (GET /api/meetings)
+  hostAvatar?: string;        // server-joined host avatar (GET /api/meetings)
 }
 
 export interface CalendarDay {

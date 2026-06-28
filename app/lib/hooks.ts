@@ -1,10 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { meetingsApi, CreateMeetingInput } from '../../services/meetingsApi';
+import { usersApi } from '../../services/usersApi';
 import { MeetingStatus } from '../../types';
 
 // Server-state hooks — the new UI reads/writes the shared schedule through these.
 export const useMeetings = () =>
   useQuery({ queryKey: ['meetings'], queryFn: () => meetingsApi.list() });
+
+export const useHosts = () =>
+  useQuery({ queryKey: ['hosts'], queryFn: () => usersApi.hosts() });
 
 export const usePendingApproval = () =>
   useQuery({ queryKey: ['meetings', 'pending'], queryFn: () => meetingsApi.pendingApproval() });

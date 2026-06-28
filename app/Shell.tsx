@@ -40,7 +40,7 @@ export const Shell: React.FC = () => {
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            {user && <span className="hidden sm:block text-sm text-muted">{user.name}</span>}
+            {user && <NavLink to="/profile" className="hidden sm:block text-sm text-muted">{user.name}</NavLink>}
             <Button variant="ghost" onClick={async () => { await logout(); nav('/login'); }}>Sign out</Button>
           </div>
         </div>

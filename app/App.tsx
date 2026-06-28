@@ -6,6 +6,10 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { Shell } from './Shell';
 import { Home } from './routes/Home';
 import { Login } from './routes/Login';
+import { Book } from './routes/Book';
+import { Requests } from './routes/Requests';
+import { Schedule } from './routes/Schedule';
+import { Profile } from './routes/Profile';
 
 const Protected: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -20,7 +24,10 @@ export const App: React.FC = () => (
           <Route path="/login" element={<Login />} />
           <Route element={<Protected><Shell /></Protected>}>
             <Route index element={<Home />} />
-            {/* Screens added by the build workflow: /requests /schedule /book /profile */}
+            <Route path="book" element={<Book />} />
+            <Route path="requests" element={<Requests />} />
+            <Route path="schedule" element={<Schedule />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
