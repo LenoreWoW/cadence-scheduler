@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Language, DateRange, VideoPlatform } from '../types';
 import { Button } from './Button';
-import { audioService } from '../services/audioService';
 import { CalendarGrid } from './CalendarGrid';
 import { tourService } from '../services/tourService';
 import { VIDEO_PLATFORM_CONFIG } from '../constants';
@@ -67,7 +66,6 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   const [blockEndTime, setBlockEndTime] = useState('');
 
   // Prefs State
-  const [soundEnabled, setSoundEnabled] = useState(audioService.enabled);
   const { prefersReduced, override: reducedMotionOverride, setOverride: setReducedMotionOverride } = useReducedMotionState();
 
   useEffect(() => {
@@ -88,7 +86,6 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
         meetingLink: currentUser.meetingSettings?.meetingLink || '',
         customPlatformName: currentUser.meetingSettings?.customPlatformName || ''
       });
-      setSoundEnabled(audioService.enabled);
       setRangeStart(null);
       setRangeEnd(null);
       setBlockStartTime('');
@@ -115,8 +112,6 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
         customPlatformName: formData.customPlatformName || null
       }
     });
-    // Toggle sound global
-    if (soundEnabled !== audioService.enabled) audioService.toggle();
     onClose();
   };
 
@@ -638,17 +633,6 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
                 {activeTab === 'preferences' && (
                    <div className="animate-fade-in space-y-6">
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                         <div>
-                            <h4 className="text-sm font-bold text-charcoal">Sound Effects</h4>
-                            <p className="text-xs text-gray-500">Play sounds for actions like booking and clicking</p>
-                         </div>
-                         <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" checked={soundEnabled} onChange={e => setSoundEnabled(e.target.checked)} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-al-adaam"></div>
-                         </label>
-                      </div>
-                      
                       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
                          <div>
                             <h4 className="text-sm font-bold text-charcoal">Reduced Motion</h4>

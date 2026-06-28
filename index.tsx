@@ -49,7 +49,6 @@ import { setTokens } from './services/api';
 import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
-import { audioService } from './services/audioService';
 import { smartDefaults } from './services/smartDefaults';
 import { shortcutManager } from './services/keyboardShortcuts';
 import { translations } from './services/translations';
@@ -155,11 +154,11 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     
     shortcutManager.register('showShortcuts', () => setIsShortcutsModalOpen(prev => !prev));
     shortcutManager.register('openCommand', () => setIsCommandPaletteOpen(true));
-    shortcutManager.register('goToDashboard', () => { setCurrentView('dashboard'); audioService.play('open'); });
-    shortcutManager.register('goToSchedule', () => { setCurrentView('scheduler'); audioService.play('open'); });
-    shortcutManager.register('goToAppointments', () => { setCurrentView('my-meetings'); audioService.play('open'); });
-    shortcutManager.register('newMeeting', () => { setCurrentView('scheduler'); setSelectedHost(null); audioService.play('click'); });
-    shortcutManager.register('quickBook', () => { setIsQuickBookOpen(true); audioService.play('click'); });
+    shortcutManager.register('goToDashboard', () => { setCurrentView('dashboard'); });
+    shortcutManager.register('goToSchedule', () => { setCurrentView('scheduler'); });
+    shortcutManager.register('goToAppointments', () => { setCurrentView('my-meetings'); });
+    shortcutManager.register('newMeeting', () => { setCurrentView('scheduler'); setSelectedHost(null); });
+    shortcutManager.register('quickBook', () => { setIsQuickBookOpen(true); });
     shortcutManager.register('close', () => {
         setIsModalOpen(false);
         setIsProfileModalOpen(false);
@@ -218,9 +217,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const addToast = (type: ToastType, message: string) => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, type, message }]);
-    if (type === 'success') audioService.play('success');
-    if (type === 'error') audioService.play('error');
-    if (type === 'info') audioService.play('notification');
     announce(`${type}: ${message}`);
   };
 
@@ -302,7 +298,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     const recommendedDuration = smartDefaults.getRecommendedDuration(host.id);
     setBookingDuration(recommendedDuration || host.availability?.slotDuration || 30);
     
-    audioService.play('click');
   };
 
   const handleCompleteOnboarding = (data: any) => {
@@ -318,8 +313,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
            slotDuration: data.slotDuration
         } as any
      };
-
-     if (data.soundEnabled !== audioService.enabled) audioService.toggle();
 
      setCurrentUser(updatedUser);
      const allUsers = storageService.getUsers();
@@ -349,17 +342,14 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const handleSelectDate = (date: Date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
-    audioService.play('click');
   };
 
   const handleSelectSlot = (slot: TimeSlot) => {
     setSelectedSlot(slot);
-    audioService.play('click');
   };
 
   const handleContinueBooking = () => {
     setIsModalOpen(true);
-    audioService.play('click');
   };
 
   const handleUpdateProfile = (availability: any) => {
@@ -531,7 +521,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
   const toggleLang = () => {
     setLang(prev => prev === 'en' ? 'ar' : 'en');
-    audioService.play('click');
   };
 
   const handleSelectTeam = () => {
@@ -545,7 +534,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
      } else {
         setCurrentView(viewId as any);
      }
-     audioService.play('click');
   };
 
   const commandActions = useMemo(() => [
@@ -619,7 +607,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                   <button
                     key={nav.id}
                     data-tour={nav.id === 'my-meetings' ? 'appointments' : nav.id}
-                    onClick={() => { setCurrentView(nav.id as any); audioService.play('click'); }}
+                    onClick={() => { setCurrentView(nav.id as any); }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                       currentView === nav.id 
                       ? 'bg-white text-charcoal shadow-sm ring-1 ring-gray-200' 
@@ -653,7 +641,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                  <div className="relative" ref={notificationRef} data-tour="notifications">
                    <button 
                      className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-gray-100 dark:bg-gray-800 text-charcoal dark:text-white' : 'text-gray-400 hover:text-charcoal dark:hover:text-white'}`}
-                     onClick={() => { setShowNotifications(!showNotifications); audioService.play('click'); }}
+                     onClick={() => { setShowNotifications(!showNotifications); }}
                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                       {requestsToApprove.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-salmon rounded-full border border-white"></span>}
@@ -783,15 +771,14 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
               meetings={meetings}
               t={t}
               lang={lang}
-              onNavigate={(view) => { setCurrentView(view); audioService.play('click'); }}
+              onNavigate={(view) => { setCurrentView(view); }}
               onBookForTeam={handleSelectTeam}
-                onQuickBook={() => { setIsQuickBookOpen(true); audioService.play('click'); }}
+                onQuickBook={() => { setIsQuickBookOpen(true); }}
                 onRefresh={async () => {
                   // Simulate refresh
                   await new Promise(resolve => setTimeout(resolve, 1500));
                   setMeetings(storageService.getMeetings()); // Reload from storage
                   loadHosts();
-                  audioService.play('notification');
                   addToast('info', 'Dashboard refreshed');
                 }}
             />
