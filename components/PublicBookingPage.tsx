@@ -535,7 +535,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                 onClick={() => setSelectedDuration(duration)}
                 className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                   selectedDuration === duration
-                    ? 'bg-[#8A1538] text-white shadow-lg shadow-[#8A1538]/20'
+                    ? 'bg-al-adaam text-white shadow-lg shadow-al-adaam/20'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -597,7 +597,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                     disabled={!isAvailable}
                     className={`aspect-square rounded-lg text-sm font-medium transition-all relative ${
                       isSelected
-                        ? 'bg-[#8A1538] text-white shadow-lg shadow-[#8A1538]/30'
+                        ? 'bg-al-adaam text-white shadow-lg shadow-al-adaam/30'
                         : isAvailable
                           ? 'hover:bg-slate-100 text-slate-700'
                           : 'text-slate-300 cursor-not-allowed'
@@ -605,7 +605,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                   >
                     {date.getDate()}
                     {isToday && !isSelected && (
-                      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#8A1538]" />
+                      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-al-adaam" />
                     )}
                   </button>
                 );
@@ -629,7 +629,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
 
                 {slotsLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8A1538]" />
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-al-adaam" />
                   </div>
                 ) : availableSlots.length === 0 ? (
                   <div className="text-center py-8 text-slate-500">
@@ -649,7 +649,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                         }}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                           selectedSlot?.time === slot.time
-                            ? 'bg-[#8A1538] text-white shadow-lg'
+                            ? 'bg-al-adaam text-white shadow-lg'
                             : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
                         }`}
                       >
@@ -669,7 +669,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                   <button
                     type="button"
                     onClick={() => setStep('time')}
-                    className="text-sm text-[#8A1538] hover:underline"
+                    className="text-sm text-al-adaam hover:underline"
                   >
                     Change time
                   </button>
@@ -677,8 +677,8 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
 
                 {/* Selected time summary */}
                 <div className="bg-slate-50 rounded-xl p-4 mb-6 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#8A1538]/10 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-[#8A1538]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 rounded-full bg-al-adaam/10 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-al-adaam" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
@@ -700,7 +700,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                       required
                       value={formData.attendeeName}
                       onChange={e => setFormData({ ...formData, attendeeName: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none transition-all"
                       placeholder="John Doe"
                     />
                   </div>
@@ -714,7 +714,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                       required
                       value={formData.attendeeEmail}
                       onChange={e => setFormData({ ...formData, attendeeEmail: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none transition-all"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -727,7 +727,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                       type="text"
                       value={formData.title}
                       onChange={e => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none transition-all"
                       placeholder="Quick chat about..."
                     />
                   </div>
@@ -742,7 +742,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                         onClick={() => setFormData({ ...formData, meetingFormat: 'in-person' })}
                         className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                           formData.meetingFormat === 'in-person'
-                            ? 'bg-[#8A1538] text-white'
+                            ? 'bg-al-adaam text-white'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
@@ -756,7 +756,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                         onClick={() => setFormData({ ...formData, meetingFormat: 'online' })}
                         className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                           formData.meetingFormat === 'online'
-                            ? 'bg-[#8A1538] text-white'
+                            ? 'bg-al-adaam text-white'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
@@ -785,7 +785,7 @@ export const PublicBookingPage: React.FC<PublicBookingPageProps> = ({ slug }) =>
                       value={formData.notes}
                       onChange={e => setFormData({ ...formData, notes: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none transition-all resize-none"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none transition-all resize-none"
                       placeholder="Anything you'd like to discuss..."
                     />
                   </div>
