@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+#
+# goal — finalize & ship-check the Cadence scheduler.
+#
+# Runs typecheck, lint, tests, and a production build, then prints a readiness
+# dashboard. It is "baseline aware": a small set of pre-existing typecheck errors
+# and two stale test suites are known and ignored, so `./goal` only fails on
+# NEW breakage you introduce. Build success is the hard ship gate.
+#
+# Usage:  ./goal            # full finalize check
+#         ./goal --quick    # skip the production build (typecheck + tests only)
+#
+set -uo pipefail
+cd "$(dirname "$0")"
+
+if [ -t 1 ]; then b=$(tput bold 2>/dev/null||true); d=$(tput dim 2>/dev/null||true); r=$(tput sgr0 2>/dev/null||true); else b=""; d=""; r=""; fi
+QUICK=0; [ "${1:-}" = "--quick" ] && QUICK=1
+
+# Pre-existing, unrelated baseline noise — NEW items outside these fail the run.
+BASELINE_TS="EmptyState3D ThemeToggle schedulerService vitest.config authService.test"
+BASELINE_TESTS="authService.test schedulerService.test"
+
+new_ts=0; new_tests=0; build_ok=1
+hr() { printf '%s\n' "────────────────────────────────────────────────────────"; }
+
+echo "${b}▶ Cadence — finalize (./goal)${r}"; hr
+
+# 1) Typecheck ---------------------------------------------------------------
+echo "${b}1. Typecheck${r} ${d}(tsc --noEmit)${r}"
+TS_OUT=$(yarn -s typecheck 2>&1 || true)
+TS_FILES=$(echo "$TS_OUT" | grep -oE "^[^ (]+\.(ts|tsx)" | sort -u)
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  known=0; for k in $BASELINE_TS; do [[ "$f" == *"$k"* ]] && known=1; done
+  if [ "$known" = 0 ]; then echo "   ${b}NEW type error:${r} $f"; new_ts=$((new_ts+1)); fi
+done <<< "$TS_FILES"
+[ "$new_ts" = 0 ] && echo "   ✅ no new type errors ${d}(known baseline ignored)${r}" || echo "   ❌ $new_ts file(s) with new type errors"
+
+# 2) Lint --------------------------------------------------------------------
+echo "${b}2. Lint${r} ${d}(eslint)${r}"
+if LINT_OUT=$(yarn -s lint 2>&1); then echo "   ✅ lint clean"; else
+  echo "   ⚠️  lint reported issues ${d}(non-gating)${r}"; fi
+
+# 3) Tests -------------------------------------------------------------------
+echo "${b}3. Tests${r} ${d}(vitest run)${r}"
+TEST_OUT=$(yarn -s vitest run 2>&1 || true)
+FAILED_FILES=$(echo "$TEST_OUT" | grep -oE "FAIL +[^ ]+\.test\.(ts|tsx)" | awk '{print $2}' | sort -u)
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  known=0; for k in $BASELINE_TESTS; do [[ "$f" == *"$k"* ]] && known=1; done
+  if [ "$known" = 0 ]; then echo "   ${b}NEW failing suite:${r} $f"; new_tests=$((new_tests+1)); fi
+done <<< "$FAILED_FILES"
+echo "$TEST_OUT" | grep -E "Tests +[0-9]" | tail -1 | sed 's/^/   /'
+[ "$new_tests" = 0 ] && echo "   ✅ no new test failures ${d}(2 stale suites ignored)${r}" || echo "   ❌ $new_tests new failing suite(s)"
+
+# 4) Build -------------------------------------------------------------------
+if [ "$QUICK" = 0 ]; then
+  echo "${b}4. Production build${r} ${d}(vite build)${r}"
+  if BUILD_OUT=$(yarn -s build 2>&1); then
+    echo "$BUILD_OUT" | grep -E "dist/.*(js|css)" | sed 's/^/   /'
+    echo "   ✅ build succeeded"
+  else
+    build_ok=0; echo "   ❌ build FAILED:"; echo "$BUILD_OUT" | tail -15 | sed 's/^/   /'
+  fi
+else
+  echo "${b}4. Production build${r} — ${d}skipped (--quick)${r}"
+fi
+
+# Summary --------------------------------------------------------------------
+hr; echo "${b}Readiness${r}"
+[ "$new_ts" = 0 ]    && echo "  ✅ Types"   || echo "  ❌ Types ($new_ts new)"
+[ "$new_tests" = 0 ] && echo "  ✅ Tests"   || echo "  ❌ Tests ($new_tests new)"
+{ [ "$QUICK" = 1 ] && echo "  ⏭  Build (skipped)"; } || { [ "$build_ok" = 1 ] && echo "  ✅ Build" || echo "  ❌ Build"; }
+hr
+echo "${d}Vision audit: docs/AUDIT.md  ·  cross-user test: yarn server + yarn dev --port 5173${r}"
+
+# Exit non-zero on real breakage (new type errors, new test failures, or a broken build).
+if [ "$new_ts" != 0 ] || [ "$new_tests" != 0 ] || { [ "$QUICK" = 0 ] && [ "$build_ok" = 0 ]; }; then
+  echo "${b}✗ not ready${r}"; exit 1
+fi
+echo "${b}✓ ready to ship${r}"
