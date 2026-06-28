@@ -184,7 +184,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8A1538]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-al-adaam" />
       </div>
     );
   }
@@ -234,7 +234,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                 type="text"
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none"
                 placeholder="Book a Meeting"
               />
             </div>
@@ -247,7 +247,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
                 rows={2}
-                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none resize-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none resize-none"
                 placeholder={lang === 'ar' ? 'وصف قصير لصفحة الحجز...' : 'A short description for your booking page...'}
               />
             </div>
@@ -268,7 +268,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                     }}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       formData.durationOptions.includes(duration)
-                        ? 'bg-[#8A1538] text-white'
+                        ? 'bg-al-adaam text-white'
                         : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
@@ -285,7 +285,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
               <select
                 value={formData.defaultDuration}
                 onChange={e => setFormData({ ...formData, defaultDuration: Number(e.target.value) })}
-                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none"
               >
                 {formData.durationOptions.map(d => (
                   <option key={d} value={d}>{d} minutes</option>
@@ -301,7 +301,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                 value={formData.customMessage}
                 onChange={e => setFormData({ ...formData, customMessage: e.target.value })}
                 rows={2}
-                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none resize-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none resize-none"
                 placeholder={lang === 'ar' ? 'رسالة تظهر للزوار...' : 'A message shown to visitors...'}
               />
             </div>
@@ -316,7 +316,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                   min="0"
                   value={formData.maxBookingsPerDay || ''}
                   onChange={e => setFormData({ ...formData, maxBookingsPerDay: Number(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none"
                   placeholder="0 = unlimited"
                 />
               </div>
@@ -329,7 +329,7 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                   min="0"
                   value={formData.bufferAfter}
                   onChange={e => setFormData({ ...formData, bufferAfter: Number(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none"
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none"
                   placeholder="0"
                 />
               </div>
@@ -437,14 +437,14 @@ export const BookingLinksManager: React.FC<BookingLinksManagerProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setAdvancedLink(link)}
-                    className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200 text-slate-500 hover:border-[#8A1538] hover:text-[#8A1538] transition-colors"
+                    className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200 text-slate-500 hover:border-al-adaam hover:text-al-adaam transition-colors"
                     aria-label={lang === 'ar' ? 'الإعدادات المتقدمة' : 'Advanced settings'}
                   >
                     {lang === 'ar' ? 'متقدم' : 'Advanced'}
                   </button>
                   <button
                     onClick={() => setEmbedLink(link)}
-                    className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200 text-slate-500 hover:border-[#8A1538] hover:text-[#8A1538] transition-colors"
+                    className="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200 text-slate-500 hover:border-al-adaam hover:text-al-adaam transition-colors"
                     aria-label={lang === 'ar' ? 'تضمين' : 'Embed'}
                   >
                     {lang === 'ar' ? 'تضمين' : 'Embed'}

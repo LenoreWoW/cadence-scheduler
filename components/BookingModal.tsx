@@ -9,6 +9,10 @@ import { smartDefaults } from '../services/smartDefaults';
 import { BookingSuccess3D } from './BookingSuccess3D';
 import { LocationAddressField } from './LocationAddressField';
 
+// Token-styled initials (replaces the ui-avatars.com placeholder).
+const initialsOf = (name?: string) =>
+  (name || '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '·';
+
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -145,8 +149,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
              </h3>
              {step < 4 && host && (
                <div className="flex items-center gap-2 mt-1">
-                 <img src={host.avatar || `https://ui-avatars.com/api/?name=${host.name}`} className="w-5 h-5 rounded-full" alt="" />
-                 <span className="text-xs text-gray-500">with <span className="font-bold text-dune">{host.name}</span></span>
+                 {host.avatar ? (
+                   <img src={host.avatar} className="w-5 h-5 rounded-full object-cover" alt="" />
+                 ) : (
+                   <span className="w-5 h-5 rounded-full bg-al-adaam/10 text-al-adaam flex items-center justify-center text-[8px] font-semibold" aria-hidden="true">{initialsOf(host.name)}</span>
+                 )}
+                 <span className="text-xs text-gray-500">{t('with')} <span className="font-semibold text-dune">{host.name}</span></span>
                </div>
              )}
           </div>
