@@ -48,6 +48,7 @@ import { BookingCalendarView } from './components/BookingCalendarView';
 import { RoutingFormPublicPage } from './components/RoutingFormPublicPage';
 import { VerifyEmailPage } from './components/VerifyEmailPage';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
+import { HelpModal } from './components/HelpModal';
 import { setTokens } from './services/api';
 import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
 import { storageService } from './services/storageService';
@@ -93,6 +94,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isQuickBookOpen, setIsQuickBookOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false); 
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   
@@ -662,7 +664,17 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
               <div className="flex items-center gap-3 border-l border-gray-200 dark:border-gray-700 pl-4 rtl:pr-4 rtl:pl-0">
                  {/* Theme Toggle */}
                  <ThemeToggle data-tour="theme-toggle" />
-                 
+                 {/* Help / How it works */}
+                 <button
+                   data-tour="help"
+                   onClick={() => setIsHelpOpen(true)}
+                   aria-label={t('helpButtonLabel')}
+                   title={t('helpButtonLabel')}
+                   className="p-2 rounded-full text-gray-400 hover:text-charcoal dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                 </button>
+
                  {/* Notifications */}
                  <div className="relative" ref={notificationRef} data-tour="notifications">
                    <button 
@@ -880,15 +892,17 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
             <div className="animate-slide-up space-y-8">
               {/* Host Selector */}
               {(!selectedHost || role === 'guest') && (
-                <HostSelector 
-                  hosts={availableHosts}
-                  teams={teams}
-                  selectedHost={selectedHost}
-                  onSelectHost={handleSelectHost}
-                  t={t}
-                  lang={lang}
-                  currentUser={currentUser}
-                />
+                <div data-tour="host-grid">
+                  <HostSelector
+                    hosts={availableHosts}
+                    teams={teams}
+                    selectedHost={selectedHost}
+                    onSelectHost={handleSelectHost}
+                    t={t}
+                    lang={lang}
+                    currentUser={currentUser}
+                  />
+                </div>
               )}
 
               {selectedHost && (
@@ -919,7 +933,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8">
                     {/* Calendar Column */}
                     <div className="lg:col-span-5 flex flex-col gap-8">
-                      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-2">
+                      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-2" data-tour="calendar">
                         <CalendarGrid 
                           currentDate={currentDate}
                           selectedDate={selectedDate}
@@ -935,7 +949,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
                     {/* Time Slots Column */}
                     <div className="lg:col-span-7 space-y-6">
-                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 min-h-[500px]">
+                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 min-h-[500px]" data-tour="time-slots">
                          <div className="flex items-center justify-between mb-6">
                             <div>
                                <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-dune">Available Times</h3>
@@ -945,7 +959,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                             </div>
                             
                             {/* Duration Selector */}
-                            <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+                            <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200 shadow-sm" data-tour="duration">
                                {[15, 30, 45, 60].map(dur => (
                                  <button
                                    key={dur}
@@ -1009,6 +1023,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
         />
 
         <TourOverlay />
+        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} t={t} lang={lang} role={role} />
 
         <CookieBanner lang={lang} />
 

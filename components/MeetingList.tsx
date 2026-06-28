@@ -72,7 +72,7 @@ export const MeetingList: React.FC<MeetingListProps> = ({
              <p className="text-xs font-mono font-bold uppercase tracking-widest text-dune dark:text-gray-400">{t('noMeetings')}</p>
           </div>
         ) : (
-          sortedMeetings.map(meeting => {
+          sortedMeetings.map((meeting, idx) => {
             const category = CATEGORY_CONFIG[meeting.category] || CATEGORY_CONFIG.general;
             const accent = getMeetingAccent(meeting);
             const localityLabel = t(LOCALITY_CONFIG[accent.locality].labelKey);
@@ -87,9 +87,10 @@ export const MeetingList: React.FC<MeetingListProps> = ({
             const isTentative = meeting.status === 'pending' && meeting.onBehalf;
 
             return (
-              <div 
-                key={meeting.id} 
+              <div
+                key={meeting.id}
                 id={`meeting-${meeting.id}`}
+                data-tour={idx === 0 ? 'meeting-card' : undefined}
                 className={`group relative bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 transition-all duration-300 md:hover:shadow-lg md:hover:-translate-y-1 border overflow-hidden cursor-pointer active:bg-gray-50 dark:active:bg-gray-700/50
                   ${isSelected ? 'ring-2 ring-al-adaam shadow-lg border-transparent' : 'border-gray-100 dark:border-gray-700'}
                   ${isTentative ? 'opacity-80 border-dashed' : ''}
