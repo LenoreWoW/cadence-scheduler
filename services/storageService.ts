@@ -115,7 +115,10 @@ export const storageService = {
     localStorage.removeItem('regent_onboarding_completed');
     localStorage.removeItem('al_adaam_smart_defaults');
     localStorage.removeItem('al_adaam_theme');
-    localStorage.removeItem('al_adaam_audio_enabled');
+    // Sweep legacy keys from removed subsystems (gamification stats + sound effects)
+    localStorage.removeItem('adaam_stats_v1');
+    localStorage.removeItem('soundEnabled');
+    localStorage.removeItem('soundVolume');
     console.log('All data reset for fresh experience');
     // Reinitialize with defaults
     storageService.init();
