@@ -43,14 +43,14 @@ export const tours: Record<string, TourDefinition> = {
     name: 'Welcome Tour',
     nameAr: 'جولة الترحيب',
     description: 'Learn the basics of Cadence',
-    descriptionAr: 'تعلم أساسيات ريجنت',
-    version: 3,
+    descriptionAr: 'تعلم أساسيات Cadence',
+    version: 4,
     steps: [
       {
         id: 'welcome-start',
         target: 'body',
         title: 'Welcome to Cadence!',
-        titleAr: 'مرحباً بك في ريجنت!',
+        titleAr: 'مرحباً بك في Cadence!',
         content: 'Let\'s take a quick tour to help you get started with scheduling.',
         contentAr: 'لنأخذ جولة سريعة لمساعدتك على البدء في الجدولة.',
         position: 'center',
@@ -211,7 +211,7 @@ export const tours: Record<string, TourDefinition> = {
         title: 'Achievements & Gamification',
         titleAr: 'الإنجازات واللعب',
         content: 'Earn achievements by using Cadence! Track your progress, unlock badges, and level up.',
-        contentAr: 'اربح إنجازات باستخدام ريجنت! تتبع تقدمك، افتح الشارات، وارتقِ بمستواك.',
+        contentAr: 'اربح إنجازات باستخدام Cadence! تتبع تقدمك، افتح الشارات، وارتقِ بمستواك.',
         position: 'bottom',
         action: 'click',
         actionLabel: 'View achievements',
@@ -225,6 +225,47 @@ export const tours: Record<string, TourDefinition> = {
         content: 'Press ? to see all keyboard shortcuts. Use / to open the command palette.',
         contentAr: 'اضغط ؟ لرؤية جميع اختصارات لوحة المفاتيح. استخدم / لفتح لوحة الأوامر.',
         position: 'center',
+        action: 'none'
+      },
+      {
+        id: 'meeting-colors',
+        target: '[data-tour="meeting-card"]',
+        title: 'Meeting Colors',
+        titleAr: 'ألوان الاجتماعات',
+        content: 'Meetings are colored by location: RED for internal (in-the-building) and BLACK for external (a different building).',
+        contentAr: 'تُلوَّن الاجتماعات حسب الموقع: الأحمر للداخلي (في المبنى) والأسود للخارجي (مبنى مختلف).',
+        position: 'right',
+        action: 'none',
+        requiredView: 'my-meetings'
+      },
+      {
+        id: 'on-behalf',
+        target: '[data-tour="notifications"]',
+        title: 'Tentative & On-Behalf',
+        titleAr: 'المبدئي والنيابة',
+        content: 'An assistant can schedule a tentative meeting for a boss. Pending items appear here — Accept or Decline, and confirmed meetings land on the boss\'s calendar.',
+        contentAr: 'يمكن لمساعد جدولة اجتماع مبدئي لمدير. تظهر العناصر المعلقة هنا — اقبل أو ارفض، وتظهر الاجتماعات المؤكدة على تقويم المدير.',
+        position: 'bottom',
+        action: 'none'
+      },
+      {
+        id: 'delegates',
+        target: '[data-tour="profile"]',
+        title: 'Delegates',
+        titleAr: 'المفوضون',
+        content: 'In your profile settings, the Delegates tab controls who may schedule meetings on your behalf.',
+        contentAr: 'في إعدادات ملفك الشخصي، يتحكم تبويب المفوضين في من يمكنه جدولة الاجتماعات نيابة عنك.',
+        position: 'bottom',
+        action: 'none'
+      },
+      {
+        id: 'help-button',
+        target: '[data-tour="help"]',
+        title: 'Help Anytime',
+        titleAr: 'المساعدة في أي وقت',
+        content: 'Reopen this guide or restart any tour from the ? button up here.',
+        contentAr: 'أعد فتح هذا الدليل أو أعد تشغيل أي جولة من زر ؟ هنا في الأعلى.',
+        position: 'bottom',
         action: 'none'
       },
       {
