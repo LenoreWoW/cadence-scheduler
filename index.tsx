@@ -53,6 +53,7 @@ import { smartDefaults } from './services/smartDefaults';
 import { shortcutManager } from './services/keyboardShortcuts';
 import { translations } from './services/translations';
 import { Button } from './components/Button';
+import { avatarPlaceholder } from './services/avatar';
 
 // Token-styled initials (replaces ui-avatars.com placeholders in the header).
 const initials = (name?: string) =>
@@ -875,7 +876,7 @@ const App: React.FC = () => {
                          </button>
                          <div className="h-8 w-px bg-gray-200"></div>
                          <div className="flex items-center gap-3">
-                           <img className="h-10 w-10 rounded-full object-cover border border-gray-200" src={selectedHost.avatar || `https://ui-avatars.com/api/?name=${selectedHost.name}`} alt="" />
+                           <img className="h-10 w-10 rounded-full object-cover border border-gray-200" src={selectedHost.avatar || avatarPlaceholder(selectedHost.name)} alt="" />
                            <div>
                               <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Scheduling with</p>
                               <h2 className="text-base font-bold text-charcoal leading-none">

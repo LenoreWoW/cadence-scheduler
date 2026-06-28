@@ -159,7 +159,7 @@ export const MeetingReassignModal: React.FC<Props> = ({
                 <select
                   value={newHostId}
                   onChange={(e) => setNewHostId(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 >
                   <option value="">{isRTL ? '— اختر —' : '— Select —'}</option>
                   {users.map((u) => (
@@ -181,7 +181,7 @@ export const MeetingReassignModal: React.FC<Props> = ({
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
                 placeholder={isRTL ? 'سيظهر السبب في سجل الاجتماع.' : 'Shown in the meeting audit log.'}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] resize-none"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam resize-none"
               />
             </div>
 

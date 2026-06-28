@@ -126,7 +126,7 @@ export const UserBookingCapsEditor: React.FC<Props> = ({ lang }) => {
             value={weekly}
             onChange={(e) => setWeekly(e.target.value)}
             placeholder="—"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
           />
         </div>
         <div>
@@ -139,7 +139,7 @@ export const UserBookingCapsEditor: React.FC<Props> = ({ lang }) => {
             value={monthly}
             onChange={(e) => setMonthly(e.target.value)}
             placeholder="—"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
           />
         </div>
         <div>
@@ -152,7 +152,7 @@ export const UserBookingCapsEditor: React.FC<Props> = ({ lang }) => {
             value={yearly}
             onChange={(e) => setYearly(e.target.value)}
             placeholder="—"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
           />
         </div>
       </div>

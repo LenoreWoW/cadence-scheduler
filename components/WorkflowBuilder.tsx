@@ -259,7 +259,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
               <div className="flex items-end">
@@ -268,7 +268,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                     type="checkbox"
                     checked={active}
                     onChange={(e) => setActive(e.target.checked)}
-                    className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                    className="rounded text-al-adaam focus:ring-al-adaam"
                   />
                   <span className="text-sm font-bold text-charcoal">{labels.active}</span>
                 </label>
@@ -282,7 +282,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                 <select
                   value={triggerType}
                   onChange={(e) => setTriggerType(e.target.value as WorkflowTrigger)}
-                  className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 >
                   <option value="booking.created">booking.created</option>
                   <option value="booking.cancelled">booking.cancelled</option>
@@ -298,7 +298,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                       min={0}
                       value={offsetMinutes}
                       onChange={(e) => setOffsetMinutes(Number(e.target.value) || 0)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                     />
                     <span className="text-xs text-gray-500 whitespace-nowrap">{labels.offset}</span>
                   </div>
@@ -323,7 +323,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                       <select
                         value={c.field}
                         onChange={(e) => updateCondition(i, { field: e.target.value })}
-                        className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                        className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                       >
                         {CONDITION_FIELDS.map((f) => (
                           <option key={f.id} value={f.id}>
@@ -334,7 +334,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                       <select
                         value={c.op}
                         onChange={(e) => updateCondition(i, { op: e.target.value as WorkflowOp })}
-                        className="col-span-3 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                        className="col-span-3 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                       >
                         <option value="equals">equals</option>
                         <option value="not_equals">not equals</option>
@@ -346,7 +346,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                         type="text"
                         value={c.value}
                         onChange={(e) => updateCondition(i, { value: e.target.value })}
-                        className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                        className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                       />
                       <button
                         type="button"
@@ -374,7 +374,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                       }
                     }}
                     value=""
-                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                    className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                   >
                     <option value="">{labels.addAction}…</option>
                     <option value="send_email">send_email</option>
@@ -404,7 +404,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                           <select
                             value={a.config.to || 'attendee'}
                             onChange={(e) => updateAction(a.id, { to: e.target.value })}
-                            className="col-span-3 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                            className="col-span-3 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                           >
                             <option value="attendee">attendee</option>
                             <option value="host">host</option>
@@ -416,7 +416,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                               placeholder="recipient@example.com"
                               value={a.config.customEmail || ''}
                               onChange={(e) => updateAction(a.id, { customEmail: e.target.value })}
-                              className="col-span-9 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                              className="col-span-9 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                               dir="ltr"
                             />
                           )}
@@ -425,7 +425,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                             placeholder="Subject"
                             value={a.config.subject || ''}
                             onChange={(e) => updateAction(a.id, { subject: e.target.value })}
-                            className={`${a.config.to === 'custom' ? 'col-span-12' : 'col-span-9'} bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]`}
+                            className={`${a.config.to === 'custom' ? 'col-span-12' : 'col-span-9'} bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam`}
                           />
                         </div>
                         <textarea
@@ -433,7 +433,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                           placeholder="Body…"
                           value={a.config.body || ''}
                           onChange={(e) => updateAction(a.id, { body: e.target.value })}
-                          className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] resize-none"
+                          className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam resize-none"
                         />
                         <p className="text-[10px] text-gray-400">{labels.bodyHint}</p>
                       </div>
@@ -445,7 +445,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                           placeholder="https://example.com/hook"
                           value={a.config.url || ''}
                           onChange={(e) => updateAction(a.id, { url: e.target.value })}
-                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] font-mono"
+                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam font-mono"
                           dir="ltr"
                         />
                         <input
@@ -453,7 +453,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                           placeholder="secret (optional)"
                           value={a.config.secret || ''}
                           onChange={(e) => updateAction(a.id, { secret: e.target.value })}
-                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] font-mono"
+                          className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam font-mono"
                           dir="ltr"
                         />
                       </div>
@@ -465,14 +465,14 @@ export const WorkflowBuilder: React.FC<Props> = ({
                           placeholder="Title"
                           value={a.config.title || ''}
                           onChange={(e) => updateAction(a.id, { title: e.target.value })}
-                          className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                          className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                         />
                         <textarea
                           rows={2}
                           placeholder="Body…"
                           value={a.config.body || ''}
                           onChange={(e) => updateAction(a.id, { body: e.target.value })}
-                          className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] resize-none"
+                          className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam resize-none"
                         />
                       </div>
                     )}
@@ -482,7 +482,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                         placeholder="vip / qualified / …"
                         value={a.config.tag || ''}
                         onChange={(e) => updateAction(a.id, { tag: e.target.value })}
-                        className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                        className="w-full bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                       />
                     )}
                     {a.type === 'create_followup' && (
@@ -494,7 +494,7 @@ export const WorkflowBuilder: React.FC<Props> = ({
                           onChange={(e) =>
                             updateAction(a.id, { delay_days: Number(e.target.value) || 0 })
                           }
-                          className="w-24 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                          className="w-24 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                         />
                         <span className="text-xs text-gray-500">
                           {lang === 'ar' ? 'يوم بعد الاجتماع' : 'days after meeting'}

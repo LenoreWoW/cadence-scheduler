@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Team, Role, Language } from '../types';
 import { Button } from './Button';
 import { storageService } from '../services/storageService';
+import { avatarPlaceholder } from '../services/avatar';
 import { TeamInvitationsPanel } from './TeamInvitationsPanel';
 import { ResourcesPanel } from './ResourcesPanel';
 import { ApprovalQueue } from './ApprovalQueue';
@@ -248,7 +249,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            <img className="h-10 w-10 rounded-full object-cover border border-gray-200" src={u.avatar || `https://ui-avatars.com/api/?name=${u.name}`} alt="" />
+                            <img className="h-10 w-10 rounded-full object-cover border border-gray-200" src={u.avatar || avatarPlaceholder(u.name)} alt="" />
                           </div>
                           <div className="ml-4 rtl:mr-4 rtl:ml-0">
                             <div className="text-sm font-medium text-gray-900">{u.name}</div>
@@ -313,7 +314,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
                         <td className="px-6 py-4 whitespace-nowrap">
                            <div className="flex -space-x-2 rtl:space-x-reverse overflow-hidden">
                              {teamMembers.slice(0, 5).map(m => (
-                               <img key={m.id} className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src={m.avatar || `https://ui-avatars.com/api/?name=${m.name}`} alt={m.name} title={m.name} />
+                               <img key={m.id} className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src={m.avatar || avatarPlaceholder(m.name)} alt={m.name} title={m.name} />
                              ))}
                              {teamMembers.length > 5 && (
                                <span className="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 text-xs text-gray-500">+{teamMembers.length - 5}</span>
@@ -468,7 +469,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
                         {users.filter(u => u.teamId === selectedTeamForMembers.id).map(member => (
                            <div key={member.id} className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                               <div className="flex items-center gap-3">
-                                <img src={member.avatar || `https://ui-avatars.com/api/?name=${member.name}`} className="w-8 h-8 rounded-full" alt="" />
+                                <img src={member.avatar || avatarPlaceholder(member.name)} className="w-8 h-8 rounded-full" alt="" />
                                 <div>
                                   <p className="text-sm font-bold text-charcoal">{member.name}</p>
                                   <p className="text-[10px] text-gray-500 uppercase">{member.role}</p>
@@ -491,7 +492,7 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
                          {users.filter(u => u.teamId !== selectedTeamForMembers.id && u.role !== 'guest').map(user => (
                            <div key={user.id} className="flex justify-between items-center p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                               <div className="flex items-center gap-3">
-                                <img src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}`} className="w-8 h-8 rounded-full" alt="" />
+                                <img src={user.avatar || avatarPlaceholder(user.name)} className="w-8 h-8 rounded-full" alt="" />
                                 <div>
                                   <p className="text-sm font-bold text-charcoal">{user.name}</p>
                                   <p className="text-[10px] text-gray-500 uppercase">

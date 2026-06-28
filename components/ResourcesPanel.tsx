@@ -153,7 +153,7 @@ export const ResourcesPanel: React.FC<ResourcesPanelProps> = ({ lang = 'en', tea
             <button
               key={r.id}
               onClick={() => handleSelect(r)}
-              className="text-left rtl:text-right p-4 bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-xl shadow-sm hover:border-[#8A1538]/30 hover:shadow-md transition-all"
+              className="text-left rtl:text-right p-4 bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-xl shadow-sm hover:border-al-adaam/30 hover:shadow-md transition-all"
             >
               <p className="text-sm font-bold text-charcoal mb-1">{r.name}</p>
               <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-500 font-mono uppercase tracking-wider">
@@ -180,7 +180,7 @@ export const ResourcesPanel: React.FC<ResourcesPanelProps> = ({ lang = 'en', tea
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -189,7 +189,7 @@ export const ResourcesPanel: React.FC<ResourcesPanelProps> = ({ lang = 'en', tea
                   <select
                     value={form.type}
                     onChange={(e) => setForm({ ...form, type: e.target.value as Resource['type'] })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                   >
                     {TYPE_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>
@@ -205,7 +205,7 @@ export const ResourcesPanel: React.FC<ResourcesPanelProps> = ({ lang = 'en', tea
                     min="0"
                     value={form.capacity}
                     onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                   />
                 </div>
               </div>
@@ -215,7 +215,7 @@ export const ResourcesPanel: React.FC<ResourcesPanelProps> = ({ lang = 'en', tea
                   type="text"
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                 />
               </div>
               <div className="flex justify-end gap-3 pt-2">

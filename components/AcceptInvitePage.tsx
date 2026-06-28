@@ -108,14 +108,14 @@ export const AcceptInvitePage: React.FC = () => {
       <header className="border-b border-gray-100 bg-white">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#8A1538] rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-[#8A1538]/20">
+            <div className="w-8 h-8 bg-al-adaam rounded-full flex items-center justify-center text-white font-serif font-bold italic shadow-lg shadow-al-adaam/20">
               C
             </div>
             <span className="font-display font-bold tracking-tight text-lg">Cadence</span>
           </div>
           <button
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            className="text-xs font-bold border border-gray-200 px-4 py-2 rounded-full text-gray-600 hover:bg-[#8A1538] hover:text-white hover:border-[#8A1538] transition-colors uppercase tracking-wider"
+            className="text-xs font-bold border border-gray-200 px-4 py-2 rounded-full text-gray-600 hover:bg-al-adaam hover:text-white hover:border-al-adaam transition-colors uppercase tracking-wider"
           >
             {lang === 'en' ? 'العربية' : 'English'}
           </button>
@@ -126,7 +126,7 @@ export const AcceptInvitePage: React.FC = () => {
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           {loading ? (
             <div className="text-center py-12">
-              <div className="w-10 h-10 mx-auto border-2 border-[#8A1538] border-t-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 mx-auto border-2 border-al-adaam border-t-transparent rounded-full animate-spin" />
               <p className="mt-4 text-sm text-gray-500">{labels.loading}</p>
             </div>
           ) : fetchError ? (
@@ -138,7 +138,7 @@ export const AcceptInvitePage: React.FC = () => {
               </div>
               <h2 className="text-lg font-bold text-charcoal mb-2">{labels.invalid}</h2>
               <p className="text-sm text-gray-500">{fetchError}</p>
-              <a href="/" className="inline-block mt-6 text-xs font-bold text-[#8A1538] hover:text-[#5f0e26] uppercase tracking-wider">
+              <a href="/" className="inline-block mt-6 text-xs font-bold text-al-adaam hover:text-al-adaam-dark uppercase tracking-wider">
                 {lang === 'ar' ? 'العودة' : 'Back to app'}
               </a>
             </div>
@@ -176,7 +176,7 @@ export const AcceptInvitePage: React.FC = () => {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                   />
                 </div>
                 <div>
@@ -187,7 +187,7 @@ export const AcceptInvitePage: React.FC = () => {
                     minLength={3}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                   />
                 </div>
                 <div>
@@ -198,7 +198,7 @@ export const AcceptInvitePage: React.FC = () => {
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
                   />
                 </div>
 

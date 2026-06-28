@@ -179,12 +179,12 @@ const FieldRenderer: React.FC<{
   const labelEl = (
     <label className="block text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
       {question.label}
-      {question.required && <span className="text-[#8A1538] ml-1">*</span>}
+      {question.required && <span className="text-al-adaam ml-1">*</span>}
     </label>
   );
 
   const inputCls =
-    'w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/20 outline-none transition-all';
+    'w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-al-adaam focus:ring-2 focus:ring-al-adaam/20 outline-none transition-all';
 
   if (question.type === 'textarea') {
     return (
@@ -233,7 +233,7 @@ const FieldRenderer: React.FC<{
                 value={opt}
                 checked={value === opt}
                 onChange={() => onChange(opt)}
-                className="text-[#8A1538] focus:ring-[#8A1538]"
+                className="text-al-adaam focus:ring-al-adaam"
               />
               <span className="text-sm text-slate-700">{opt}</span>
             </label>
@@ -253,11 +253,11 @@ const FieldRenderer: React.FC<{
             type="checkbox"
             checked={!!value}
             onChange={(e) => onChange(e.target.checked ? 'true' : '')}
-            className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+            className="rounded text-al-adaam focus:ring-al-adaam"
           />
           <span className="text-sm text-slate-700">
             {question.label}
-            {question.required && <span className="text-[#8A1538] ml-1">*</span>}
+            {question.required && <span className="text-al-adaam ml-1">*</span>}
           </span>
         </label>
       );
@@ -277,7 +277,7 @@ const FieldRenderer: React.FC<{
                     : arr.filter((x) => x !== opt);
                   onChange(next);
                 }}
-                className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                className="rounded text-al-adaam focus:ring-al-adaam"
               />
               <span className="text-sm text-slate-700">{opt}</span>
             </label>

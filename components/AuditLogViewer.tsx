@@ -134,7 +134,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ lang = 'en' }) =
               }}
               className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${
                 statusFilter === p.value
-                  ? 'bg-[#8A1538] text-white border-[#8A1538]'
+                  ? 'bg-al-adaam text-white border-al-adaam'
                   : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -148,28 +148,28 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ lang = 'en' }) =
             placeholder={labels.search}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
           />
           <input
             type="text"
             placeholder={labels.userId}
             value={userIdFilter}
             onChange={(e) => setUserIdFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none font-mono"
+            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none font-mono"
           />
           <input
             type="date"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
             aria-label={labels.from}
-            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
           />
           <input
             type="date"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
             aria-label={labels.to}
-            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538] outline-none"
+            className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-al-adaam focus:ring-1 focus:ring-al-adaam outline-none"
           />
         </div>
         <div className="flex justify-end">
@@ -212,7 +212,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ lang = 'en' }) =
             {loading ? (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center text-gray-400 text-sm italic">
-                  <div className="w-6 h-6 mx-auto border-2 border-gray-200 border-t-[#8A1538] rounded-full animate-spin" />
+                  <div className="w-6 h-6 mx-auto border-2 border-gray-200 border-t-al-adaam rounded-full animate-spin" />
                 </td>
               </tr>
             ) : rows.length === 0 ? (
@@ -255,14 +255,14 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ lang = 'en' }) =
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-[#8A1538] hover:text-[#8A1538] disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-500 transition-colors"
+              className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-al-adaam hover:text-al-adaam disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-500 transition-colors"
             >
               {labels.prev}
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-[#8A1538] hover:text-[#8A1538] disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-500 transition-colors"
+              className="px-3 py-1.5 rounded-md border border-gray-200 text-xs font-bold uppercase tracking-wider text-gray-500 hover:border-al-adaam hover:text-al-adaam disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-500 transition-colors"
             >
               {labels.next}
             </button>

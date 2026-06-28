@@ -308,7 +308,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
               <div>
@@ -317,7 +317,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
             </section>
@@ -361,12 +361,12 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                           placeholder={labels.label}
                           value={q.label}
                           onChange={(e) => updateField(q.id, { label: e.target.value })}
-                          className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                          className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                         />
                         <select
                           value={q.type}
                           onChange={(e) => updateField(q.id, { type: e.target.value as QuestionType })}
-                          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                         >
                           <option value="text">Text</option>
                           <option value="textarea">Textarea</option>
@@ -389,7 +389,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                 .filter(Boolean),
                             })
                           }
-                          className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                          className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                         />
                       )}
                       <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                             type="checkbox"
                             checked={!!q.required}
                             onChange={(e) => updateField(q.id, { required: e.target.checked })}
-                            className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                            className="rounded text-al-adaam focus:ring-al-adaam"
                           />
                           <span className="text-gray-600">{labels.required}</span>
                         </label>
@@ -437,7 +437,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                           <p className="text-xs font-bold text-charcoal">
                             {lang === 'ar' ? 'قاعدة' : 'Rule'} #{idx + 1}
                             {isFallback && (
-                              <span className="ml-2 text-[10px] font-mono uppercase text-[#8A1538]">{labels.fallback}</span>
+                              <span className="ml-2 text-[10px] font-mono uppercase text-al-adaam">{labels.fallback}</span>
                             )}
                           </p>
                           <div className="flex items-center gap-2">
@@ -460,7 +460,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                             <button
                               type="button"
                               onClick={() => addCondition(r.id)}
-                              className="text-xs text-[#8A1538] hover:underline font-bold"
+                              className="text-xs text-al-adaam hover:underline font-bold"
                             >
                               {labels.addCondition}
                             </button>
@@ -482,7 +482,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                       updateCondition(r.id, ci, { fieldId: v });
                                     }
                                   }}
-                                  className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                  className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                                 >
                                   <option value="">—</option>
                                   {fields.map((f) => (
@@ -497,7 +497,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                 <select
                                   value={c.op}
                                   onChange={(e) => updateCondition(r.id, ci, { op: e.target.value as RoutingOp })}
-                                  className="col-span-3 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                  className="col-span-3 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                                 >
                                   <option value="equals">equals</option>
                                   <option value="not_equals">not equals</option>
@@ -509,7 +509,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                   type="text"
                                   value={c.value}
                                   onChange={(e) => updateCondition(r.id, ci, { value: e.target.value })}
-                                  className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                  className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                                 />
                                 <button
                                   type="button"
@@ -534,7 +534,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                         fieldId: `user_attribute:${e.target.value}`,
                                       })
                                     }
-                                    className="col-span-8 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] font-mono"
+                                    className="col-span-8 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam font-mono"
                                   />
                                 </div>
                               )}
@@ -558,7 +558,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                 },
                               })
                             }
-                            className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                            className="col-span-4 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                           >
                             <option value="route_to_user">{labels.routeToUser}</option>
                             <option value="route_to_link">{labels.routeToLink}</option>
@@ -570,7 +570,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                               onChange={(e) =>
                                 updateRule(r.id, { action: { ...r.action, target: e.target.value } })
                               }
-                              className="col-span-8 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                              className="col-span-8 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                             >
                               <option value="">—</option>
                               {hostsList.map((h) => (
@@ -585,7 +585,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                               onChange={(e) =>
                                 updateRule(r.id, { action: { ...r.action, target: e.target.value } })
                               }
-                              className="col-span-8 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                              className="col-span-8 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                             >
                               <option value="">—</option>
                               {bookingLinksList.map((l) => (
@@ -605,7 +605,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                     action: { ...r.action, attributeKey: e.target.value },
                                   })
                                 }
-                                className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538] font-mono"
+                                className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam font-mono"
                               />
                               <input
                                 type="text"
@@ -616,7 +616,7 @@ export const RoutingFormBuilder: React.FC<Props> = ({
                                     action: { ...r.action, attributeValue: e.target.value },
                                   })
                                 }
-                                className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-[#8A1538]"
+                                className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-al-adaam"
                               />
                             </div>
                           )}

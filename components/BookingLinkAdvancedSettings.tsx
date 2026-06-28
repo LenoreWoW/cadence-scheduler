@@ -174,19 +174,19 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                   type="checkbox"
                   checked={hasOverride}
                   onChange={(e) => setHasOverride(e.target.checked)}
-                  className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                  className="rounded text-al-adaam focus:ring-al-adaam"
                 />
                 <span className="text-sm font-bold text-charcoal">{labels.availabilityOverride}</span>
               </label>
               {hasOverride && (
-                <div className="space-y-4 pl-6 rtl:pr-6 rtl:pl-0 border-l-2 border-[#8A1538]/20 rtl:border-r-2 rtl:border-l-0">
+                <div className="space-y-4 pl-6 rtl:pr-6 rtl:pl-0 border-l-2 border-al-adaam/20 rtl:border-r-2 rtl:border-l-0">
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">{labels.start}</label>
                       <select
                         value={override.startHour}
                         onChange={(e) => setOverride({ ...override, startHour: Number(e.target.value) })}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                       >
                         {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                           <option key={h} value={h}>{h}:00</option>
@@ -198,7 +198,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                       <select
                         value={override.endHour}
                         onChange={(e) => setOverride({ ...override, endHour: Number(e.target.value) })}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                       >
                         {Array.from({ length: 24 }, (_, i) => i).map((h) => (
                           <option key={h} value={h}>{h}:00</option>
@@ -210,7 +210,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                       <select
                         value={override.slotDuration}
                         onChange={(e) => setOverride({ ...override, slotDuration: Number(e.target.value) })}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                       >
                         {[15, 30, 45, 60, 90].map((m) => (
                           <option key={m} value={m}>{m} min</option>
@@ -228,7 +228,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                           onClick={() => toggleDay(d.id)}
                           className={`w-10 h-10 rounded-lg text-xs font-bold border transition-all ${
                             override.days.includes(d.id)
-                              ? 'bg-[#8A1538] text-white border-[#8A1538]'
+                              ? 'bg-al-adaam text-white border-al-adaam'
                               : 'bg-white text-gray-400 border-gray-200'
                           }`}
                         >
@@ -244,7 +244,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                         type="date"
                         value={newTimeOff}
                         onChange={(e) => setNewTimeOff(e.target.value)}
-                        className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                        className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                       />
                       <Button type="button" variant="secondary" onClick={addTimeOff}>
                         {labels.addDate}
@@ -272,7 +272,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                   max={365}
                   value={bookableWindowDays}
                   onChange={(e) => setBookableWindowDays(Number(e.target.value) || 1)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
               <div>
@@ -283,7 +283,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                   max={100}
                   value={slotCapacity}
                   onChange={(e) => setSlotCapacity(Number(e.target.value) || 1)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                 />
               </div>
             </section>
@@ -294,7 +294,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                   type="checkbox"
                   checked={approvalRequired}
                   onChange={(e) => setApprovalRequired(e.target.checked)}
-                  className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                  className="rounded text-al-adaam focus:ring-al-adaam"
                 />
                 <span className="text-sm font-bold text-charcoal">{labels.approval}</span>
               </label>
@@ -373,12 +373,12 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                           placeholder={labels.label}
                           value={q.label}
                           onChange={(e) => updateQuestion(q.id, { label: e.target.value })}
-                          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                         />
                         <select
                           value={q.type}
                           onChange={(e) => updateQuestion(q.id, { type: e.target.value as QuestionDef['type'] })}
-                          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                         >
                           <option value="text">Text</option>
                           <option value="textarea">Textarea</option>
@@ -399,7 +399,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                                 .filter(Boolean),
                             })
                           }
-                          className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                          className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                         />
                       )}
                       <div className="flex items-center justify-between">
@@ -408,7 +408,7 @@ export const BookingLinkAdvancedSettings: React.FC<Props> = ({ isOpen, onClose, 
                             type="checkbox"
                             checked={!!q.required}
                             onChange={(e) => updateQuestion(q.id, { required: e.target.checked })}
-                            className="rounded text-[#8A1538] focus:ring-[#8A1538]"
+                            className="rounded text-al-adaam focus:ring-al-adaam"
                           />
                           <span className="text-gray-600">{labels.required}</span>
                         </label>

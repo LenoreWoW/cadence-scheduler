@@ -36,7 +36,7 @@ export const ForgotPasswordPage: React.FC = () => {
             </div>
             <a
               href="/login"
-              className="block text-center w-full px-5 py-3 bg-[#8A1538] hover:bg-[#a02050] text-white rounded-lg font-medium"
+              className="block text-center w-full px-5 py-3 bg-al-adaam hover:bg-[#a02050] text-white rounded-lg font-medium"
             >
               Back to sign in
             </a>
@@ -52,14 +52,14 @@ export const ForgotPasswordPage: React.FC = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-[#8A1538]"
+                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:border-al-adaam"
                 placeholder="you@example.com"
               />
             </div>
             <button
               type="submit"
               disabled={submitting || !email}
-              className="w-full px-5 py-3 bg-[#8A1538] hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
+              className="w-full px-5 py-3 bg-al-adaam hover:bg-[#a02050] text-white rounded-lg font-medium disabled:opacity-50"
             >
               {submitting ? 'Sending…' : 'Send reset link'}
             </button>

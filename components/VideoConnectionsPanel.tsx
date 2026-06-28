@@ -176,7 +176,7 @@ export const VideoConnectionsPanel: React.FC<Props> = ({ lang }) => {
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     autoComplete="off"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538] font-mono"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam font-mono"
                   />
                 </div>
                 <div>
@@ -188,7 +188,7 @@ export const VideoConnectionsPanel: React.FC<Props> = ({ lang }) => {
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
                     placeholder="yourteam.daily.co"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A1538]"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-al-adaam"
                   />
                 </div>
                 {error && (

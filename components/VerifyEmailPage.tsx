@@ -53,8 +53,8 @@ export const VerifyEmailPage: React.FC<Props> = ({ token }) => {
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
         {status === 'verifying' && (
           <>
-            <div className="w-16 h-16 rounded-full bg-[#8A1538]/10 flex items-center justify-center mx-auto mb-6">
-              <div className="w-8 h-8 border-2 border-[#8A1538] border-t-transparent rounded-full animate-spin" />
+            <div className="w-16 h-16 rounded-full bg-al-adaam/10 flex items-center justify-center mx-auto mb-6">
+              <div className="w-8 h-8 border-2 border-al-adaam border-t-transparent rounded-full animate-spin" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800 mb-2">Verifying…</h1>
             <p className="text-slate-600">Hang tight, we're checking your link.</p>
