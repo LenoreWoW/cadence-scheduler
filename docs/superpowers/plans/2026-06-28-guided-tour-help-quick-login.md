@@ -40,7 +40,8 @@
 - Modify: `services/translations.ts` (the `en` object and the `ar` object)
 
 **Interfaces:**
-- Produces translation keys consumed by Tasks 2, 3, 6: `helpButtonLabel`, `helpTitle`, `helpIntro`, `helpRolesTitle`, `helpRolesBody`, `helpSchedulingTitle`, `helpSchedulingBody`, `helpApprovalsTitle`, `helpApprovalsBody`, `helpColorsTitle`, `helpColorsBody`, `helpTentativeTitle`, `helpTentativeBody`, `helpBookingLinksTitle`, `helpBookingLinksBody`, `helpShortcutsTitle`, `helpShortcutsBody`, `helpStartTour`, `helpStartShortcuts`, `helpStartBookingLinks`, `helpStartAdmin`, `helpClose`, `quickLoginTitle`, `quickLoginNote`, `roleAdmin`, `roleManager`, `roleAssistant`, `roleClient`.
+- Produces 24 NEW translation keys consumed by Tasks 2, 3, 6: `helpButtonLabel`, `helpTitle`, `helpIntro`, `helpRolesTitle`, `helpRolesBody`, `helpSchedulingTitle`, `helpSchedulingBody`, `helpApprovalsTitle`, `helpApprovalsBody`, `helpColorsTitle`, `helpColorsBody`, `helpTentativeTitle`, `helpTentativeBody`, `helpBookingLinksTitle`, `helpBookingLinksBody`, `helpShortcutsTitle`, `helpShortcutsBody`, `helpStartTour`, `helpStartShortcuts`, `helpStartBookingLinks`, `helpStartAdmin`, `helpClose`, `quickLoginTitle`, `quickLoginNote`.
+- REUSES existing role-label keys (do NOT re-add): `roleAdmin` ("Admin"), `roleManager` ("Manager"), `roleSubordinate` ("Subordinate"), `roleGuest` ("Guest") — already in both en+ar. Task 6's quick-login buttons reference these.
 
 - [ ] **Step 1: Add the keys to the `en` block.** Insert these into the `en: { ... }` object (anywhere among the existing keys; ensure a trailing comma on the line before if needed):
 
@@ -69,11 +70,8 @@
     helpClose: "Close",
     quickLoginTitle: "Quick login (demo)",
     quickLoginNote: "Demo accounts for testing — password: password",
-    roleAdmin: "Admin",
-    roleManager: "Manager",
-    roleAssistant: "Assistant",
-    roleClient: "Client",
 ```
+(Do NOT add `roleAdmin`/`roleManager`/`roleSubordinate`/`roleGuest` — they already exist; Task 6 reuses them.)
 
 - [ ] **Step 2: Add the same keys to the `ar` block** (Arabic values):
 
@@ -102,13 +100,10 @@
     helpClose: "إغلاق",
     quickLoginTitle: "دخول سريع (تجريبي)",
     quickLoginNote: "حسابات تجريبية للاختبار — كلمة المرور: password",
-    roleAdmin: "مدير النظام",
-    roleManager: "مدير",
-    roleAssistant: "مساعد",
-    roleClient: "عميل",
 ```
+(Do NOT add the `role*` keys — they already exist in the `ar` block too.)
 
-- [ ] **Step 3: Verify the same key set exists in both blocks + typecheck.** Run: `yarn typecheck` — Expected: no NEW errors. Manually confirm both blocks contain all 28 keys.
+- [ ] **Step 3: Verify the same key set exists in both blocks + typecheck.** Run: `yarn typecheck` — Expected: no NEW errors. Manually confirm both blocks contain all 24 NEW keys and that you did NOT duplicate any pre-existing key (`roleAdmin`/`roleManager`/`roleSubordinate`/`roleGuest` must remain single-defined).
 
 - [ ] **Step 4: Commit.**
 ```bash
@@ -470,7 +465,7 @@ git commit -m "feat(tour): extend welcome tour with locality/on-behalf/delegates
 - Test: `tests/components/LoginPage.quicklogin.test.tsx`
 
 **Interfaces:**
-- Consumes: `authService.login`, `t` keys from Task 1 (`quickLoginTitle`, `quickLoginNote`, `roleAdmin`/`roleManager`/`roleAssistant`/`roleClient`).
+- Consumes: `authService.login`, the Task 1 keys (`quickLoginTitle`, `quickLoginNote`), and the EXISTING role-label keys `roleAdmin`/`roleManager`/`roleSubordinate`/`roleGuest`.
 
 - [ ] **Step 1: Write the failing test** `tests/components/LoginPage.quicklogin.test.tsx`:
 
@@ -492,8 +487,8 @@ describe('LoginPage quick login', () => {
     render(<LoginPage onLogin={vi.fn()} lang="en" t={t} toggleLang={vi.fn()} />);
     expect(screen.getByText('roleAdmin')).toBeInTheDocument();
     expect(screen.getByText('roleManager')).toBeInTheDocument();
-    expect(screen.getByText('roleAssistant')).toBeInTheDocument();
-    expect(screen.getByText('roleClient')).toBeInTheDocument();
+    expect(screen.getByText('roleSubordinate')).toBeInTheDocument();
+    expect(screen.getByText('roleGuest')).toBeInTheDocument();
   });
 
   it('clicking a role logs in with the seeded account and calls onLogin', async () => {
@@ -501,7 +496,7 @@ describe('LoginPage quick login', () => {
     const login = vi.spyOn(authService, 'login').mockResolvedValue(fakeUser);
     const onLogin = vi.fn();
     render(<LoginPage onLogin={onLogin} lang="en" t={t} toggleLang={vi.fn()} />);
-    fireEvent.click(screen.getByText('roleAssistant'));
+    fireEvent.click(screen.getByText('roleSubordinate'));
     await waitFor(() => expect(login).toHaveBeenCalledWith('sub', 'password'));
     await waitFor(() => expect(onLogin).toHaveBeenCalledWith(fakeUser));
   });
@@ -530,8 +525,8 @@ describe('LoginPage quick login', () => {
   const QUICK_ROLES: Array<{ labelKey: string; username: string }> = [
     { labelKey: 'roleAdmin', username: 'admin' },
     { labelKey: 'roleManager', username: 'manager' },
-    { labelKey: 'roleAssistant', username: 'sub' },
-    { labelKey: 'roleClient', username: 'user1' },
+    { labelKey: 'roleSubordinate', username: 'sub' },
+    { labelKey: 'roleGuest', username: 'user1' },
   ];
 ```
 
