@@ -282,26 +282,12 @@ class DatabaseManager {
       '20240121_team_invitations_index',
       `CREATE INDEX IF NOT EXISTS idx_team_invitations_email ON team_invitations(email)`
     );
+    // Departments were removed in the Phase 1 redesign (flat user list; Teams kept).
+    // Drop the table on existing DBs; the now-unused users/teams.department_id columns
+    // are left in place (dead, unreferenced) — simpler and safe across SQLite versions.
     runOnce(
-      '20240122_departments',
-      `CREATE TABLE IF NOT EXISTS departments (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        description TEXT,
-        head_user_id TEXT,
-        parent_id TEXT,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (head_user_id) REFERENCES users(id) ON DELETE SET NULL,
-        FOREIGN KEY (parent_id) REFERENCES departments(id) ON DELETE SET NULL
-      )`
-    );
-    runOnce(
-      '20240123_users_add_department',
-      `ALTER TABLE users ADD COLUMN department_id TEXT`
-    );
-    runOnce(
-      '20240124_teams_add_department',
-      `ALTER TABLE teams ADD COLUMN department_id TEXT`
+      '20240625_drop_departments',
+      `DROP TABLE IF EXISTS departments`
     );
     runOnce(
       '20240125_resources',

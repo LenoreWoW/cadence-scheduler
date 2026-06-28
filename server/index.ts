@@ -22,7 +22,6 @@ import calendarRoutes from './routes/calendar';
 import notificationRoutes from './routes/notifications';
 import teamBookingLinkRoutes from './routes/teamBookingLinks';
 import teamInvitationRoutes from './routes/teamInvitations';
-import departmentRoutes from './routes/departments';
 import resourceRoutes from './routes/resources';
 import attachmentRoutes from './routes/attachments';
 import webhookRoutes from './routes/webhooks';
@@ -145,7 +144,6 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/team-booking-links', teamBookingLinkRoutes);
 app.use('/api/team-invitations', teamInvitationRoutes);
-app.use('/api/departments', departmentRoutes);
 app.use('/api/resources', resourceRoutes);
 // /api/attachments mounted above with its own body parser
 app.use('/api/webhooks', webhookRoutes);

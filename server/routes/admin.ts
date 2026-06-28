@@ -31,7 +31,7 @@ router.get('/health', ...adminOnly, asyncHandler(async (_req: AuthenticatedReque
   const tables = [
     'users', 'teams', 'meetings', 'booking_links', 'team_booking_links',
     'sessions', 'activity_logs', 'notifications',
-    'departments', 'resources', 'resource_bookings',
+    'resources', 'resource_bookings',
     'meeting_attachments', 'outbound_webhooks', 'webhook_deliveries',
     'api_tokens', 'team_invitations', 'calendar_connections',
   ];

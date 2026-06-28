@@ -127,7 +127,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({
                   >
                     {hosts.map(host => (
                       <option key={host.id} value={host.id}>
-                        {host.name}{host.department ? ` (${host.department})` : ''}
+                        {host.name}{host.title ? ` (${host.title})` : ''}
                       </option>
                     ))}
                   </select>
