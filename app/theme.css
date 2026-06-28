@@ -43,6 +43,9 @@
 }
 
 html, body, #root { height: 100%; }
+/* Theme the root element so the canvas (overscroll / content overflow) is never
+   an un-themed white strip in dark mode. */
+html { background: var(--bg); }
 body {
   margin: 0;
   background: var(--bg);

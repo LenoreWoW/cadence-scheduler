@@ -31,6 +31,9 @@ test('guest requests a meeting and an admin approves it', async ({ page }) => {
   const card = page.locator('div').filter({ hasText: title }).filter({
     has: page.getByRole('button', { name: 'Approve' }),
   }).last();
+  // Regression: the request card must show a real "Pending" status pill (the
+  // /pending-approval endpoint used to omit `status`, rendering an empty pill).
+  await expect(card.getByText('Pending')).toBeVisible();
   await card.getByRole('button', { name: 'Approve' }).click();
 
   await expect(page.getByRole('status')).toContainText('approved');

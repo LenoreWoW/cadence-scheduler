@@ -11,6 +11,8 @@ const MAP: Record<string, { key: StringKey; cls: string }> = {
 export const StatusPill: React.FC<{ status: string }> = ({ status }) => {
   const { t } = useI18n();
   const s = MAP[status];
+  // Don't render an empty/placeholder pill for a missing or unknown status.
+  if (!s && !status) return null;
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${s?.cls ?? 'status-neutral'}`}>
       {s ? t(s.key) : status}

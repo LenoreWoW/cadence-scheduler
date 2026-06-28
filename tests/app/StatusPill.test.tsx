@@ -26,4 +26,9 @@ describe('StatusPill', () => {
     renderPill('archived');
     expect(screen.getByText('archived')).toBeInTheDocument();
   });
+
+  it('renders nothing for an empty/missing status (no placeholder pill)', () => {
+    const { container } = renderPill('');
+    expect(container).toBeEmptyDOMElement();
+  });
 });
