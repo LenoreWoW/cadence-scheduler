@@ -16,7 +16,7 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-arabic: 'IBM Plex Sans Arabic', sans-serif;
 
-  /* Color System - Regent Brand */
+  /* Color System — Qatar GBA palette */
   --color-al-adaam: #8A1538;
   --color-al-adaam-dark: #5f0e26;
   --color-dune: #A29475;
@@ -28,6 +28,18 @@
   --color-sunrise: #fdf39d;
   --color-salmon: #dd7877;
   --color-dark-purple: #511C3C;
+
+  /* Surfaces & text (light) */
+  --bg-primary: #F9F9F9;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --border-color: rgba(162, 148, 117, 0.18);
+  --text-primary: #111111;
+  --text-secondary: #6b6b6b;
+  /* Semantic accents (GBA-mapped) */
+  --accent-success: #129b82; /* palm */
+  --accent-pending: #dd7877; /* salmon */
+  --accent-info: #4194b3;    /* sea */
 
   /* Meeting locality accents (Feature 1) */
   --meeting-internal: #DC2626; /* RED — internal / in-building */
