@@ -4,7 +4,6 @@ import { User, Team, Role, Language } from '../types';
 import { Button } from './Button';
 import { storageService } from '../services/storageService';
 import { TeamInvitationsPanel } from './TeamInvitationsPanel';
-import { DepartmentsPanel } from './DepartmentsPanel';
 import { ResourcesPanel } from './ResourcesPanel';
 import { ApprovalQueue } from './ApprovalQueue';
 import { BulkUserImportModal } from './BulkUserImportModal';
@@ -23,7 +22,7 @@ interface TeamWithLeader extends Team {
 }
 
 export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, currentUser }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'teams' | 'invitations' | 'departments' | 'resources' | 'approvals' | 'workflows'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'teams' | 'invitations' | 'resources' | 'approvals' | 'workflows'>('users');
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<TeamWithLeader[]>([]);
@@ -177,7 +176,6 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
               { id: 'users', label: t('users'), show: true },
               { id: 'teams', label: t('teams'), show: true },
               { id: 'invitations', label: lang === 'ar' ? 'الدعوات' : 'Invitations', show: isAdmin || isManager },
-              { id: 'departments', label: lang === 'ar' ? 'الأقسام' : 'Departments', show: isAdmin },
               { id: 'resources', label: lang === 'ar' ? 'الموارد' : 'Resources', show: isAdmin || isManager },
               { id: 'approvals', label: lang === 'ar' ? 'الموافقات' : 'Approvals', show: isAdmin || isManager },
               { id: 'workflows', label: lang === 'ar' ? 'سير العمل' : 'Workflows', show: isAdmin || isManager },
@@ -200,8 +198,6 @@ export const TeamManagement: React.FC<TeamManagementProps> = ({ t, lang, current
        <div className="p-6">
           {activeTab === 'invitations' ? (
              <TeamInvitationsPanel teamId={currentUser?.teamId} lang={lang} />
-          ) : activeTab === 'departments' ? (
-             <DepartmentsPanel lang={lang} />
           ) : activeTab === 'resources' ? (
              <ResourcesPanel lang={lang} teamId={currentUser?.teamId} />
           ) : activeTab === 'approvals' ? (

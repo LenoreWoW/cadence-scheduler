@@ -90,7 +90,7 @@ export const HostSelector: React.FC<HostSelectorProps> = ({
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
                     </div>
                     <div className="absolute inset-0 flex flex-col justify-end p-4 z-10">
-                      <span className="text-[9px] font-mono font-bold text-white/70 uppercase tracking-widest mb-1">Department</span>
+                      <span className="text-[9px] font-mono font-bold text-white/70 uppercase tracking-widest mb-1">Team</span>
                       <h3 className="text-lg font-serif text-white leading-tight">{team.name}</h3>
                       <span className="text-white/80 text-[10px] font-medium mt-1 flex items-center gap-1">
                         View Members
@@ -155,7 +155,7 @@ export const HostSelector: React.FC<HostSelectorProps> = ({
                      </div>
 
                      <div className="absolute bottom-0 left-0 p-6 lg:p-8 text-left w-full z-10">
-                        <span className="text-xs font-mono font-bold text-white/70 uppercase tracking-widest mb-2 block pl-1">Department</span>
+                        <span className="text-xs font-mono font-bold text-white/70 uppercase tracking-widest mb-2 block pl-1">Team</span>
                         <h3 className="text-2xl lg:text-3xl font-serif text-white mb-2 leading-tight shadow-black drop-shadow-md">{team.name}</h3>
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">
                            <span className="text-white text-xs font-bold uppercase tracking-widest">View Members</span>
