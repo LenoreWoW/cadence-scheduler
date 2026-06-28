@@ -31,7 +31,6 @@ import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { ForgotPasswordPage } from './components/ForgotPasswordPage';
 import { TeamBookingPage } from './components/TeamBookingPage';
 import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team } from './types';
-import { BookingLinksManager } from './components/BookingLinksManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { TermsOfServicePage } from './components/TermsOfServicePage';
@@ -543,7 +542,6 @@ const App: React.FC = () => {
     { id: 'appointments', label: 'My Appointments', icon: '📝', shortcut: 'g a', action: () => setCurrentView('my-meetings'), category: 'Navigation' },
     { id: 'new', label: 'New Meeting', icon: '⊕', shortcut: 'n', action: () => { setCurrentView('scheduler'); setSelectedHost(null); }, category: 'Actions' },
     { id: 'profile', label: 'Profile Settings', icon: '⚙️', shortcut: 'P', action: () => setIsProfileModalOpen(true), category: 'Settings' },
-    ...(currentUser?.role !== 'guest' ? [{ id: 'booking-links', label: 'Manage Booking Links', icon: '🔗', action: () => setCurrentView('booking-links'), category: 'Settings' }] : []),
     ...(currentUser?.role === 'admin' || currentUser?.role === 'manager' ? [{ id: 'booking-calendar', label: 'Booking Calendar', icon: '🗓️', action: () => setCurrentView('booking-calendar'), category: 'Navigation' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'analytics', label: 'View Analytics', icon: '📊', action: () => setCurrentView('analytics'), category: 'Admin' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'system-health', label: 'System Health', icon: '💚', action: () => setCurrentView('system-health'), category: 'Admin' }] : []),
@@ -601,7 +599,6 @@ const App: React.FC = () => {
                     { id: 'my-meetings', label: t('myAppointments'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', show: true },
                     { id: 'team-management', label: t('teams'), icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', show: role === 'admin' },
                     { id: 'logs', label: t('logs'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', show: role === 'admin' },
-                    { id: 'booking-links', label: t('bookingLinks'), icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1', show: role !== 'guest' },
                     { id: 'booking-calendar', label: t('calendar'), icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', show: role === 'admin' || role === 'manager' },
                     { id: 'analytics', label: t('analytics'), icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', show: role === 'admin' }
                 ].map(nav => nav.show && (
@@ -794,17 +791,6 @@ const App: React.FC = () => {
             <PageTransition viewKey="logs"><div className="animate-slide-up"><LogsPanel logs={logs} t={t} /></div></PageTransition>
           ) : currentView === 'team-management' ? (
              <PageTransition viewKey="team"><div className="animate-slide-up"><TeamManagement t={t} lang={lang} currentUser={currentUser} /></div></PageTransition>
-          ) : currentView === 'booking-links' ? (
-             <PageTransition viewKey="booking-links">
-               <div className="animate-slide-up max-w-4xl mx-auto">
-                 <BookingLinksManager
-                   userId={currentUser.id}
-                   t={t}
-                   lang={lang}
-                   accessToken={localStorage.getItem('accessToken') || ''}
-                 />
-               </div>
-             </PageTransition>
           ) : currentView === 'booking-calendar' ? (
              <PageTransition viewKey="booking-calendar">
                <div className="animate-slide-up max-w-6xl mx-auto">

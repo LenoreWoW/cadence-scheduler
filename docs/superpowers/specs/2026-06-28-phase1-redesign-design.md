@@ -97,4 +97,7 @@ Replace the **REGENT** wordmark (login/header/legal/accept-invite) and reconcile
 - No real portal/OIDC integration yet (stub the seam; wire when the portal exists).
 - No new backend features beyond the structural removals + the auth seam.
 - No router library swap (keep the `index.tsx` `resolveRoute`/`currentView` model; restyle in place).
-- No removal of Teams, webhooks, calendar sync, booking links, or the locality/tentative features (those stay; only restyled).
+- No removal of Teams, webhooks, calendar sync, or the locality/tentative features (those stay; only restyled).
+
+### 10.1 Amendment (2026-06-28, post-Phase-1): booking-link creation/sharing removed
+The original non-goal kept booking links. **Superseded by user decision:** the *unused* workflow — **creating a personal booking link and sharing it** — is removed from the UI. Removed entry points: the **Booking Links** management view + header nav (`BookingLinksManager`), the Profile Settings **Booking Links** tab, the Dashboard **Copy/Share Link** quick actions, and the matching guided-tour/Help steps. **Retained** (still "kept"): the underlying public-booking infrastructure — `PublicBookingPage`/`TeamBookingPage`/`ManageBookingPage`, routing forms, embed, analytics pixels, restriction schedules, booking caps, custom domains, the server routes, and the DB tables (FK graph untouched). This is a frontend entry-point removal only; no server/DB changes. Teams are unaffected (membership = `users.team_id` + role scoping; departments were never required).

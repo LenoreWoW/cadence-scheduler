@@ -28,7 +28,6 @@ const initialsOf = (name?: string) =>
     .toUpperCase() || '·';
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, onNavigate, onBookForTeam, onQuickBook, onRefresh }) => {
-  const [linkCopied, setLinkCopied] = useState(false);
   const [greeting, setGreeting] = useState('');
   const [timeUntil, setTimeUntil] = useState<{ hours: number; minutes: number } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false); // Refresh state
@@ -114,12 +113,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
 
   const todayStr = new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  const handleCopyLink = () => {
-    const url = `https://adaam.scheduler.com/${user.username}`;
-    navigator.clipboard.writeText(url);
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
-  };
 
   const isHappeningNow = nextMeeting && (!timeUntil || (timeUntil.hours === 0 && timeUntil.minutes < 0));
   const startsInLabel = timeUntil
@@ -177,22 +170,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
                   <span className="text-sm font-semibold text-charcoal dark:text-white group-hover:text-al-adaam transition-colors">{t('bookMeeting')}</span>
                   <span className="text-[10px] text-gray-500">{t('scheduleNew')}</span>
                </button>
-
-               <button
-                 onClick={handleCopyLink}
-                 data-tour="share-link"
-                 className="group flex flex-col items-start p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-al-adaam hover:shadow-md transition-all rounded-lg text-left"
-               >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${linkCopied ? 'bg-palm/10 text-palm' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
-                     {linkCopied ? (
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                     ) : (
-                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                     )}
-                  </div>
-                  <span className="text-sm font-semibold text-charcoal dark:text-white group-hover:text-al-adaam transition-colors">{linkCopied ? t('copied') : t('copyLink')}</span>
-                  <span className="text-[10px] text-gray-500">{t('sharePage')}</span>
-               </button>
           </div>
         </div>
 
@@ -225,24 +202,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
                   <div className="text-left">
                     <span className="text-sm font-semibold text-charcoal dark:text-white block">{t('bookMeeting')}</span>
                     <span className="text-[10px] text-gray-500">{t('scheduleNew')}</span>
-                  </div>
-               </button>
-
-               <button
-                 onClick={handleCopyLink}
-                 data-tour="share-link"
-                 className="group flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition-transform"
-               >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${linkCopied ? 'bg-palm/10 text-palm' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
-                     {linkCopied ? (
-                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                     ) : (
-                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                     )}
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-semibold text-charcoal dark:text-white block">{linkCopied ? t('copied') : t('copyLink')}</span>
-                    <span className="text-[10px] text-gray-500">{t('copyBookingPage')}</span>
                   </div>
                </button>
 
