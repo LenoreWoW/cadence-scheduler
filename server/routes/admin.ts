@@ -33,8 +33,7 @@ router.get('/health', ...adminOnly, asyncHandler(async (_req: AuthenticatedReque
     'sessions', 'activity_logs', 'notifications',
     'departments', 'resources', 'resource_bookings',
     'meeting_attachments', 'outbound_webhooks', 'webhook_deliveries',
-    'api_tokens', 'challenges', 'user_challenge_progress',
-    'team_invitations', 'calendar_connections',
+    'api_tokens', 'team_invitations', 'calendar_connections',
   ];
   const rowCounts: Record<string, number> = {};
   for (const t of tables) {

@@ -45,13 +45,6 @@ router.post('/export', authenticateToken, asyncHandler(async (req: Authenticated
     SELECT id, type, title, body, read, created_at FROM notifications WHERE user_id = ?
   `).all(userId);
 
-  const stats = db.connection.prepare(`SELECT * FROM user_stats WHERE user_id = ?`).get(userId);
-
-  let achievements: any = null;
-  if (stats && (stats as any).unlocked_achievements) {
-    try { achievements = JSON.parse((stats as any).unlocked_achievements); } catch {}
-  }
-
   res.json({
     exportedAt: new Date().toISOString(),
     user,
@@ -59,8 +52,6 @@ router.post('/export', authenticateToken, asyncHandler(async (req: Authenticated
     bookingLinks,
     calendarConnections,
     notifications,
-    userStats: stats,
-    achievements,
   });
 }));
 
