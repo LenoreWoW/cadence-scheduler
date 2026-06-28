@@ -54,6 +54,10 @@ import { shortcutManager } from './services/keyboardShortcuts';
 import { translations } from './services/translations';
 import { Button } from './components/Button';
 
+// Token-styled initials (replaces ui-avatars.com placeholders in the header).
+const initials = (name?: string) =>
+  (name || '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '·';
+
 const App: React.FC = () => {
   // Global State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -589,25 +593,25 @@ const App: React.FC = () => {
 
             {/* Navigation Pills */}
             <div className="flex items-center gap-2 md:gap-8">
-              <nav className="hidden md:flex items-center space-x-1 rtl:space-x-reverse bg-gray-100/50 p-1 rounded-full">
+              <nav className="hidden md:flex items-center space-x-1 rtl:space-x-reverse bg-gray-100/50 dark:bg-gray-800/50 p-1 rounded-full">
                 {[
-                    { id: 'dashboard', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z', show: role !== 'guest' },
+                    { id: 'dashboard', label: t('dashboard'), icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z', show: role !== 'guest' },
                     { id: 'scheduler', label: t('scheduler'), icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', show: true },
                     { id: 'my-meetings', label: t('myAppointments'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', show: true },
                     { id: 'team-management', label: t('teams'), icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', show: role === 'admin' },
                     { id: 'logs', label: t('logs'), icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', show: role === 'admin' },
-                    { id: 'booking-links', label: 'Booking Links', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1', show: role !== 'guest' },
-                    { id: 'booking-calendar', label: 'Calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', show: role === 'admin' || role === 'manager' },
-                    { id: 'analytics', label: 'Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', show: role === 'admin' }
+                    { id: 'booking-links', label: t('bookingLinks'), icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1', show: role !== 'guest' },
+                    { id: 'booking-calendar', label: t('calendar'), icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', show: role === 'admin' || role === 'manager' },
+                    { id: 'analytics', label: t('analytics'), icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', show: role === 'admin' }
                 ].map(nav => nav.show && (
                   <button
                     key={nav.id}
                     data-tour={nav.id === 'my-meetings' ? 'appointments' : nav.id}
                     onClick={() => { setCurrentView(nav.id as any); }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                      currentView === nav.id 
-                      ? 'bg-white text-charcoal shadow-sm ring-1 ring-gray-200' 
-                      : 'text-gray-500 hover:text-charcoal hover:bg-white/50'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
+                      currentView === nav.id
+                      ? 'bg-white dark:bg-gray-700 text-charcoal dark:text-white shadow-sm ring-1 ring-gray-200 dark:ring-gray-600'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-charcoal dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50'
                     }`}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={nav.icon} /></svg>
@@ -644,34 +648,34 @@ const App: React.FC = () => {
                    </button>
                    
                    {showNotifications && (
-                      <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-scale-in origin-top-right">
-                         <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                            <h4 className="font-bold text-sm text-charcoal">Notifications</h4>
-                            {requestsToApprove.length > 0 && <span className="bg-salmon text-white text-[10px] px-2 py-0.5 rounded-full">{requestsToApprove.length} New</span>}
+                      <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 animate-scale-in origin-top-right rtl:origin-top-left">
+                         <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center">
+                            <h4 className="font-semibold text-sm text-charcoal dark:text-white">{t('notifications')}</h4>
+                            {requestsToApprove.length > 0 && <span className="bg-salmon text-white text-[10px] px-2 py-0.5 rounded-full">{requestsToApprove.length} {t('newBadge')}</span>}
                          </div>
                          <div className="max-h-64 overflow-y-auto">
                             {requestsToApprove.length === 0 ? (
                                <div className="p-8 text-center">
-                                  <p className="text-gray-400 text-xs italic">No pending requests</p>
+                                  <p className="text-gray-400 dark:text-gray-500 text-xs italic">{t('noPendingRequests')}</p>
                                </div>
                             ) : (
                                requestsToApprove.map(req => (
-                                  <div key={req.id} className="p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                  <div key={req.id} className="p-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                      <div className="flex justify-between items-start mb-2">
-                                        <p className="text-sm font-bold text-charcoal">{req.title}</p>
+                                        <p className="text-sm font-semibold text-charcoal dark:text-white">{req.title}</p>
                                         <span className="text-[10px] text-gray-400">{req.date}</span>
                                      </div>
-                                     <p className="text-xs text-gray-500 mb-3">from {req.attendeeName}</p>
+                                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('from')} {req.attendeeName}</p>
                                      <div className="flex gap-2">
-                                        <button onClick={() => handleApprove(req.id)} className="flex-1 bg-palm/10 text-palm text-[10px] font-bold py-1.5 rounded hover:bg-palm hover:text-white transition-colors">Approve</button>
-                                        <button onClick={() => handleReject(req.id)} className="flex-1 bg-salmon/10 text-salmon text-[10px] font-bold py-1.5 rounded hover:bg-salmon hover:text-white transition-colors">Reject</button>
+                                        <button onClick={() => handleApprove(req.id)} className="flex-1 bg-palm/10 text-palm text-[10px] font-semibold py-1.5 rounded hover:bg-palm hover:text-white transition-colors">{t('approve')}</button>
+                                        <button onClick={() => handleReject(req.id)} className="flex-1 bg-salmon/10 text-salmon text-[10px] font-semibold py-1.5 rounded hover:bg-salmon hover:text-white transition-colors">{t('reject')}</button>
                                      </div>
                                   </div>
                                ))
                             )}
                          </div>
-                         <button onClick={() => { setCurrentView('my-meetings'); setShowNotifications(false); }} className="w-full p-3 text-center text-xs font-bold text-dune hover:bg-gray-50 hover:text-al-adaam border-t border-gray-100 transition-colors">
-                            View All Appointments
+                         <button onClick={() => { setCurrentView('my-meetings'); setShowNotifications(false); }} className="w-full p-3 text-center text-xs font-semibold text-dune hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-al-adaam border-t border-gray-100 dark:border-gray-700 transition-colors">
+                            {t('viewAllAppointments')}
                          </button>
                       </div>
                    )}
@@ -679,16 +683,22 @@ const App: React.FC = () => {
 
                 {(role === 'manager' || role === 'admin') && (
                   <div className="relative group cursor-pointer" data-tour="profile" onClick={() => setIsProfileModalOpen(true)}>
-                     <img
-                       src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.name}`}
-                       alt="Profile"
-                       className="w-8 h-8 rounded-full border border-gray-200 group-hover:border-al-adaam transition-colors"
-                     />
+                     {currentUser.avatar ? (
+                       <img
+                         src={currentUser.avatar}
+                         alt={currentUser.name}
+                         className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 group-hover:border-al-adaam transition-colors object-cover"
+                       />
+                     ) : (
+                       <div className="w-8 h-8 rounded-full bg-al-adaam text-white flex items-center justify-center text-[10px] font-semibold border border-gray-200 dark:border-gray-700 group-hover:border-al-adaam transition-colors" aria-hidden="true">
+                         {initials(currentUser.name)}
+                       </div>
+                     )}
                   </div>
                 )}
-                
-                <button onClick={handleLogout} className="text-xs font-bold text-gray-400 hover:text-salmon transition-colors">
-                   Sign Out
+
+                <button onClick={handleLogout} className="text-xs font-semibold text-gray-400 hover:text-salmon transition-colors">
+                   {t('signOut')}
                 </button>
               </div>
             </div>
@@ -727,7 +737,7 @@ const App: React.FC = () => {
              {showNotifications && (
                <div className="absolute top-full left-0 right-0 mt-1 mx-3 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 animate-fade-in-down">
                  <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center">
-                   <h4 className="font-bold text-sm text-charcoal dark:text-white">Notifications</h4>
+                   <h4 className="font-semibold text-sm text-charcoal dark:text-white">{t('notifications')}</h4>
                    <button onClick={() => setShowNotifications(false)} className="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                    </button>
@@ -738,19 +748,19 @@ const App: React.FC = () => {
                        <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                        </div>
-                       <p className="text-gray-400 text-xs">All caught up!</p>
+                       <p className="text-gray-400 dark:text-gray-500 text-xs">{t('noPendingRequests')}</p>
                      </div>
                    ) : (
                      requestsToApprove.map(req => (
                        <div key={req.id} className="p-3 border-b border-gray-50 dark:border-gray-700/50 active:bg-gray-50 dark:active:bg-gray-700">
                          <div className="flex justify-between items-start mb-2">
-                           <p className="text-sm font-bold text-charcoal dark:text-white truncate flex-1">{req.title}</p>
+                           <p className="text-sm font-semibold text-charcoal dark:text-white truncate flex-1">{req.title}</p>
                            <span className="text-[9px] text-gray-400 ml-2">{req.date}</span>
                          </div>
-                         <p className="text-xs text-gray-500 mb-2">from {req.attendeeName}</p>
+                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t('from')} {req.attendeeName}</p>
                          <div className="flex gap-2">
-                           <button onClick={() => { handleApprove(req.id); setShowNotifications(false); }} className="flex-1 bg-palm text-white text-[10px] font-bold py-2 rounded-lg active:scale-95 transition-transform">Approve</button>
-                           <button onClick={() => { handleReject(req.id); setShowNotifications(false); }} className="flex-1 bg-salmon text-white text-[10px] font-bold py-2 rounded-lg active:scale-95 transition-transform">Reject</button>
+                           <button onClick={() => { handleApprove(req.id); setShowNotifications(false); }} className="flex-1 bg-palm text-white text-[10px] font-semibold py-2 rounded-lg active:scale-95 transition-transform">{t('approve')}</button>
+                           <button onClick={() => { handleReject(req.id); setShowNotifications(false); }} className="flex-1 bg-salmon text-white text-[10px] font-semibold py-2 rounded-lg active:scale-95 transition-transform">{t('reject')}</button>
                          </div>
                        </div>
                      ))
@@ -962,10 +972,11 @@ const App: React.FC = () => {
           )}
         </main>
         
-        <MobileNav 
-           currentView={currentView} 
+        <MobileNav
+           currentView={currentView}
            onNavigate={handleMobileNavigate}
            pendingCount={requestsToApprove.length}
+           t={t}
         />
 
         <TourOverlay />
