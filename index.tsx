@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CalendarGrid } from './components/CalendarGrid';
 import { TimeSlotList } from './components/TimeSlotList';
@@ -45,7 +45,8 @@ import { VerifyEmailPage } from './components/VerifyEmailPage';
 import { EmailVerificationBanner } from './components/EmailVerificationBanner';
 import { HelpModal } from './components/HelpModal';
 import { setTokens } from './services/api';
-import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
+import { generateTimeSlots, getMeetingsForDate } from './services/schedulerService';
+import { meetingsApi } from './services/meetingsApi';
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
 import { smartDefaults } from './services/smartDefaults';
@@ -71,6 +72,17 @@ const App: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+
+  // Server-backed: meetings live on the server so the whole office shares ONE
+  // schedule. Refetch after every mutation. (Replaces the old localStorage store.)
+  const loadMeetings = useCallback(async () => {
+    try {
+      const list = await meetingsApi.list();
+      setMeetings(Array.isArray(list) ? list : []);
+    } catch {
+      /* not authenticated / offline — leave current state */
+    }
+  }, []);
   
   // Data State
   const [availableHosts, setAvailableHosts] = useState<User[]>([]);
@@ -124,17 +136,7 @@ const App: React.FC = () => {
     }
 
     storageService.init();
-    setMeetings(storageService.getMeetings());
-    import('./services/delegationApi').then(({ fetchMyTentatives }) =>
-      fetchMyTentatives().then((server) => {
-        if (!Array.isArray(server) || server.length === 0) return;
-        setMeetings(prev => {
-          const ids = new Set(prev.map(m => m.id));
-          const merged = server.filter(m => m.onBehalf && !ids.has(m.id));
-          return merged.length ? [...prev, ...merged] : prev;
-        });
-      }).catch(() => { /* offline / not logged into server — in-app still works */ })
-    );
+    loadMeetings();
     setLogs(storageService.getLogs());
     setTeams(storageService.getTeams());
 
@@ -194,20 +196,11 @@ const App: React.FC = () => {
     }
   }, [currentUser, currentUser?.onboardingCompleted]);
 
-  // Re-merge server tentatives when a user logs in during the session (without a page reload).
+  // Refetch the shared schedule from the server whenever the signed-in user changes.
   useEffect(() => {
     if (!currentUser) return;
-    import('./services/delegationApi').then(({ fetchMyTentatives }) =>
-      fetchMyTentatives().then((server) => {
-        if (!Array.isArray(server) || server.length === 0) return;
-        setMeetings(prev => {
-          const ids = new Set(prev.map(m => m.id));
-          const merged = server.filter(m => m.onBehalf && !ids.has(m.id));
-          return merged.length ? [...prev, ...merged] : prev;
-        });
-      }).catch(() => { /* offline / not logged in — no-op */ })
-    );
-  }, [currentUser]);
+    loadMeetings();
+  }, [currentUser, loadMeetings]);
 
   const announce = (msg: string) => {
      setAnnouncement(msg);
@@ -232,11 +225,6 @@ const App: React.FC = () => {
     setAvailableHosts(sortedHosts);
   };
 
-  useEffect(() => {
-    if (currentUser) {
-       storageService.saveMeetings(meetings);
-    }
-  }, [meetings, currentUser]);
 
   useEffect(() => {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -269,8 +257,9 @@ const App: React.FC = () => {
   // Handlers
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    loadHosts(); 
-    setTeams(storageService.getTeams()); 
+    loadHosts();
+    loadMeetings();
+    setTeams(storageService.getTeams());
     setLogs(prev => [storageService.addLog({ action: 'LOGIN', details: 'User logged in', performedBy: user.name, role: user.role }), ...prev]);
     addToast('success', `${t('welcome')} ${user.name}`);
     setCurrentView(user.role === 'guest' ? 'scheduler' : 'dashboard');
@@ -367,126 +356,96 @@ const App: React.FC = () => {
     addToast('success', 'Profile updated');
   };
 
-  const handleBookingSubmit = (formData: any) => {
+  const handleBookingSubmit = async (formData: any) => {
     if (!selectedSlot || !currentUser || !selectedHost) return;
+    const baseDateStr = selectedDate.toISOString().split('T')[0];
 
-    if (formData.bookOnBehalf && selectedHost.id !== currentUser.id) {
-      const baseDateStr = selectedDate.toISOString().split('T')[0];
-      import('./services/delegationApi').then(({ createOnBehalfMeeting }) =>
-        createOnBehalfMeeting({
-          title: formData.title,
-          category: formData.category || 'general',
-          date: baseDateStr,
-          time: selectedSlot.label,
-          durationMinutes: formData.duration || bookingDuration,
-          attendeeName: formData.attendeeName,
-          attendeeEmail: formData.attendeeEmail,
-          additionalAttendees: formData.additionalAttendees,
-          notes: formData.notes,
-          hostId: selectedHost.id,
-          meetingFormat: formData.meetingFormat || 'in-person',
-          meetingLink: formData.meetingLink,
-          locationAddress: formData.meetingFormat === 'in-person' ? formData.locationAddress : undefined,
-          locality: formData.locality || 'internal',
-        })
-      ).then((created) => {
-        setMeetings(prev => [...prev, { ...(created as any), bookedBy: currentUser.role, userId: currentUser.id }]);
-        addToast('success', t('awaitingConfirmation'));
-      }).catch((e: any) => addToast('error', e?.body?.error || e?.message || 'Failed'));
-      return;
+    // Occurrence dates (single, or recurring daily/weekly).
+    const occurrences = (formData.frequency && formData.frequency !== 'none')
+      ? Math.max(1, formData.occurrences || 1) : 1;
+    const dates: string[] = [];
+    for (let i = 0; i < occurrences; i++) {
+      const d = new Date(baseDateStr);
+      if (formData.frequency === 'daily') d.setDate(d.getDate() + i);
+      else if (formData.frequency === 'weekly') d.setDate(d.getDate() + i * 7);
+      dates.push(d.toISOString().split('T')[0]);
     }
 
-    const baseDateStr = selectedDate.toISOString().split('T')[0];
-    const newMeetingData = {
+    const payloadBase = {
       title: formData.title,
       category: formData.category || 'general',
-      date: baseDateStr,
       time: selectedSlot.label,
       durationMinutes: formData.duration || bookingDuration,
       attendeeName: formData.attendeeName,
       attendeeEmail: formData.attendeeEmail,
       additionalAttendees: formData.additionalAttendees,
-      bookedBy: currentUser.role,
-      userId: currentUser.id,
       notes: formData.notes,
       hostId: selectedHost.id,
       meetingFormat: formData.meetingFormat || 'in-person',
       meetingLink: formData.meetingLink,
+      meetingPlatform: formData.meetingPlatform,
       locationAddress: formData.meetingFormat === 'in-person' ? formData.locationAddress : undefined,
-      locality: formData.locality || 'internal'
+      locality: formData.locality || 'internal',
     };
 
-    const buffer = selectedHost.availability?.bufferMinutes || 0;
+    // Server is the source of truth. It derives on-behalf (delegate) vs inbound
+    // request, enforces conflicts (409), and sets pending/approved appropriately.
+    try {
+      let lastCreated: any = null;
+      let conflicts = 0;
+      for (const date of dates) {
+        try {
+          const res = await meetingsApi.create({ ...payloadBase, date });
+          lastCreated = (res as any)?.meeting ?? res;
+        } catch (e: any) {
+          if (e?.status === 409) conflicts++;
+          else throw e;
+        }
+      }
+      await loadMeetings();
+      smartDefaults.trackAction('book_slot', { hostId: selectedHost.id, duration: payloadBase.durationMinutes, time: payloadBase.time });
 
-    // Recurrence Logic
-    if (formData.frequency && formData.frequency !== 'none') {
-       let hasAnyConflict = false;
-       const conflictingDates: string[] = [];
-       const datesToCheck: string[] = [];
-       
-       for(let i=0; i<formData.occurrences; i++) {
-          const d = new Date(baseDateStr);
-          if (formData.frequency === 'daily') d.setDate(d.getDate() + i);
-          if (formData.frequency === 'weekly') d.setDate(d.getDate() + (i * 7));
-          datesToCheck.push(d.toISOString().split('T')[0]);
-       }
-
-       for (const dateStr of datesToCheck) {
-          if (checkMeetingConflict(meetings, dateStr, newMeetingData.time, newMeetingData.durationMinutes, selectedHost.id, undefined, buffer)) {
-             hasAnyConflict = true;
-             conflictingDates.push(dateStr);
-          }
-       }
-
-       if (hasAnyConflict) {
-          if (!window.confirm(`${t('recurringConflictMessage')}\n${conflictingDates.join(', ')}\n\n${t('proceedAnyway')}`)) return;
-       }
-
-       setMeetings(prev => createRecurringMeetings(prev, newMeetingData, currentUser.role, formData.frequency, formData.occurrences));
-       
-       setLogs(prev => [storageService.addLog({ action: 'BOOK', details: `Scheduled recurring "${newMeetingData.title}" (${formData.frequency}) with ${selectedHost.name}`, performedBy: currentUser.name, role: currentUser.role }), ...prev]);
-       
-    } else {
-       // Single Meeting
-       const hasConflict = checkMeetingConflict(meetings, baseDateStr, newMeetingData.time, newMeetingData.durationMinutes, selectedHost.id, undefined, buffer);
-       if (hasConflict && !window.confirm(`${t('conflictMessage')} ${t('proceedAnyway')}`)) return;
-
-       setMeetings(prev => createMeeting(prev, newMeetingData, currentUser.role));
-       setLogs(prev => [storageService.addLog({ action: 'BOOK', details: `Scheduled "${newMeetingData.title}" with ${selectedHost.name}`, performedBy: currentUser.name, role: currentUser.role }), ...prev]);
+      if (conflicts === dates.length) {
+        addToast('error', t('conflictMessage') || 'That time is already booked');
+        return;
+      }
+      const onBehalf = !!lastCreated?.onBehalf;
+      addToast('success', onBehalf
+        ? t('awaitingConfirmation')
+        : (currentUser.role === 'guest' ? t('requestSent') : t('meetingScheduled')));
+    } catch (e: any) {
+      addToast('error', e?.body?.error || e?.message || 'Failed to book');
     }
-
-    // Track smart defaults
-    smartDefaults.trackAction('book_slot', { 
-       hostId: selectedHost.id, 
-       duration: newMeetingData.durationMinutes, 
-       time: newMeetingData.time 
-    });
-
-    addToast('success', currentUser.role === 'guest' ? t('requestSent') : t('meetingScheduled'));
   };
 
-  const handleCancelMeeting = (id: string) => {
-    setMeetings(prev => cancelMeeting(prev, id));
-    if (currentUser) {
-      storageService.addLog({ action: 'CANCEL', details: `Cancelled meeting ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
+  const handleCancelMeeting = async (id: string) => {
+    try {
+      await meetingsApi.setStatus(id, 'cancelled');
+      await loadMeetings();
+      addToast('info', 'Meeting Cancelled');
+    } catch (e: any) {
+      addToast('error', e?.body?.error || e?.message || 'Failed to cancel');
     }
-    addToast('info', 'Meeting Cancelled');
   };
 
-  const handleApprove = (id: string) => {
-    const m = meetings.find(x => x.id === id);
-    setMeetings(prev => updateMeetingStatus(prev, id, 'approved'));
-    if (m?.onBehalf) import('./services/delegationApi').then(({ confirmMeeting }) => confirmMeeting(id)).catch(() => {});
-    if (currentUser) storageService.addLog({ action: 'APPROVE', details: `Approved ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
-    addToast('success', t('confirmed'));
+  const handleApprove = async (id: string) => {
+    try {
+      await meetingsApi.setStatus(id, 'approved');
+      await loadMeetings();
+      addToast('success', t('confirmed'));
+    } catch (e: any) {
+      addToast('error', e?.body?.error || e?.message || 'Failed to approve');
+    }
   };
 
-  const handleReject = (id: string) => {
-    const m = meetings.find(x => x.id === id);
-    setMeetings(prev => updateMeetingStatus(prev, id, 'rejected'));
-    if (m?.onBehalf) import('./services/delegationApi').then(({ declineMeeting }) => declineMeeting(id)).catch(() => {});
-    if (currentUser) storageService.addLog({ action: 'REJECT', details: `Rejected ID ${id}`, performedBy: currentUser.name, role: currentUser.role });
-    addToast('error', t('decline'));
+  const handleReject = async (id: string) => {
+    try {
+      await meetingsApi.setStatus(id, 'rejected');
+      await loadMeetings();
+      addToast('error', t('decline'));
+    } catch (e: any) {
+      addToast('error', e?.body?.error || e?.message || 'Failed to reject');
+    }
   };
   
   const handleRemind = (id: string) => {
@@ -501,21 +460,18 @@ const App: React.FC = () => {
     setRescheduleMeetingObj(meeting);
   };
 
-  const handleConfirmReschedule = (newDate: Date, newSlot: TimeSlot) => {
+  const handleConfirmReschedule = async (newDate: Date, newSlot: TimeSlot) => {
     if (!rescheduleMeetingObj || !currentUser) return;
     const dateStr = newDate.toISOString().split('T')[0];
-    const hostId = rescheduleMeetingObj.hostId;
-    const host = availableHosts.find(h => h.id === hostId);
-    const buffer = host?.availability?.bufferMinutes || 0;
-
-    const hasConflict = checkMeetingConflict(meetings, dateStr, newSlot.label, rescheduleMeetingObj.durationMinutes, hostId, rescheduleMeetingObj.id, buffer);
-    if (hasConflict && !window.confirm(`${t('conflictMessage')} ${t('proceedAnyway')}`)) return;
-
-    if (window.confirm(`${t('confirmReschedule')} ${newDate.toDateString()} @ ${newSlot.label}?`)) {
-        setMeetings(prev => rescheduleMeeting(prev, rescheduleMeetingObj.id, dateStr, newSlot.label));
-        storageService.addLog({ action: 'RESCHEDULE', details: `Rescheduled "${rescheduleMeetingObj.title}"`, performedBy: currentUser.name, role: currentUser.role });
-        setRescheduleMeetingObj(null);
-        addToast('success', 'Meeting Rescheduled');
+    if (!window.confirm(`${t('confirmReschedule')} ${newDate.toDateString()} @ ${newSlot.label}?`)) return;
+    try {
+      // Server enforces conflicts + authorization.
+      await meetingsApi.reschedule(rescheduleMeetingObj.id, dateStr, newSlot.label);
+      await loadMeetings();
+      setRescheduleMeetingObj(null);
+      addToast('success', 'Meeting Rescheduled');
+    } catch (e: any) {
+      addToast('error', e?.body?.error || e?.message || 'Failed to reschedule');
     }
   };
 
@@ -779,9 +735,7 @@ const App: React.FC = () => {
               onBookForTeam={handleSelectTeam}
                 onQuickBook={() => { setIsQuickBookOpen(true); }}
                 onRefresh={async () => {
-                  // Simulate refresh
-                  await new Promise(resolve => setTimeout(resolve, 1500));
-                  setMeetings(storageService.getMeetings()); // Reload from storage
+                  await loadMeetings(); // Refetch the shared schedule from the server
                   loadHosts();
                   addToast('info', 'Dashboard refreshed');
                 }}
@@ -974,24 +928,24 @@ const App: React.FC = () => {
         <QuickBookModal
           isOpen={isQuickBookOpen}
           onClose={() => setIsQuickBookOpen(false)}
-          onConfirm={(data) => {
-             const newMeetingData = {
-                title: data.title,
-                category: 'general',
-                date: data.date.toISOString().split('T')[0],
-                time: data.slot.label,
-                durationMinutes: 30,
-                attendeeName: currentUser.name,
-                attendeeEmail: currentUser.email,
-                bookedBy: currentUser.role,
-                userId: currentUser.id,
-                hostId: data.hostId
-             };
-             
-             setMeetings(prev => createMeeting(prev, newMeetingData as any, currentUser.role));
-             setLogs(prev => [storageService.addLog({ action: 'BOOK', details: `Quick Booked "${data.title}"`, performedBy: currentUser.name, role: currentUser.role }), ...prev]);
-             smartDefaults.trackAction('book_slot', { hostId: data.hostId, duration: 30, time: data.slot.label });
-             addToast('success', 'Quick booking confirmed!');
+          onConfirm={async (data) => {
+             try {
+                await meetingsApi.create({
+                   title: data.title,
+                   category: 'general',
+                   date: data.date.toISOString().split('T')[0],
+                   time: data.slot.label,
+                   durationMinutes: 30,
+                   attendeeName: currentUser.name,
+                   attendeeEmail: currentUser.email || '',
+                   hostId: data.hostId,
+                });
+                await loadMeetings();
+                smartDefaults.trackAction('book_slot', { hostId: data.hostId, duration: 30, time: data.slot.label });
+                addToast('success', 'Quick booking confirmed!');
+             } catch (e: any) {
+                addToast('error', e?.body?.error || e?.message || 'Failed to book');
+             }
              setIsQuickBookOpen(false);
           }}
           hosts={availableHosts}
