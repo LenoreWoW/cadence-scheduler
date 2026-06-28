@@ -8,9 +8,7 @@ import { db } from '../database';
 import { authenticateToken, optionalAuth, AuthenticatedRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import { syncMeetingToCalendar, deleteSyncedEvent, getExternalBusyTimes } from '../services/calendarSync';
-import { awardXp, incrementBookingStat } from '../services/userStatsSync';
 import { dispatchWebhook } from '../services/outboundWebhooks';
-import { trackChallengeProgress } from './challenges';
 import { canActOnBehalf } from './delegates';
 
 const router = Router();
@@ -479,9 +477,7 @@ router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedReques
       })();
     }
 
-    // Stats / XP / webhook / challenges hooks
-    try { awardXp(hostId, 10, 'new booking'); } catch {}
-    try { incrementBookingStat(hostId); } catch {}
+    // Webhook hook — best-effort, never block the response.
     try {
       dispatchWebhook(hostId, 'booking.created', {
         meetingId, title, date, time,
@@ -490,7 +486,6 @@ router.post('/', authenticateToken, asyncHandler(async (req: AuthenticatedReques
         source: 'internal',
       });
     } catch {}
-    try { trackChallengeProgress(hostId, 'bookings_received', 1); } catch {}
 
     // Workflow dispatch — fire-and-forget.
     (async () => {
@@ -594,7 +589,7 @@ router.patch('/:id/status', authenticateToken, asyncHandler(async (req: Authenti
       }
     }
 
-    // Webhook + XP hooks for status changes
+    // Webhook hooks for status changes
     const webhookBase = {
       meetingId: meeting.id, title: meeting.title,
       date: meeting.date, time: meeting.time,
@@ -603,7 +598,6 @@ router.patch('/:id/status', authenticateToken, asyncHandler(async (req: Authenti
     try {
       if (status === 'approved') {
         dispatchWebhook(meeting.host_id, 'booking.approved', webhookBase);
-        awardXp(meeting.host_id, 5, 'approved_booking');
       } else if (status === 'rejected') {
         dispatchWebhook(meeting.host_id, 'booking.rejected', webhookBase);
       } else if (status === 'cancelled') {

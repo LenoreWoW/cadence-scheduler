@@ -3,8 +3,6 @@ import { useSwipeable } from 'react-swipeable';
 import { Meeting, User, Language } from '../types';
 import { Button } from './Button';
 import { EmptyState3D } from './EmptyState3D';
-import { AchievementGallery } from './AchievementGallery';
-import { gamificationService, Achievement } from '../services/gamificationService';
 import { getMeetingAccent } from '../services/localityService';
 
 interface DashboardProps {
@@ -23,11 +21,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
   const [greeting, setGreeting] = useState('');
   const [timeUntil, setTimeUntil] = useState<{ hours: number; minutes: number } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false); // Refresh state
-  
-  // Achievement State
-  const [showAchievements, setShowAchievements] = useState(false);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [userAchievements, setUserAchievements] = useState<string[]>([]);
 
   // Pull-to-refresh Handlers
   const pullHandlers = useSwipeable({
@@ -42,15 +35,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
     trackMouse: false
   });
 
-  useEffect(() => {
-    setAchievements(gamificationService.getAchievements());
-    setUserAchievements(gamificationService.getUserAchievements());
-    const unsubscribe = gamificationService.subscribe(() => {
-       setUserAchievements(gamificationService.getUserAchievements());
-    });
-    return unsubscribe;
-  }, []);
-  
   // Derived Data
   const myMeetings = useMemo(() => meetings.filter(m => m.hostId === user.id || m.userId === user.id), [meetings, user.id]);
   const pendingCount = myMeetings.filter(m => m.status === 'pending').length;
@@ -263,19 +247,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
                  </button>
                )}
 
-               <button 
-                 onClick={() => setShowAchievements(true)}
-                 data-tour="achievements"
-                 className="group flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition-transform"
-               >
-                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center">
-                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-                  </div>
-                  <div className="text-left">
-                    <span className="text-sm font-bold text-charcoal dark:text-white block">Achievements</span>
-                    <span className="text-[10px] text-gray-500">{userAchievements.length} Unlocked</span>
-                  </div>
-               </button>
           </div>
         </div>
       </div>
@@ -441,15 +412,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, meetings, t, lang, o
          </div>
       </div>
 
-      {showAchievements && (
-        <AchievementGallery 
-          achievements={achievements}
-          userAchievements={userAchievements}
-          onClose={() => setShowAchievements(false)}
-          t={t}
-          userId={user.id}
-        />
-      )}
     </div>
   );
 };

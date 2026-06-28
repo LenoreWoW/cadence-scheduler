@@ -33,19 +33,6 @@ Object.defineProperty(window, 'matchMedia', {
   }))
 });
 
-// Mock Audio
-class AudioMock {
-  volume = 1;
-  currentTime = 0;
-  play = vi.fn().mockResolvedValue(undefined);
-  pause = vi.fn();
-  load = vi.fn();
-}
-
-Object.defineProperty(window, 'Audio', {
-  value: vi.fn(() => new AudioMock())
-});
-
 // Mock ResizeObserver
 class ResizeObserverMock {
   observe = vi.fn();

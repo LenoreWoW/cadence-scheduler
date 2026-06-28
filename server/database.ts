@@ -402,35 +402,6 @@ class DatabaseManager {
       )`
     );
     runOnce(
-      '20240133_challenges',
-      `CREATE TABLE IF NOT EXISTS challenges (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        metric TEXT NOT NULL,
-        target INTEGER NOT NULL,
-        period TEXT DEFAULT 'week',
-        starts_at TEXT NOT NULL,
-        ends_at TEXT NOT NULL,
-        xp_reward INTEGER DEFAULT 100,
-        active INTEGER DEFAULT 1,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )`
-    );
-    runOnce(
-      '20240134_user_challenge_progress',
-      `CREATE TABLE IF NOT EXISTS user_challenge_progress (
-        user_id TEXT NOT NULL,
-        challenge_id TEXT NOT NULL,
-        progress INTEGER DEFAULT 0,
-        completed INTEGER DEFAULT 0,
-        completed_at TEXT,
-        PRIMARY KEY (user_id, challenge_id),
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE
-      )`
-    );
-    runOnce(
       '20240135_users_email_verification',
       `ALTER TABLE users ADD COLUMN email_verification_token TEXT`
     );
@@ -465,14 +436,6 @@ class DatabaseManager {
     runOnce(
       '20240141_users_preferred_language',
       `ALTER TABLE users ADD COLUMN preferred_language TEXT DEFAULT 'en'`
-    );
-    runOnce(
-      '20240142_user_stats_xp',
-      `ALTER TABLE user_stats ADD COLUMN xp INTEGER DEFAULT 0`
-    );
-    runOnce(
-      '20240143_user_stats_level',
-      `ALTER TABLE user_stats ADD COLUMN level INTEGER DEFAULT 1`
     );
     runOnce(
       '20240144_meetings_approval_status',
@@ -935,23 +898,6 @@ class DatabaseManager {
       )
     `);
 
-    // User Stats (for gamification)
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS user_stats (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL UNIQUE,
-        total_bookings INTEGER DEFAULT 0,
-        total_cancellations INTEGER DEFAULT 0,
-        meetings_attended INTEGER DEFAULT 0,
-        last_login TEXT,
-        login_streak INTEGER DEFAULT 0,
-        unlocked_achievements TEXT DEFAULT '[]',
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-      )
-    `);
-
     // Sessions table (for JWT refresh tokens)
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
@@ -1016,6 +962,12 @@ class DatabaseManager {
     } catch (e) {
       console.error('Failed to initialize round-robin table:', e);
     }
+
+    // Drop gamification tables that were removed in this refactor.
+    runOnce(
+      '20240600_drop_gamification_tables',
+      `DROP TABLE IF EXISTS user_challenge_progress; DROP TABLE IF EXISTS challenges; DROP TABLE IF EXISTS user_stats;`
+    );
 
     // Apply any ALTER TABLE migrations whose target tables were created
     // after their declaration site above.

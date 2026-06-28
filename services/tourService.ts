@@ -206,18 +206,6 @@ export const tours: Record<string, TourDefinition> = {
         spotlightPadding: 10
       },
       {
-        id: 'achievements',
-        target: '[data-tour="achievements"]',
-        title: 'Achievements & Gamification',
-        titleAr: 'الإنجازات واللعب',
-        content: 'Earn achievements by using Cadence! Track your progress, unlock badges, and level up.',
-        contentAr: 'اربح إنجازات باستخدام Cadence! تتبع تقدمك، افتح الشارات، وارتقِ بمستواك.',
-        position: 'bottom',
-        action: 'click',
-        actionLabel: 'View achievements',
-        actionLabelAr: 'عرض الإنجازات'
-      },
-      {
         id: 'keyboard-shortcuts',
         target: 'body',
         title: 'Pro Tip: Keyboard Shortcuts',

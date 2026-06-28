@@ -20,7 +20,6 @@ import { MobileNav } from './components/MobileNav';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { LiveRegion } from './components/LiveRegion';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { AchievementPopup } from './components/AchievementPopup';
 import ThemeToggle from './components/ThemeToggle';
 import { tourService } from './services/tourService';
 import { PageTransition } from './components/PageTransition';
@@ -31,7 +30,7 @@ import { ManageBookingPage } from './components/ManageBookingPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { ForgotPasswordPage } from './components/ForgotPasswordPage';
 import { TeamBookingPage } from './components/TeamBookingPage';
-import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team, Achievement } from './types';
+import { Meeting, Role, TimeSlot, User, LogEntry, Language, Team } from './types';
 import { BookingLinksManager } from './components/BookingLinksManager';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
@@ -39,11 +38,8 @@ import { TermsOfServicePage } from './components/TermsOfServicePage';
 import { AcceptInvitePage } from './components/AcceptInvitePage';
 import { ConfirmInvitePage } from './components/ConfirmInvitePage';
 import { CookieBanner } from './components/CookieBanner';
-import { XpLevelBadge } from './components/XpLevelBadge';
-import { ChallengesCard } from './components/ChallengesCard';
 import { SystemHealthDashboard } from './components/SystemHealthDashboard';
 import { AuditLogViewer } from './components/AuditLogViewer';
-import { TeamCompetitionLeaderboard } from './components/TeamCompetitionLeaderboard';
 import { BookingCalendarView } from './components/BookingCalendarView';
 import { RoutingFormPublicPage } from './components/RoutingFormPublicPage';
 import { VerifyEmailPage } from './components/VerifyEmailPage';
@@ -53,8 +49,6 @@ import { setTokens } from './services/api';
 import { generateTimeSlots, createMeeting, createRecurringMeetings, cancelMeeting, rescheduleMeeting, getMeetingsForDate, updateMeetingStatus, checkMeetingConflict } from './services/schedulerService';
 import { storageService } from './services/storageService';
 import { authService } from './services/authService';
-import { audioService } from './services/audioService';
-import { achievementService } from './services/achievementService';
 import { smartDefaults } from './services/smartDefaults';
 import { shortcutManager } from './services/keyboardShortcuts';
 import { translations } from './services/translations';
@@ -69,7 +63,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // Views
-  const [currentView, setCurrentView] = useState<'dashboard' | 'scheduler' | 'logs' | 'my-meetings' | 'team-management' | 'booking-links' | 'booking-calendar' | 'analytics' | 'system-health' | 'audit-log' | 'team-competition'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'scheduler' | 'logs' | 'my-meetings' | 'team-management' | 'booking-links' | 'booking-calendar' | 'analytics' | 'system-health' | 'audit-log'>('dashboard');
   const [lang, setLang] = useState<Language>('en');
 
   // Scheduler State
@@ -105,9 +99,8 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   // Reschedule State
   const [rescheduleMeetingObj, setRescheduleMeetingObj] = useState<Meeting | null>(null);
 
-  // Notifications & Achievements State
+  // Notifications State
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
   
   // Accessibility State
   const [announcement, setAnnouncement] = useState('');
@@ -161,11 +154,11 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     
     shortcutManager.register('showShortcuts', () => setIsShortcutsModalOpen(prev => !prev));
     shortcutManager.register('openCommand', () => setIsCommandPaletteOpen(true));
-    shortcutManager.register('goToDashboard', () => { setCurrentView('dashboard'); audioService.play('open'); });
-    shortcutManager.register('goToSchedule', () => { setCurrentView('scheduler'); audioService.play('open'); });
-    shortcutManager.register('goToAppointments', () => { setCurrentView('my-meetings'); audioService.play('open'); });
-    shortcutManager.register('newMeeting', () => { setCurrentView('scheduler'); setSelectedHost(null); audioService.play('click'); });
-    shortcutManager.register('quickBook', () => { setIsQuickBookOpen(true); audioService.play('click'); });
+    shortcutManager.register('goToDashboard', () => { setCurrentView('dashboard'); });
+    shortcutManager.register('goToSchedule', () => { setCurrentView('scheduler'); });
+    shortcutManager.register('goToAppointments', () => { setCurrentView('my-meetings'); });
+    shortcutManager.register('newMeeting', () => { setCurrentView('scheduler'); setSelectedHost(null); });
+    shortcutManager.register('quickBook', () => { setIsQuickBookOpen(true); });
     shortcutManager.register('close', () => {
         setIsModalOpen(false);
         setIsProfileModalOpen(false);
@@ -224,23 +217,12 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const addToast = (type: ToastType, message: string) => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, type, message }]);
-    if (type === 'success') audioService.play('success');
-    if (type === 'error') audioService.play('error');
-    if (type === 'info') audioService.play('notification');
     announce(`${type}: ${message}`);
   };
 
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
-
-  const checkAchievements = (action: 'login' | 'booking' | 'visit_team') => {
-     if (!currentUser) return;
-     const unlocks = achievementService.trackAction(currentUser.id, action);
-     if (unlocks.length > 0) {
-        setNewAchievements(prev => [...prev, ...unlocks]);
-     }
-  }
 
   const loadHosts = () => {
     const allUsers = storageService.getUsers();
@@ -292,12 +274,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     setLogs(prev => [storageService.addLog({ action: 'LOGIN', details: 'User logged in', performedBy: user.name, role: user.role }), ...prev]);
     addToast('success', `${t('welcome')} ${user.name}`);
     setCurrentView(user.role === 'guest' ? 'scheduler' : 'dashboard');
-    
-    // Check login achievements
-    setTimeout(() => {
-       const unlocks = achievementService.trackAction(user.id, 'login');
-       if (unlocks.length > 0) setNewAchievements(unlocks);
-    }, 1000);
 
     if (user.role !== 'guest' && !user.onboardingCompleted) {
        setShowOnboarding(true);
@@ -322,7 +298,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     const recommendedDuration = smartDefaults.getRecommendedDuration(host.id);
     setBookingDuration(recommendedDuration || host.availability?.slotDuration || 30);
     
-    audioService.play('click');
   };
 
   const handleCompleteOnboarding = (data: any) => {
@@ -338,8 +313,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
            slotDuration: data.slotDuration
         } as any
      };
-
-     if (data.soundEnabled !== audioService.enabled) audioService.toggle();
 
      setCurrentUser(updatedUser);
      const allUsers = storageService.getUsers();
@@ -369,17 +342,14 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   const handleSelectDate = (date: Date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
-    audioService.play('click');
   };
 
   const handleSelectSlot = (slot: TimeSlot) => {
     setSelectedSlot(slot);
-    audioService.play('click');
   };
 
   const handleContinueBooking = () => {
     setIsModalOpen(true);
-    audioService.play('click');
   };
 
   const handleUpdateProfile = (availability: any) => {
@@ -493,7 +463,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     });
 
     addToast('success', currentUser.role === 'guest' ? t('requestSent') : t('meetingScheduled'));
-    checkAchievements('booking');
   };
 
   const handleCancelMeeting = (id: string) => {
@@ -552,13 +521,11 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
 
   const toggleLang = () => {
     setLang(prev => prev === 'en' ? 'ar' : 'en');
-    audioService.play('click');
   };
 
   const handleSelectTeam = () => {
-    setSelectedHost(null); 
+    setSelectedHost(null);
     setCurrentView('scheduler');
-    checkAchievements('visit_team');
   };
 
   const handleMobileNavigate = (viewId: string) => {
@@ -567,7 +534,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
      } else {
         setCurrentView(viewId as any);
      }
-     audioService.play('click');
   };
 
   const commandActions = useMemo(() => [
@@ -581,7 +547,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
     ...(currentUser?.role === 'admin' ? [{ id: 'analytics', label: 'View Analytics', icon: '📊', action: () => setCurrentView('analytics'), category: 'Admin' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'system-health', label: 'System Health', icon: '💚', action: () => setCurrentView('system-health'), category: 'Admin' }] : []),
     ...(currentUser?.role === 'admin' ? [{ id: 'audit-log', label: 'Audit Log', icon: '📜', action: () => setCurrentView('audit-log'), category: 'Admin' }] : []),
-    { id: 'team-competition', label: 'Team Competition', icon: '🏆', action: () => setCurrentView('team-competition'), category: 'Gamification' },
     { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: '⌨️', shortcut: '?', action: () => setIsShortcutsModalOpen(true), category: 'Help' },
     { id: 'logout', label: 'Sign Out', icon: '🚪', action: handleLogout, category: 'Account' },
     ...(currentUser?.role === 'admin' ? [{ id: 'teams', label: 'Team Management', icon: '👥', action: () => setCurrentView('team-management'), category: 'Admin' }] : []),
@@ -605,9 +570,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
         <LiveRegion message={announcement} />
         <EmailVerificationBanner currentUser={currentUser} lang={lang} />
         
-        {/* Global Achievement Toast */}
-        <AchievementPopup achievements={newAchievements} onClose={() => setNewAchievements([])} />
-
         {showOnboarding && (
            <OnboardingFlow onComplete={handleCompleteOnboarding} currentUser={currentUser} t={t} />
         )}
@@ -645,7 +607,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                   <button
                     key={nav.id}
                     data-tour={nav.id === 'my-meetings' ? 'appointments' : nav.id}
-                    onClick={() => { setCurrentView(nav.id as any); audioService.play('click'); }}
+                    onClick={() => { setCurrentView(nav.id as any); }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
                       currentView === nav.id 
                       ? 'bg-white text-charcoal shadow-sm ring-1 ring-gray-200' 
@@ -679,7 +641,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                  <div className="relative" ref={notificationRef} data-tour="notifications">
                    <button 
                      className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-gray-100 dark:bg-gray-800 text-charcoal dark:text-white' : 'text-gray-400 hover:text-charcoal dark:hover:text-white'}`}
-                     onClick={() => { setShowNotifications(!showNotifications); audioService.play('click'); }}
+                     onClick={() => { setShowNotifications(!showNotifications); }}
                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                       {requestsToApprove.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-salmon rounded-full border border-white"></span>}
@@ -718,8 +680,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
                       </div>
                    )}
                  </div>
-
-                <XpLevelBadge lang={lang} />
 
                 {(role === 'manager' || role === 'admin') && (
                   <div className="relative group cursor-pointer" data-tour="profile" onClick={() => setIsProfileModalOpen(true)}>
@@ -811,23 +771,17 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
               meetings={meetings}
               t={t}
               lang={lang}
-              onNavigate={(view) => { setCurrentView(view); audioService.play('click'); }}
+              onNavigate={(view) => { setCurrentView(view); }}
               onBookForTeam={handleSelectTeam}
-                onQuickBook={() => { setIsQuickBookOpen(true); audioService.play('click'); }}
+                onQuickBook={() => { setIsQuickBookOpen(true); }}
                 onRefresh={async () => {
                   // Simulate refresh
                   await new Promise(resolve => setTimeout(resolve, 1500));
                   setMeetings(storageService.getMeetings()); // Reload from storage
                   loadHosts();
-                  audioService.play('notification');
                   addToast('info', 'Dashboard refreshed');
                 }}
             />
-            {currentUser.role !== 'guest' && (
-              <div className="mt-6 max-w-2xl mx-auto">
-                <ChallengesCard lang={lang} />
-              </div>
-            )}
             </PageTransition>
           ) : currentView === 'logs' ? (
             <PageTransition viewKey="logs"><div className="animate-slide-up"><LogsPanel logs={logs} t={t} /></div></PageTransition>
@@ -868,10 +822,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
           ) : currentView === 'audit-log' ? (
              <PageTransition viewKey="audit-log">
                <div className="animate-slide-up max-w-6xl mx-auto"><AuditLogViewer lang={lang} /></div>
-             </PageTransition>
-          ) : currentView === 'team-competition' ? (
-             <PageTransition viewKey="team-competition">
-               <div className="animate-slide-up max-w-4xl mx-auto"><TeamCompetitionLeaderboard lang={lang} /></div>
              </PageTransition>
           ) : currentView === 'my-meetings' ? (
             <PageTransition viewKey="appointments">
@@ -1048,7 +998,6 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
              setLogs(prev => [storageService.addLog({ action: 'BOOK', details: `Quick Booked "${data.title}"`, performedBy: currentUser.name, role: currentUser.role }), ...prev]);
              smartDefaults.trackAction('book_slot', { hostId: data.hostId, duration: 30, time: data.slot.label });
              addToast('success', 'Quick booking confirmed!');
-             checkAchievements('booking');
              setIsQuickBookOpen(false);
           }}
           hosts={availableHosts}

@@ -8,9 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { db } from '../database';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
-import { awardXp, incrementBookingStat } from '../services/userStatsSync';
 import { dispatchWebhook } from '../services/outboundWebhooks';
-import { trackChallengeProgress } from './challenges';
 import { getActiveOOO } from './ooo';
 import { isBlocked } from './blocklist';
 
@@ -1081,16 +1079,13 @@ router.post('/public/:slug/book', publicBookingLimiter, asyncHandler(async (req:
       } catch (e) { console.error('workflow dispatch failed:', e); }
     })();
 
-    // Stats / XP / webhook / challenges — best-effort, never block the response.
-    try { awardXp(link.host_id, 10, 'public booking'); } catch {}
-    try { incrementBookingStat(link.host_id); } catch {}
+    // Webhook hook — best-effort, never block the response.
     try {
       dispatchWebhook(link.host_id, 'booking.created', {
         meetingId, title: meetingTitle, date, time, duration: bookingDuration,
         attendeeName, attendeeEmail, source: 'booking_link', slug,
       });
     } catch {}
-    try { trackChallengeProgress(link.host_id, 'bookings_received', 1); } catch {}
 
     // Notify host in-app
     try {

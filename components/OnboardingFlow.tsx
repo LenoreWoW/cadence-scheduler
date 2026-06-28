@@ -80,7 +80,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, curr
     startHour: 9,
     endHour: 17,
     slotDuration: 30,
-    soundEnabled: true,
     meetingPlatform: '',
     meetingLink: ''
   });
@@ -276,17 +275,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, curr
 
            {step === 3 && (
               <div className="space-y-6">
-                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <div>
-                       <h4 className="font-bold text-charcoal text-sm">Enable Sound Effects</h4>
-                       <p className="text-xs text-gray-500">Audio feedback for interactions</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={formData.soundEnabled} onChange={e => setFormData({...formData, soundEnabled: e.target.checked})} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-al-adaam"></div>
-                    </label>
-                 </div>
-                 
                  <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-dune mb-3">Default Duration</label>
                     <div className="grid grid-cols-3 gap-2">

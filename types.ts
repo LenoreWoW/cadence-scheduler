@@ -110,44 +110,6 @@ export interface CalendarDay {
   isSelected: boolean;
 }
 
-// --- Gamification Types ---
-export type AchievementCategory = 'booking' | 'attendance' | 'social' | 'productivity' | 'explorer' | 'secret';
-
-export interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
-  category?: AchievementCategory;
-  hidden?: boolean; // Secret achievements
-  requiredCount?: number; // For progress-based achievements
-  xp?: number; // Points awarded
-}
-
-export interface MeetingPartnerStats {
-  partnerId: string;
-  partnerName: string;
-  meetingCount: number;
-}
-
-export interface UserStats {
-  totalBookings: number;
-  totalCancellations: number;
-  meetingsAttended: number;
-  lastLogin: string;
-  loginStreak: number;
-  longestStreak: number;
-  unlockedAchievements: string[]; // Array of Achievement IDs
-  totalTimeSpent: number; // Minutes in meetings
-  firstLoginDate: string; // ISO date
-  totalXP: number; // Experience points
-  level: number; // Current level
-  meetingPartners: MeetingPartnerStats[]; // Track who you meet with most
-  weeklyMeetings: number; // Meetings this week
-  monthlyMeetings: number; // Meetings this month
-}
-
 export interface Delegate {
   principalUserId: string;
   delegateUserId: string;

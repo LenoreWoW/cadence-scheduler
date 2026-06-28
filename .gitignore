@@ -52,3 +52,8 @@ COMPARISON_REPORT.md
 
 # Subagent-driven-development scratch (briefs, reports, ledger, review diffs)
 .superpowers/
+
+# Playwright MCP scratch + ad-hoc screenshots
+.playwright-mcp/
+login-page.png
+*.scratch.png
