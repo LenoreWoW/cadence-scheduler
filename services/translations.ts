@@ -355,7 +355,11 @@ export const translations: Record<Language, TranslationKeys> = {
     helpStartAdmin: "Admin features tour",
     helpClose: "Close",
     quickLoginTitle: "Quick login (demo)",
-    quickLoginNote: "Demo accounts for testing — password: password"
+    quickLoginNote: "Demo accounts for testing — password: password",
+    portalSignInTitle: "Sign in through the portal",
+    portalSignInSubtitle: "Cadence is part of your organization's portal. Sign in there and you'll be brought straight to your schedule.",
+    portalSignInButton: "Continue to the portal",
+    devEntryTitle: "Developer entry"
   },
   ar: {
     appName: "Cadence",
@@ -706,6 +710,10 @@ export const translations: Record<Language, TranslationKeys> = {
     helpStartAdmin: "جولة ميزات المدير",
     helpClose: "إغلاق",
     quickLoginTitle: "دخول سريع (تجريبي)",
-    quickLoginNote: "حسابات تجريبية للاختبار — كلمة المرور: password"
+    quickLoginNote: "حسابات تجريبية للاختبار — كلمة المرور: password",
+    portalSignInTitle: "سجّل الدخول عبر البوابة",
+    portalSignInSubtitle: "تطبيق Cadence جزء من بوابة مؤسستك. سجّل الدخول هناك وسيتم نقلك مباشرةً إلى جدولك.",
+    portalSignInButton: "المتابعة إلى البوابة",
+    devEntryTitle: "دخول المطوّر"
   }
 };

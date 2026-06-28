@@ -87,6 +87,27 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Portal session handoff — SINGLE SEAM for portal-authenticated sign-in.
+ *
+ * Cadence is moving to a model where users arrive already authenticated from an
+ * external org portal (no in-app login form). This endpoint is the one boundary
+ * where that handoff is validated and exchanged for a Cadence session. It is
+ * intentionally a STUB today (see docs/superpowers/specs phase1 §4 + §10 YAGNI):
+ * the real mechanism is wired when the portal exists, and will be exactly ONE of
+ *   - OIDC callback (validate `code`/`id_token` against the portal's IdP), or
+ *   - signed-token validation (verify a portal-signed JWT in the body), or
+ *   - gateway-header trust (trust an authenticating reverse proxy's headers).
+ * Whichever it is, it resolves to a verified user row and then issues tokens +
+ * a session row + returns the same `{ user, accessToken, refreshToken }` shape
+ * as POST /login above (factor that issuance out and reuse it here at that time).
+ */
+router.post('/portal-session', async (_req: Request, res: Response) => {
+  res.status(501).json({
+    error: 'Portal session handoff is not yet wired. Use the dev quick-login (POST /login) in development.',
+  });
+});
+
 // Register
 router.post('/register', async (req: Request, res: Response) => {
   try {

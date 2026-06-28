@@ -5,7 +5,7 @@ import { CalendarGrid } from './components/CalendarGrid';
 import { TimeSlotList } from './components/TimeSlotList';
 import { BookingModal } from './components/BookingModal';
 import { MeetingList } from './components/MeetingList';
-import { LoginPage } from './components/LoginPage';
+import { PortalGate } from './components/PortalGate';
 import { LogsPanel } from './components/LogsPanel';
 import { RescheduleModal } from './components/RescheduleModal';
 import { HostSelector } from './components/HostSelector';
@@ -54,11 +54,7 @@ import { shortcutManager } from './services/keyboardShortcuts';
 import { translations } from './services/translations';
 import { Button } from './components/Button';
 
-interface AppProps {
-  initialAuthMode?: 'login' | 'register';
-}
-
-const App: React.FC<AppProps> = ({ initialAuthMode }) => {
+const App: React.FC = () => {
   // Global State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
@@ -556,7 +552,7 @@ const App: React.FC<AppProps> = ({ initialAuthMode }) => {
   if (!currentUser) {
     return (
       <ErrorBoundary>
-         <LoginPage onLogin={handleLogin} lang={lang} t={t} toggleLang={toggleLang} initialMode={initialAuthMode} />
+         <PortalGate onLogin={handleLogin} lang={lang} t={t} toggleLang={toggleLang} />
       </ErrorBoundary>
     );
   }
@@ -1140,7 +1136,7 @@ const Router: React.FC = () => {
     );
   }
 
-  return <App initialAuthMode={route.authMode} />;
+  return <App />;
 };
 
 function resolveRoute(path: string, search: string): RouteState {
