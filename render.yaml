@@ -1,44 +1,36 @@
-# Render blueprint — https://render.com/docs/blueprint-spec
-# Deploy with one click after connecting this repo to Render.
+# Render blueprint — Cadence backend API (UAT).
+#
+# Deploy:  Render dashboard → New → Blueprint → connect this repo →
+#          pick branch `feat/frontend-rebuild`. It reads this file.
+#          Then set FRONTEND_URL (Settings → Environment) to the Netlify site URL.
+#
+# NOTE: all server deps (express, better-sqlite3, tsx, …) live in
+# devDependencies, so the build MUST install dev deps (--production=false),
+# otherwise the server can't start.
 
 services:
   - type: web
     name: cadence-api
     runtime: node
     region: oregon
-    plan: starter
-    branch: main
-    buildCommand: yarn install --ignore-engines --frozen-lockfile
+    plan: free
+    branch: feat/frontend-rebuild
+    buildCommand: yarn install --frozen-lockfile --ignore-engines --production=false
     startCommand: yarn server
     healthCheckPath: /api/health
-    disk:
-      name: cadence-data
-      mountPath: /data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
+      # UAT: seed demo accounts so testers can sign in
+      # (admin / manager / sub / user1 — password "password").
+      - key: SEED_DEMO_DATA
+        value: "true"
+      # Free tier has no persistent disk — the DB lives in ephemeral /tmp and
+      # re-seeds on restart. Fine for UAT (note: created data resets on spin-down).
       - key: DATABASE_PATH
-        value: /data/cadence.db
+        value: /tmp/cadence-uat.db
       - key: JWT_SECRET
         generateValue: true
-      - key: PORT
-        value: 3001
+      # Set this to the Netlify site URL in the Render dashboard (CORS allow-list).
       - key: FRONTEND_URL
-        sync: false        # Set this manually in Render dashboard
-      - key: EMAIL_FROM
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GOOGLE_REDIRECT_URI
-        sync: false
-      - key: MICROSOFT_CLIENT_ID
-        sync: false
-      - key: MICROSOFT_CLIENT_SECRET
-        sync: false
-      - key: MICROSOFT_REDIRECT_URI
         sync: false

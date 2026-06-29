@@ -57,3 +57,8 @@ COMPARISON_REPORT.md
 .playwright-mcp/
 login-page.png
 *.scratch.png
+
+# Playwright e2e
+test-results/
+playwright-report/
+playwright/.cache/

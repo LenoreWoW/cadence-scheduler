@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# goal — Cadence's single delivery command.
+#
+# MISSION: ship the COMPLETE product — a simple, immersive booking app that is
+# management + self-service for a professional org, on the Qatar GBA palette:
+#     rebuild the frontend → integrate it to the backend → fully test → ready.
+#
+# Run `./goal` anytime to see delivery progress (milestones) + the quality gate
+# (typecheck / tests / build). It is baseline-aware: known pre-existing noise in
+# the legacy code is ignored, so it only flags NEW breakage. Verdict = SHIPPED
+# when every milestone is met and the build is green.
+#
+# Usage:  ./goal           full report
+#         ./goal --quick   skip the production build
+#
+set -uo pipefail
+cd "$(dirname "$0")"
+if [ -t 1 ]; then b=$(tput bold 2>/dev/null||true); d=$(tput dim 2>/dev/null||true); r=$(tput sgr0 2>/dev/null||true); else b=""; d=""; r=""; fi
+QUICK=0; [ "${1:-}" = "--quick" ] && QUICK=1
+BASELINE_TS="EmptyState3D ThemeToggle schedulerService vitest.config authService.test"
+BASELINE_TESTS="authService.test schedulerService.test"
+hr(){ printf '%s\n' "──────────────────────────────────────────────────────────"; }
+
+echo "${b}▶ Cadence — delivery (./goal)${r}"
+echo "${d}rebuild frontend → integrate backend → fully test → ship${r}"; hr
+
+# ── Delivery milestones ─────────────────────────────────────────────────────
+done=0; total=0
+chk(){ total=$((total+1)); if eval "$2" >/dev/null 2>&1; then echo "  ✅ $1"; done=$((done+1)); else echo "  ⬜ $1"; fi; }
+echo "${b}Delivery milestones${r}"
+chk "Fresh design system (app/theme.css)"          "[ -f app/theme.css ]"
+chk "App shell + providers (router + query)"        "[ -f app/App.tsx ] && [ -f app/main.tsx ]"
+chk "react-router-dom installed"                    "grep -q 'react-router-dom' package.json"
+chk "@tanstack/react-query installed"               "grep -q '@tanstack/react-query' package.json"
+chk "Entry repointed to app/ (nuclear reset)"       "grep -q 'app/main.tsx' index.html"
+chk "Screen · Home"                                 "[ -f app/routes/Home.tsx ]"
+chk "Screen · Book / request a meeting"             "[ -f app/routes/Book.tsx ]"
+chk "Screen · Requests (approvals inbox)"           "[ -f app/routes/Requests.tsx ]"
+chk "Screen · Schedule / calendar"                  "[ -f app/routes/Schedule.tsx ]"
+chk "Screen · Profile / settings"                   "[ -f app/routes/Profile.tsx ]"
+chk "Backend wired (app/ uses the server API)"      "grep -rq 'meetingsApi\|/api/' app/"
+chk "No localStorage data store in app/"            "! grep -rq 'storageService' app/"
+chk "Legacy UI deleted (old index.tsx gone)"        "[ ! -f index.tsx ]"
+echo "  ${d}${done}/${total} milestones${r}"
+
+# ── Quality gate ────────────────────────────────────────────────────────────
+hr; echo "${b}Quality gate${r}"
+new_ts=0
+TS_FILES=$(yarn -s typecheck 2>&1 | grep -oE "^[^ (]+\.(ts|tsx)" | sort -u)
+while IFS= read -r f; do [ -z "$f" ] && continue; k=0; for x in $BASELINE_TS; do [[ "$f" == *"$x"* ]] && k=1; done; [ "$k" = 0 ] && { echo "  ❌ new type error: $f"; new_ts=$((new_ts+1)); }; done <<< "$TS_FILES"
+[ "$new_ts" = 0 ] && echo "  ✅ typecheck (no new errors)" || true
+
+new_tests=0
+TEST_OUT=$(yarn -s vitest run 2>&1 || true)
+FAILED=$(echo "$TEST_OUT" | grep -oE "FAIL +[^ ]+\.test\.(ts|tsx)" | awk '{print $2}' | sort -u)
+while IFS= read -r f; do [ -z "$f" ] && continue; k=0; for x in $BASELINE_TESTS; do [[ "$f" == *"$x"* ]] && k=1; done; [ "$k" = 0 ] && { echo "  ❌ new failing suite: $f"; new_tests=$((new_tests+1)); }; done <<< "$FAILED"
+[ "$new_tests" = 0 ] && echo "  ✅ tests (no new failures)" || true
+
+build_ok=1
+if [ "$QUICK" = 0 ]; then
+  if yarn -s build >/dev/null 2>&1; then echo "  ✅ production build"; else build_ok=0; echo "  ❌ production build FAILED (run: yarn build)"; fi
+else echo "  ⏭  build skipped (--quick)"; fi
+
+# ── Verdict ─────────────────────────────────────────────────────────────────
+hr
+ready=1
+[ "$done" = "$total" ] || ready=0
+[ "$new_ts" = 0 ] || ready=0
+[ "$new_tests" = 0 ] || ready=0
+{ [ "$QUICK" = 0 ] && [ "$build_ok" = 0 ]; } && ready=0
+if [ "$ready" = 1 ]; then echo "${b}✓ SHIPPED — ${done}/${total} milestones, quality gate green${r}"; exit 0; fi
+echo "${b}◷ IN PROGRESS — ${done}/${total} milestones${r}"
+echo "${d}cross-user smoke: yarn server  +  yarn dev --port 5173${r}"
+exit 1

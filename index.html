@@ -10,24 +10,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Minimal critical CSS to prevent FOUC; full token system lives in index.css -->
+    <!-- Minimal critical CSS to prevent FOUC; full design system lives in app/theme.css -->
     <style>
       html, body {
-        background-color: #FFFFFF;
+        background-color: #f7f6f4;
         font-family: 'Inter', sans-serif;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="theme-color" content="#8A1538" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="description" content="Cadence - Premium scheduling application for teams who value every moment. Experience the new standard in time management." />
@@ -35,38 +25,13 @@
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <script type="module" src="./app/main.tsx"></script>
     <script>
-      // Register Service Worker
+      // Clean rebuild: proactively unregister any stale service worker from the
+      // OLD app so it can't keep serving cached old assets. (No SW in the rebuild.)
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
-              console.log('ServiceWorker registered:', registration.scope);
-            })
-            .catch(function(error) {
-              console.log('ServiceWorker registration failed:', error);
-            });
-        });
+        navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
       }
-      
-      // Set time-of-day theme
-      function setTimeTheme() {
-        const hour = new Date().getHours();
-        let timeOfDay;
-        if (hour >= 5 && hour < 12) {
-          timeOfDay = 'morning';
-        } else if (hour >= 12 && hour < 17) {
-          timeOfDay = 'afternoon';
-        } else if (hour >= 17 && hour < 21) {
-          timeOfDay = 'evening';
-        } else {
-          timeOfDay = 'night';
-        }
-        document.body.setAttribute('data-time', timeOfDay);
-      }
-      setTimeTheme();
-      setInterval(setTimeTheme, 60000); // Update every minute
     </script>
   </body>
 </html>

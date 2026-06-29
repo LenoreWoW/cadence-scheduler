@@ -1,9 +1,11 @@
 [build]
-  command = "npm run build"
+  command = "yarn build"
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
+  # drei/camera-controls declares node>=22; we build fine on 20.
+  YARN_IGNORE_ENGINES = "true"
 
 # Handle SPA routing - redirect all routes to index.html
 [[redirects]]
