@@ -79,11 +79,9 @@ export const Schedule: React.FC = () => {
           </button>
         ))}
       </div>
-      {view === 'agenda' && (
-        <Button variant={showAll ? 'secondary' : 'ghost'} onClick={() => setShowAll((v) => !v)} aria-pressed={showAll}>
-          {showAll ? t('schedule.hideCancelled') : `${t('schedule.showCancelled')}${hiddenCount ? ` (${hiddenCount})` : ''}`}
-        </Button>
-      )}
+      <Button variant={showAll ? 'secondary' : 'ghost'} onClick={() => setShowAll((v) => !v)} aria-pressed={showAll}>
+        {showAll ? t('schedule.hideCancelled') : `${t('schedule.showCancelled')}${hiddenCount ? ` (${hiddenCount})` : ''}`}
+      </Button>
     </>
   );
 
@@ -182,7 +180,7 @@ export const Schedule: React.FC = () => {
 
           {/* Month view */}
           {view === 'month' && !isLoading && !isError && (
-            <MonthCalendar meetings={meetings} onSelect={setSelected} />
+            <MonthCalendar meetings={visible} onSelect={setSelected} />
           )}
         </div>
       </div>

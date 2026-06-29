@@ -49,8 +49,10 @@ describe('MonthCalendar', () => {
     expect(screen.getByText('+2 more')).toBeInTheDocument();
   });
 
-  it('hides cancelled/rejected meetings', () => {
-    renderCal([{ ...meeting('1', 'Hidden', '09:00'), status: 'cancelled' }]);
-    expect(screen.queryByText(/Hidden/)).not.toBeInTheDocument();
+  it('renders exactly the meetings it is given (filtering is the parent\'s job)', () => {
+    // The Schedule screen filters cancelled/rejected via its show-all toggle and
+    // passes the result in; the calendar itself does not filter.
+    renderCal([{ ...meeting('1', 'Cancelled one', '09:00'), status: 'cancelled' }]);
+    expect(screen.getByText(/Cancelled one/)).toBeInTheDocument();
   });
 });
